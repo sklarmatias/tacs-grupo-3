@@ -1,22 +1,32 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>TACS</groupId>
-    <artifactId>TACS</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>tacsWSREST</groupId>
+    <artifactId>tacsWSREST</artifactId>
+    <version>0.0.1</version>
     <packaging>war</packaging>
-    <name>Simple CXF Java-first SOAP project using Spring configuration</name>
-    <description>Simple CXF Java-first SOAP project using Spring configuration</description>
+    <name>Simple CXF JAX-RS webapp service using spring configuration</name>
+    <description>Simple CXF JAX-RS webapp service using spring configuration</description>
     <dependencies>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <version>4.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
+            <artifactId>cxf-rt-rs-client</artifactId>
             <version>4.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+            <version>2.16.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>6.0.17</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -29,41 +39,25 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-context</artifactId>
-    <version>5.1.5.RELEASE</version>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.16.0</version>
 </dependency>
     </dependencies>
-
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <!-- mvn clean install tomcat:run-war to deploy
-                    Look for "Running war on http://xxx" and
-                    "Setting the server's publish address to be /yyy"
-                    in console output; WSDL browser address will be
-                    concatenation of the two: http://xxx/yyy?wsdl
-                    -->
                     <groupId>org.apache.tomcat.maven</groupId>
                     <artifactId>tomcat7-maven-plugin</artifactId>
                     <version>2.0</version>
-                    <executions>
-                        <execution>
-                            <id>start-tomcat</id>
-                            <goals>
-                                <goal>run-war</goal>
-                            </goals>
-                            <phase>pre-integration-test</phase>
-                            <configuration>
-                                <port>${test.server.port}</port>
-                                <path>/webservice</path>
-                                <fork>true</fork>
-                                <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
-                            </configuration>
-                        </execution>
-                    </executions>
+                    <configuration>
+						<server>TomcatServer</server>
+						<url>http://localhost:8080/manager/text</url>
+    					<path>/restapp</path>
+					</configuration>
+
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -85,6 +79,79 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>test.server.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-tomcat</id>
+                        <goals>
+                            <goal>run-war</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <port>${test.server.port}</port>
+                            <path>/jaxrs-service</path>
+                            <fork>true</fork>
+                            <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-tomcat</id>
+                        <goals>
+                            <goal>shutdown</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <path>/jaxrs-service</path>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.2</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <service.url>http://localhost:${test.server.port}/jaxrs-service</service.url>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
-
 </project>
