@@ -4,6 +4,7 @@ import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -21,4 +22,7 @@ public class Usuario {
 
     private List<Anotacion> anotaciones;
 
+    public int getId() {
+    	return id;
+    }
 }

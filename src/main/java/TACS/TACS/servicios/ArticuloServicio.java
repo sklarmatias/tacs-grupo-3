@@ -1,15 +1,13 @@
 package TACS.TACS.servicios;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import TACS.TACS.repositorios.articulos.RepositorioDeArticulosEnMemoria;
-import TACS.TACS.usuarios.Usuario;
 import jakarta.ws.rs.*;
 
-	@Path("/articulo")
+	@Path("/articulos")
 public class ArticuloServicio {
 		private RepositorioDeArticulosEnMemoria repo = new RepositorioDeArticulosEnMemoria();
 		

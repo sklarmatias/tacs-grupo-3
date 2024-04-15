@@ -16,14 +16,9 @@ import org.junit.Test;
 public class HelloWorldIT {
     private static String endpointUrl;
 
-    @BeforeClass
-    public static void beforeClass() {
-        endpointUrl = System.getProperty("service.url");
-    }
-
     @Test
     public void testPing() throws Exception {
-        WebClient client = WebClient.create(endpointUrl + "/hello/echo/SierraTangoNevada");
+        WebClient client = WebClient.create("");
         Response r = client.accept("text/plain").get();
         assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());
         String value = IOUtils.toString((InputStream)r.getEntity());

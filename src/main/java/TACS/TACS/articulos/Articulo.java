@@ -44,4 +44,10 @@ public class Articulo {
     	anotaciones.add(anotacion);
     	cantidadDeAnotaciones++;
     }
+    public int getId() {
+    	return id;
+    }
+    public List<Anotacion> getAnotaciones() {
+    	return anotaciones;
+    }
 }
