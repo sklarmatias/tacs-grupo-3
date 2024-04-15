@@ -21,8 +21,11 @@ public class Usuario {
     private List<Articulo> articulosPublicados;
 
     private List<Anotacion> anotaciones;
-
-    public int getId() {
-    	return id;
+    public Usuario(){}
+    public Usuario(Integer id, String nombre, String apellido, String mail){
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.mail=mail;
     }
 }

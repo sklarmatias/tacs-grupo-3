@@ -31,7 +31,11 @@ public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
     @Override
     public Integer guardarUsuario(Usuario usuario) {
         clave += 1;
-        usuarios.put(clave, usuario);
+        usuarios.put(usuario.getId(), usuario);
         return clave;
+    }
+    public void vaciarRepositorio(){
+        usuarios = new HashMap<>();
+        clave = 0;
     }
 }
