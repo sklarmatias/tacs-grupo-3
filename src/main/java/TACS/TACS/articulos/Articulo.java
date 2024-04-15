@@ -2,10 +2,12 @@ package TACS.TACS.articulos;
 
 import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.usuarios.Usuario;
+import lombok.Getter;
 
 import java.util.Date;
 import java.util.List;
 
+@Getter
 public class Articulo {
 
     private Integer id;
