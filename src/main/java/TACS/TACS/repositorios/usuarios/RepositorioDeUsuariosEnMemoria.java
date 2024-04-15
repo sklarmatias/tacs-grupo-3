@@ -9,13 +9,9 @@ import java.util.Map;
 
 public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
 
-    private Map<Integer, Usuario> usuarios;
-    private Integer clave;
+    private static Map<Integer, Usuario> usuarios = new HashMap<>();
+    private static Integer clave = 0;
 
-    public RepositorioDeUsuariosEnMemoria(){
-        usuarios = new HashMap<>();
-        clave = 0;
-    }
 
     @Override
     public List<Usuario> listarUsuarios() {

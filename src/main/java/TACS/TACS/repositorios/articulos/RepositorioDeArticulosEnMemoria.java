@@ -9,14 +9,9 @@ import java.util.Map;
 
 public class RepositorioDeArticulosEnMemoria implements RepositorioDeArticulos{
 
-    private Map<Integer, Articulo> articulos;
+    private static Map<Integer, Articulo> articulos = new HashMap<>();
 
-    private Integer clave;
-
-    public RepositorioDeArticulosEnMemoria(){
-        articulos = new HashMap<>();
-        clave = 0;
-    }
+    private static Integer clave = 0;
 
     @Override
     public List<Articulo> listarArticulos() {

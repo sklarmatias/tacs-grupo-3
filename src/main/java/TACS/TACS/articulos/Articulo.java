@@ -40,4 +40,8 @@ public class Articulo {
 
     private Integer maximoUsuarios;
 
+    public void agregarAnotacion(Anotacion anotacion) {
+    	anotaciones.add(anotacion);
+    	cantidadDeAnotaciones++;
+    }
 }

@@ -10,7 +10,9 @@
     <bean class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer"/>
     <jaxrs:server id="services" address="/">
         <jaxrs:serviceBeans>
-            <bean class="tacsWSREST.tacsWSREST.HelloWorld"/>
+            <bean class="TACS.TACS.servicios.UsuarioServicio"/>            
+	    <bean class="TACS.TACS.servicios.ArticuloServicio"/>   
+	    <bean class="TACS.TACS.servicios.ReporteServicio"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
