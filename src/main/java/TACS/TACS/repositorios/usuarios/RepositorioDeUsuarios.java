@@ -1,4 +1,4 @@
-package TACS.TACS.repositorios.anotaciones;
+package TACS.TACS.repositorios.usuarios;
 
 import TACS.TACS.usuarios.Usuario;
 
