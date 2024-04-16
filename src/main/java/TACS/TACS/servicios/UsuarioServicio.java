@@ -23,19 +23,12 @@ public class UsuarioServicio {
     @PATCH
     @Path("/{id}")
     @Consumes("application/json")
-    public void updateUsuario(@PathParam("id") int id,
-                              @QueryParam("nombre") String nombre,
-                              @QueryParam("apellido") String apellido,
-                              @QueryParam("email") String email) {
-        Usuario usuario = new Usuario(nombre, apellido, email);
+    public void updateUsuario(@PathParam("id") int id, Usuario usuario) {
     	repo.actualizarUsuario(id,usuario);
     }
     @POST
     @Consumes("application/json")
-    public Integer addUsuario(@QueryParam("nombre") String nombre,
-                           @QueryParam("apellido") String apellido,
-                           @QueryParam("email") String email) {
-        Usuario usuario = new Usuario(nombre, apellido, email);
+    public Integer addUsuario(Usuario usuario) {
         return repo.guardarUsuario(usuario);
     }
 
