@@ -10,7 +10,7 @@ public interface RepositorioDeUsuarios {
 
     Usuario obtenerUsuario(Integer id);
 
-    void actualizarUsuario(Usuario usuario);
+    void actualizarUsuario(Integer id,Usuario usuario);
 
     Integer guardarUsuario(Usuario usuario);
 

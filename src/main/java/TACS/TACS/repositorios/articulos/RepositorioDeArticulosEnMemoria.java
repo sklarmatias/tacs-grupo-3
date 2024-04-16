@@ -9,29 +9,35 @@ import java.util.Map;
 
 public class RepositorioDeArticulosEnMemoria implements RepositorioDeArticulos{
 
-    private static Map<Integer, Articulo> articulos = new HashMap<>();
+    private static List<Articulo> articulos = new ArrayList<>();
 
     private static Integer clave = 0;
 
     @Override
     public List<Articulo> listarArticulos() {
-        return new ArrayList<>(articulos.values());
+        return new ArrayList<>(articulos);
     }
 
     @Override
     public Articulo obtenerArticulo(Integer id) {
-        return articulos.get(id);
+        return articulos.stream().filter(art -> art.getId().equals(id)).findFirst().get();
     }
 
     @Override
     public Integer guardarArticulo(Articulo articulo) {
-        clave += 1;
-        articulos.put(clave, articulo);
+        clave++;
+        articulo.setId(clave);
+        articulos.add(articulo);
         return clave;
     }
 
     @Override
-    public void actualizarArticulo(Articulo articulo) {
-        articulos.put(articulo.getId(), articulo);
+    public void actualizarArticulo(int Id, Articulo articulo) {
+        Articulo artoriginal = articulos.stream().filter(art -> art.getId().equals(Id)).findFirst().get();
+        artoriginal.actualizarValores(articulo);
+    }
+    public void borrarArticulos(){
+        articulos.clear();
+        clave = 0;
     }
 }

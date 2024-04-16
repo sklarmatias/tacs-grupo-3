@@ -1,5 +1,6 @@
 package TACS.TACS.repositorios.usuarios;
 
+import TACS.TACS.articulos.Articulo;
 import TACS.TACS.usuarios.Usuario;
 
 import java.util.ArrayList;
@@ -9,33 +10,35 @@ import java.util.Map;
 
 public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
 
-    private static Map<Integer, Usuario> usuarios = new HashMap<>();
+    private static List<Usuario> usuarios = new ArrayList<>();
     private static Integer clave = 0;
 
 
     @Override
     public List<Usuario> listarUsuarios() {
-        return new ArrayList<>(usuarios.values());
+        return new ArrayList<>(usuarios);
     }
 
     @Override
     public Usuario obtenerUsuario(Integer id) {
-        return usuarios.get(id);
+        return usuarios.stream().filter(us -> us.getId().equals(id)).findFirst().get();
     }
 
     @Override
-    public void actualizarUsuario(Usuario usuario) {
-        usuarios.put(usuario.getId(), usuario);
+    public void actualizarUsuario(Integer id, Usuario usuario) {
+        Usuario useroriginal = usuarios.stream().filter(us -> us.getId().equals(id)).findFirst().get();
+        useroriginal.actualizarValores(usuario);
     }
 
     @Override
     public Integer guardarUsuario(Usuario usuario) {
         clave += 1;
-        usuarios.put(usuario.getId(), usuario);
+        usuario.setId(clave);
+        usuarios.add(usuario);
         return clave;
     }
-    public void vaciarRepositorio(){
-        usuarios = new HashMap<>();
+    public void borrarUsuarios(){
+        usuarios.clear();
         clave = 0;
     }
 }

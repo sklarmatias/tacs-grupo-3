@@ -12,6 +12,6 @@ public interface RepositorioDeArticulos {
 
     Integer guardarArticulo(Articulo articulo);
 
-    void actualizarArticulo(Articulo articulo);
+    void actualizarArticulo(int Id, Articulo articulo);
 
 }

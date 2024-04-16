@@ -22,16 +22,20 @@ public class UsuarioServicio {
         return repo.obtenerUsuario(id);
     }
     @PATCH
+    @Path("/{id}")
     @Consumes("application/json")
-    public void updateUsuario(Usuario usuario) {
-    	repo.actualizarUsuario(usuario);
+    public void updateUsuario(@PathParam("id") int id,Usuario usuario) {
+    	repo.actualizarUsuario(id,usuario);
     }
     @POST
     @Consumes("application/json")
     public void addUsuario(Usuario usuario) {
         repo.guardarUsuario(usuario);
     }
-
+    @DELETE
+    public void cleanUsuarios(){
+        repo.borrarUsuarios();
+    }
 }
 
 

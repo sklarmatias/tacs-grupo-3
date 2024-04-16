@@ -4,6 +4,8 @@ import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import TACS.TACS.articulos.EstadoArticulo;
 import TACS.TACS.articulos.TipoCosto;
+import TACS.TACS.repositorios.articulos.RepositorioDeArticulosEnMemoria;
+import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,35 +22,109 @@ import static org.junit.Assert.*;
 
 public class ArticuloTest {
     ObjectMapper mapper = new ObjectMapper();
+    RepositorioDeUsuariosEnMemoria repous = new RepositorioDeUsuariosEnMemoria();
+    RepositorioDeArticulosEnMemoria repoar = new RepositorioDeArticulosEnMemoria();
+    @Test
+    public void testAddUsuarioLocal(){
+        repous.borrarUsuarios();
+        repoar.borrarArticulos();
+        Usuario user = new Usuario("John","Doe","john.doe@example.com");
+        repous.guardarUsuario(user);
+        Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,100.00, TipoCosto.POR_PERSONA,1,5);
+        repoar.guardarArticulo(articulo1);
+        Anotacion anotacion = new Anotacion(1);
+        Articulo articulo = repoar.obtenerArticulo(1);
+        articulo.agregarAnotacion(anotacion);
+        repoar.actualizarArticulo(1,articulo);
+        Articulo art1 = repoar.obtenerArticulo(1);
+        assertEquals(1,art1.getAnotaciones().get(0).getUsuario().getId().intValue());
+    }
+
+
         @Test
         public void testCreacion() throws Exception {
+            //Creo el cliente
+            WebClient client = WebClient.create("http://localhost:8080/restapp/usuarios/");
 
-            Articulo articulo1 = new Articulo(1,"Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,100.00, TipoCosto.POR_PERSONA,1,5);
-            WebClient client = WebClient.create("http://localhost:8080/restapp/articulos/");
-            Response r = client.type("application/json").post(mapper.writeValueAsString(articulo1));
+            //Vacio la base
+            Response r = client.delete();
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Creo un usuario de prueba
+            Usuario user = new Usuario("John","Doe","john.doe@example.com");
+
+            //Inserto el usuario
+            r = client.type("application/json").post(mapper.writeValueAsString(user));
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+            repous.guardarUsuario(user);
+
+            client = WebClient.create("http://localhost:8080/restapp/articulos/");
+            //Vacio la base
+            r = client.delete();
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Creo un articulo de prueba
+            Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,100.00, TipoCosto.POR_PERSONA,1,5);
+
+            //Inserto en la base
+            r = client.type("application/json").post(mapper.writeValueAsString(articulo1));
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Obtengo el articulo
             r = client.path("/1/").accept("application/json").get();
             assertEquals(Response.Status.OK.getStatusCode(), r.getStatus());
             String articuloResponse = r.readEntity(String.class);
             Articulo articulo2 = mapper.readValue(articuloResponse, Articulo.class);
-            Assert.assertEquals(articulo1.getId(), articulo2.getId());
+
+            //Valido los valores
             Assert.assertEquals(articulo1.getNombre(), articulo2.getNombre());
             Assert.assertEquals(articulo1.getCosto(), articulo2.getCosto());
         }
         @Test
     public void testAgregarUsuario() throws Exception{
-            Articulo articulo1 = new Articulo(2,"Articulo2","002.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,150.00, TipoCosto.POR_PERSONA,1,5);
-            WebClient client = WebClient.create("http://localhost:8080/restapp/articulos/");
-            String json =mapper.writeValueAsString(articulo1);
-            Response r = client.type("application/json").post(json);
+        repoar.borrarArticulos();
+        repous.borrarUsuarios();
+            //Creo el cliente
+            WebClient client = WebClient.create("http://localhost:8080/restapp/usuarios/");
+
+            //Vacio la base
+            Response r = client.delete();
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
-            Usuario user = new Usuario(2,"John","Doe","john.doe@example.com");
-            Anotacion anotacion = new Anotacion(user);
-            r = client.path("/2/usuarios").type("application/json").post(mapper.writeValueAsString(anotacion));
+
+            //Creo un usuario de prueba
+            Usuario user = new Usuario("John","Doe","john.doe@example.com");
+
+            //Inserto el usuario
+            r = client.type("application/json").post(mapper.writeValueAsString(user));
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+            repous.guardarUsuario(user);
+
+            //Creo el cliente
+            client = WebClient.create("http://localhost:8080/restapp/articulos/");
+
+            //Vacio la base
+            r = client.delete();
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Creo un articulo de prueba
+            Articulo articulo1 = new Articulo("Articulo2","002.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,150.00, TipoCosto.POR_PERSONA,1,5);
+
+            //Inserto en la base
+            r = client.type("application/json").post(mapper.writeValueAsString(articulo1));
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Creo una anotacion
+            Anotacion anotacion = new Anotacion(1);
+
+            //Inserto la anotacion
+            r = client.path("/1/usuarios").type("application/json").post(mapper.writeValueAsString(anotacion));
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+            //Obtengo lista de anotaciones
             r = client.accept("application/json").get();
             String anotacionesResponse = r.readEntity(String.class);
             List<Anotacion> anotaciones = mapper.readValue(anotacionesResponse, new TypeReference<List<Anotacion>>(){});
             assertFalse(anotaciones.isEmpty());
+            assertEquals(1,anotaciones.get(0).getUsuario().getId().intValue());
         }
 }

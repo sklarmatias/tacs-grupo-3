@@ -25,9 +25,10 @@ public class ArticuloServicio {
 	    }
 	    
 	    @PATCH
+		@Path("/{id}")
 	    @Consumes("application/json")
-	    public void updateArticulo(Articulo articulo) {
-	    	repo.actualizarArticulo(articulo);
+	    public void updateArticulo(@PathParam("id") int id, Articulo articulo) {
+	    	repo.actualizarArticulo(id,articulo);
 	    }
 	    
 	    @POST
@@ -40,9 +41,13 @@ public class ArticuloServicio {
 	    @Path("/{id}/usuarios")
 	    @Consumes("application/json")
 	    public void addUsuarioEnArticulo(@PathParam("id") int id,Anotacion anotacion) {
-	        Articulo articulo = repo.obtenerArticulo(id);
-	        articulo.agregarAnotacion(anotacion);
-	        repo.actualizarArticulo(articulo);
+			try {
+				Articulo articulo = repo.obtenerArticulo(id);
+				articulo.agregarAnotacion(anotacion);
+				repo.actualizarArticulo(id, articulo);
+			}catch (Exception ex){
+				throw ex;
+			}
 	    }
 	    
 	    @GET
@@ -52,4 +57,8 @@ public class ArticuloServicio {
 	    	Articulo articulo = repo.obtenerArticulo(id);
 	        return articulo.getAnotaciones();
 	    }
+		@DELETE
+		public void cleanArticulo(){
+			repo.borrarArticulos();
+		}
 }
