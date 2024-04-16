@@ -3,13 +3,13 @@ package TACS.TACS.usuarios;
 import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Usuario {
     @Setter
     private Integer id;
@@ -23,7 +23,6 @@ public class Usuario {
     private List<Articulo> articulosPublicados;
 
     private List<Anotacion> anotaciones;
-    public Usuario(){}
     public Usuario(String nombre, String apellido, String mail){
         this.nombre = nombre;
         this.apellido = apellido;

@@ -4,10 +4,11 @@ import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import TACS.TACS.articulos.EstadoArticulo;
 import TACS.TACS.articulos.TipoCosto;
+import TACS.TACS.repositorios.articulos.RepositorioDeArticulos;
 import TACS.TACS.repositorios.articulos.RepositorioDeArticulosEnMemoria;
+import TACS.TACS.repositorios.usuarios.RepositorioDeUsuarios;
 import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
@@ -22,15 +23,15 @@ import static org.junit.Assert.*;
 
 public class ArticuloTest {
     ObjectMapper mapper = new ObjectMapper();
-    RepositorioDeUsuariosEnMemoria repous = new RepositorioDeUsuariosEnMemoria();
-    RepositorioDeArticulosEnMemoria repoar = new RepositorioDeArticulosEnMemoria();
+    RepositorioDeUsuarios repous = new RepositorioDeUsuariosEnMemoria();
+    RepositorioDeArticulos repoar = new RepositorioDeArticulosEnMemoria();
     @Test
     public void testAddUsuarioLocal(){
         repous.borrarUsuarios();
         repoar.borrarArticulos();
         Usuario user = new Usuario("John","Doe","john.doe@example.com");
         repous.guardarUsuario(user);
-        Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,100.00, TipoCosto.POR_PERSONA,1,5);
+        Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),user,100.00, TipoCosto.POR_PERSONA,1,5);
         repoar.guardarArticulo(articulo1);
         Anotacion anotacion = new Anotacion(1);
         Articulo articulo = repoar.obtenerArticulo(1);
@@ -64,7 +65,7 @@ public class ArticuloTest {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
             //Creo un articulo de prueba
-            Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,100.00, TipoCosto.POR_PERSONA,1,5);
+            Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),user,100.00, TipoCosto.POR_PERSONA,1,5);
 
             //Inserto en la base
             r = client.type("application/json").post(mapper.writeValueAsString(articulo1));
@@ -107,7 +108,7 @@ public class ArticuloTest {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
             //Creo un articulo de prueba
-            Articulo articulo1 = new Articulo("Articulo2","002.jpg","","1kg", EstadoArticulo.OPEN,new Date(),1,150.00, TipoCosto.POR_PERSONA,1,5);
+            Articulo articulo1 = new Articulo("Articulo2","002.jpg","","1kg", EstadoArticulo.OPEN,new Date(),user,150.00, TipoCosto.POR_PERSONA,1,5);
 
             //Inserto en la base
             r = client.type("application/json").post(mapper.writeValueAsString(articulo1));

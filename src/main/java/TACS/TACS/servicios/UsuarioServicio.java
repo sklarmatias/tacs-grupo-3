@@ -1,14 +1,13 @@
 package TACS.TACS.servicios;
 
-import java.util.ArrayList;
 import java.util.List;
-
+import TACS.TACS.repositorios.usuarios.RepositorioDeUsuarios;
 import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
 import jakarta.ws.rs.*;
 @Path("/usuarios")
 public class UsuarioServicio {
-    private RepositorioDeUsuariosEnMemoria repo = new RepositorioDeUsuariosEnMemoria();
+    private RepositorioDeUsuarios repo = new RepositorioDeUsuariosEnMemoria();
 
     @GET
     @Produces("application/json")
@@ -24,14 +23,23 @@ public class UsuarioServicio {
     @PATCH
     @Path("/{id}")
     @Consumes("application/json")
-    public void updateUsuario(@PathParam("id") int id,Usuario usuario) {
+    public void updateUsuario(@PathParam("id") int id,
+                              @QueryParam("nombre") String nombre,
+                              @QueryParam("apellido") String apellido,
+                              @QueryParam("email") String email) {
+        Usuario usuario = new Usuario(nombre, apellido, email);
     	repo.actualizarUsuario(id,usuario);
     }
     @POST
     @Consumes("application/json")
-    public void addUsuario(Usuario usuario) {
-        repo.guardarUsuario(usuario);
+    public Integer addUsuario(@QueryParam("nombre") String nombre,
+                           @QueryParam("apellido") String apellido,
+                           @QueryParam("email") String email) {
+        Usuario usuario = new Usuario(nombre, apellido, email);
+        return repo.guardarUsuario(usuario);
     }
+
+    // TODO eliminar este path, no lo vamos a usar más que en los tests. Refactorizar esa parte.
     @DELETE
     public void cleanUsuarios(){
         repo.borrarUsuarios();

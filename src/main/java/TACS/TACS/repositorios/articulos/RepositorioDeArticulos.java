@@ -14,4 +14,6 @@ public interface RepositorioDeArticulos {
 
     void actualizarArticulo(int Id, Articulo articulo);
 
+    void borrarArticulos();
+
 }

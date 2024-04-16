@@ -1,16 +1,12 @@
 package TACS.TACS.repositorios.usuarios;
 
-import TACS.TACS.articulos.Articulo;
 import TACS.TACS.usuarios.Usuario;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
 
-    private static List<Usuario> usuarios = new ArrayList<>();
+    private static final List<Usuario> usuarios = new ArrayList<>();
     private static Integer clave = 0;
 
 
@@ -37,6 +33,8 @@ public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
         usuarios.add(usuario);
         return clave;
     }
+
+    @Override
     public void borrarUsuarios(){
         usuarios.clear();
         clave = 0;

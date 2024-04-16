@@ -1,15 +1,12 @@
 package TACS.TACS.repositorios.articulos;
 
 import TACS.TACS.articulos.Articulo;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RepositorioDeArticulosEnMemoria implements RepositorioDeArticulos{
 
-    private static List<Articulo> articulos = new ArrayList<>();
+    private static final List<Articulo> articulos = new ArrayList<>();
 
     private static Integer clave = 0;
 
@@ -36,6 +33,8 @@ public class RepositorioDeArticulosEnMemoria implements RepositorioDeArticulos{
         Articulo artoriginal = articulos.stream().filter(art -> art.getId().equals(Id)).findFirst().get();
         artoriginal.actualizarValores(articulo);
     }
+
+    @Override
     public void borrarArticulos(){
         articulos.clear();
         clave = 0;

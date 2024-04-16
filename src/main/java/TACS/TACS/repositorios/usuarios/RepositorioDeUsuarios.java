@@ -14,6 +14,5 @@ public interface RepositorioDeUsuarios {
 
     Integer guardarUsuario(Usuario usuario);
 
-
-
+    void borrarUsuarios();
 }

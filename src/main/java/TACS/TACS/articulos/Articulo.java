@@ -1,18 +1,18 @@
 package TACS.TACS.articulos;
 
 import TACS.TACS.anotaciones.Anotacion;
-import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Articulo {
 
     private Integer id;
@@ -27,11 +27,13 @@ public class Articulo {
 
     private EstadoArticulo estado;
 
+    // TODO sacar de la entidad, hacerlo en el servicio
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date deadline;
 
     private Usuario propietario;
 
+    // TODO sacar de la entidad, hacerlo en el servicio
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date fechaDeCreacion;
 
@@ -54,18 +56,23 @@ public class Articulo {
     	anotaciones.add(anotacion);
     	cantidadDeAnotaciones++;
     }
-    public Articulo(){}
-    public Articulo(String nombre, String imagen, String link, String usuarioRecibe, EstadoArticulo estado,
-                    Date deadline, Integer propietario, Double costo, TipoCosto tipoCosto, Integer minimoUsuarios,
-                    Integer maximoUsuarios) {
-        RepositorioDeUsuariosEnMemoria repo = new RepositorioDeUsuariosEnMemoria();
+
+    // CONSTRUCTOR PARA CREAR NUEVO ARTICULO DESDE 0 Y ABIERTO
+    /*/ TODO agregar las siguientes validaciones:
+    minimoUsuarios > 0, < maximoUsuarios
+    maximoUsuarios > 0 > minimoUsuarios
+    deadline > hoy
+    /*/
+
+    public Articulo(String nombre, String imagen, String link, String usuarioRecibe, Usuario propietario,
+                    Date deadline, Double costo, TipoCosto tipoCosto, Integer minimoUsuarios, Integer maximoUsuarios) {
         this.nombre = nombre;
         this.imagen = imagen;
         this.link = link;
         this.usuarioRecibe = usuarioRecibe;
-        this.estado = estado;
+        this.propietario = propietario;
+        this.estado = EstadoArticulo.OPEN;
         this.deadline = deadline;
-        this.propietario = repo.obtenerUsuario(propietario);
         this.fechaDeCreacion = new Date();
         this.anotaciones = new ArrayList<>();
         this.cantidadDeAnotaciones = 0;
@@ -74,6 +81,27 @@ public class Articulo {
         this.minimoUsuarios = minimoUsuarios;
         this.maximoUsuarios = maximoUsuarios;
     }
+
+    public Articulo(String nombre, String imagen, String link, String usuarioRecibe, EstadoArticulo estado,
+                    Date deadline, Usuario propietario, Double costo, TipoCosto tipoCosto, Integer minimoUsuarios,
+                    Integer maximoUsuarios) {
+        this.nombre = nombre;
+        this.imagen = imagen;
+        this.link = link;
+        this.usuarioRecibe = usuarioRecibe;
+        this.estado = estado;
+        this.deadline = deadline;
+        this.propietario =propietario;
+        this.fechaDeCreacion = new Date();
+        this.anotaciones = new ArrayList<>();
+        this.cantidadDeAnotaciones = 0;
+        this.costo = costo;
+        this.tipoCosto = tipoCosto;
+        this.minimoUsuarios = minimoUsuarios;
+        this.maximoUsuarios = maximoUsuarios;
+    }
+
+    // TODO sacar de acá, poner en el repo
     public void actualizarValores(Articulo other) {
         if (other.getNombre() != null) {
             this.setNombre(other.getNombre());
