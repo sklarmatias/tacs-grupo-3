@@ -38,21 +38,28 @@ public class ArticuloServicio {
 
 	    @POST
 	    @Consumes("application/json")
-		public Integer addArticulo(Articulo articulo){
-			return repo.guardarArticulo(articulo);
+		public Integer addArticulo(Articulo articulo, @QueryParam("idPropietario") Integer idPropietario){
+			return repo.guardarArticulo(
+					new Articulo(
+							articulo.getNombre(),
+							articulo.getImagen(),
+							articulo.getLink(),
+							articulo.getUsuarioRecibe(),
+							repoUsuarios.obtenerUsuario(idPropietario),
+							articulo.getDeadline(),
+							articulo.getCosto(),
+							articulo.getTipoCosto(),
+							articulo.getMinimoUsuarios(),
+							articulo.getMaximoUsuarios()));
 		}
 
 	    @POST
 	    @Path("/{id}/usuarios")
 	    @Consumes("application/json")
 	    public void addUsuarioEnArticulo(@PathParam("id") int id,Anotacion anotacion) {
-			try {
-				Articulo articulo = repo.obtenerArticulo(id);
-				articulo.agregarAnotacion(anotacion);
-				repo.actualizarArticulo(id, articulo);
-			}catch (Exception ex){
-				throw ex;
-			}
+			Articulo articulo = repo.obtenerArticulo(id);
+			articulo.agregarAnotacion(anotacion);
+			repo.actualizarArticulo(id, articulo);
 	    }
 	    
 	    @GET

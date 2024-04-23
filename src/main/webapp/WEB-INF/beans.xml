@@ -16,6 +16,8 @@
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
+            <bean class="TACS.TACS.servicios.IllegalArgumentExceptionMapper"/>
+            <bean class="TACS.TACS.servicios.NoSuchElementExceptionMapper"/>
         </jaxrs:providers>
     </jaxrs:server>
 </beans>
