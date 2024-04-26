@@ -1,4 +1,4 @@
-package TACS.TACS.repositorios.articulos;
+package TACS.TACS.articulos.repositorios;
 
 import TACS.TACS.articulos.Articulo;
 

@@ -1,28 +1,22 @@
-package TACS.TACS.servicios;
+package TACS.TACS.usuarios;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import TACS.TACS.repositorios.usuarios.RepositorioDeUsuarios;
-import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
-import TACS.TACS.usuarios.Usuario;
+import TACS.TACS.usuarios.repositorios.RepositorioDeUsuarios;
+import TACS.TACS.usuarios.repositorios.RepositorioDeUsuariosEnMemoria;
 import jakarta.ws.rs.*;
 
 @Path("/usuarios")
+@Produces("application/json")
 public class UsuarioServicio {
     private RepositorioDeUsuarios repo = new RepositorioDeUsuariosEnMemoria();
-
     @GET
-    @Produces("application/json")
-    public List<Usuario> getUsuarios() {
-        return repo.listarUsuarios();
+    public List<Usuario.UsuarioDTO> getUsuarios() {
+        return repo.listarUsuarios().stream().map(Usuario::convertirADTO).toList();
     }
     @GET
     @Path("/{id}")
-    @Produces("application/json")
-    public Usuario getUsuario(@PathParam("id") int id) {
-        return repo.obtenerUsuario(id);
+    public Usuario.UsuarioDTO getUsuario(@PathParam("id") int id) {
+        return repo.obtenerUsuario(id).convertirADTO();
     }
     @PATCH
     @Path("/{id}")

@@ -1,4 +1,4 @@
-package TACS.TACS.repositorios.usuarios;
+package TACS.TACS.usuarios.repositorios;
 
 import TACS.TACS.usuarios.Usuario;
 

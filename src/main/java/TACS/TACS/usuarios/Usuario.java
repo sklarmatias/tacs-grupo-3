@@ -25,6 +25,11 @@ public class Usuario {
     private List<Articulo> articulosPublicados;
 
     private List<Anotacion> anotaciones;
+
+    public boolean interactuo(){
+        return !(this.articulosPublicados.isEmpty() && this.anotaciones.isEmpty());
+    }
+
     public Usuario(String nombre, String apellido, String mail){
         this.nombre = nombre;
         this.apellido = apellido;
@@ -43,4 +48,27 @@ public class Usuario {
             this.setMail(other.getMail());
         }
     }
+
+    public UsuarioDTO convertirADTO(){
+        return new UsuarioDTO(this);
+    }
+
+    public static class UsuarioDTO{
+
+        public Integer id;
+
+        public String nombre;
+
+        public String apellido;
+
+        public String email;
+
+        public UsuarioDTO(Usuario usuario){
+            this.id = usuario.getId();
+            this.nombre = usuario.getNombre();
+            this.apellido = usuario.getApellido();
+            this.email = usuario.getMail();
+        }
+    }
+
 }

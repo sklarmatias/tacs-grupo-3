@@ -1,4 +1,4 @@
-package TACS.TACS.servicios;
+package TACS.TACS.mappers;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

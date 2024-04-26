@@ -50,9 +50,6 @@ public class Articulo {
     private Integer maximoUsuarios;
 
     public void agregarAnotacion(Anotacion anotacion) {
-        if(anotaciones == null){
-            anotaciones = new ArrayList<>();
-        }
     	anotaciones.add(anotacion);
     	cantidadDeAnotaciones++;
     }
@@ -101,40 +98,69 @@ public class Articulo {
         this.maximoUsuarios = maximoUsuarios;
     }
 
-    // TODO sacar de acá, poner en el repo
-    public void actualizarValores(Articulo other) {
-        if (other.getNombre() != null) {
-            this.setNombre(other.getNombre());
-        }
-        if (other.getImagen() != null) {
-            this.setImagen(other.getImagen());
-        }
-        if (other.getLink() != null) {
-            this.setLink(other.getLink());
-        }
-        if (other.getUsuarioRecibe() != null) {
-            this.setUsuarioRecibe(other.getUsuarioRecibe());
-        }
-        if (other.getEstado() != null) {
-            this.setEstado(other.getEstado());
-        }
-        if (other.getDeadline() != null) {
-            this.setDeadline(other.getDeadline());
-        }
-        if (other.getPropietario() != null) {
-            this.setPropietario(other.getPropietario());
-        }
-        if (other.getCosto() != null) {
-            this.setCosto(other.getCosto());
-        }
-        if (other.getTipoCosto() != null) {
-            this.setTipoCosto(other.getTipoCosto());
-        }
-        if (other.getMinimoUsuarios() != null) {
-            this.setMinimoUsuarios(other.getMinimoUsuarios());
-        }
-        if (other.getMaximoUsuarios() != null) {
-            this.setMaximoUsuarios(other.getMaximoUsuarios());
-        }
+    public boolean fueCerradoConExito(){
+        return this.estado.equals(EstadoArticulo.CLOSED_SUCCESS);
     }
+
+    public ArticuloDTO convertirADTO(){
+        return new Articulo.ArticuloDTO(this);
+    }
+
+    public static class ArticuloDTO{
+
+        public Integer id;
+
+        public String nombre;
+
+        public String imagen;
+
+        public String link;
+
+        public String usuarioRecibe;
+
+        public EstadoArticulo estado;
+
+        // TODO sacar de la entidad, hacerlo en el servicio
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        public Date deadline;
+
+        public Integer idPropietario;
+
+        // TODO sacar de la entidad, hacerlo en el servicio
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        public Date fechaDeCreacion;
+
+        public List<Anotacion> anotaciones;
+
+        public Integer cantidadDeAnotaciones;
+
+        public Double costo;
+
+        public TipoCosto tipoCosto;
+
+        public Integer minimoUsuarios;
+
+        public Integer maximoUsuarios;
+
+        public ArticuloDTO(Articulo articulo){
+
+            this.id = articulo.getId();
+            this.nombre = articulo.getNombre();
+            this.imagen = articulo.getImagen();
+            this.link = articulo.getLink();
+            this.usuarioRecibe = articulo.getUsuarioRecibe();
+            this.estado = articulo.getEstado();
+            this.deadline = articulo.getDeadline();
+            this.fechaDeCreacion = articulo.getFechaDeCreacion();
+            this.cantidadDeAnotaciones = articulo.getCantidadDeAnotaciones();
+            this.costo = articulo.getCosto();
+            this.tipoCosto = articulo.getTipoCosto();
+            this.maximoUsuarios = articulo.getMaximoUsuarios();
+            this.minimoUsuarios = articulo.getMinimoUsuarios();
+            this.idPropietario = articulo.getPropietario().getId();
+            this.anotaciones = articulo.getAnotaciones();
+        }
+
+    }
+
 }

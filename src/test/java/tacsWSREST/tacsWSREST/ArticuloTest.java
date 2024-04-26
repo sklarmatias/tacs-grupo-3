@@ -4,10 +4,10 @@ import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.articulos.Articulo;
 import TACS.TACS.articulos.EstadoArticulo;
 import TACS.TACS.articulos.TipoCosto;
-import TACS.TACS.repositorios.articulos.RepositorioDeArticulos;
-import TACS.TACS.repositorios.articulos.RepositorioDeArticulosEnMemoria;
-import TACS.TACS.repositorios.usuarios.RepositorioDeUsuarios;
-import TACS.TACS.repositorios.usuarios.RepositorioDeUsuariosEnMemoria;
+import TACS.TACS.articulos.repositorios.RepositorioDeArticulos;
+import TACS.TACS.articulos.repositorios.RepositorioDeArticulosEnMemoria;
+import TACS.TACS.usuarios.repositorios.RepositorioDeUsuarios;
+import TACS.TACS.usuarios.repositorios.RepositorioDeUsuariosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +33,7 @@ public class ArticuloTest {
         repous.guardarUsuario(user);
         Articulo articulo1 = new Articulo("Articulo1","001.jpg","","1kg", EstadoArticulo.OPEN,new Date(),user,100.00, TipoCosto.POR_PERSONA,1,5);
         repoar.guardarArticulo(articulo1);
-        Anotacion anotacion = new Anotacion(1);
+        Anotacion anotacion = new Anotacion(repous.obtenerUsuario(1));
         Articulo articulo = repoar.obtenerArticulo(1);
         articulo.agregarAnotacion(anotacion);
         repoar.actualizarArticulo(1,articulo);
@@ -115,7 +115,7 @@ public class ArticuloTest {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
             //Creo una anotacion
-            Anotacion anotacion = new Anotacion(1);
+            Anotacion anotacion = new Anotacion(repous.obtenerUsuario(1));
 
             //Inserto la anotacion
             r = client.path("/1/usuarios").type("application/json").post(mapper.writeValueAsString(anotacion));
@@ -128,4 +128,5 @@ public class ArticuloTest {
             assertFalse(anotaciones.isEmpty());
             assertEquals(1,anotaciones.get(0).getUsuario().getId().intValue());
         }
+
 }
