@@ -2,7 +2,6 @@ package TACS.TACS.usuarios;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import TACS.TACS.usuarios.repositorios.RepositorioDeUsuarios;
 import TACS.TACS.usuarios.repositorios.RepositorioDeUsuariosEnMemoria;
 import jakarta.ws.rs.*;
@@ -24,6 +23,8 @@ public class UsuarioServicio {
     public Usuario.UsuarioDTO getUsuario(@PathParam("id") int id) {
         return repo.obtenerUsuario(id).convertirADTO();
     }
+
+    // devuelve un 204
     @PATCH
     @Path("/{id}")
     @Consumes("application/json")

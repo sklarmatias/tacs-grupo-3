@@ -124,7 +124,7 @@ public class Articulo {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date deadline;
 
-        public Integer idPropietario;
+        public Usuario.UsuarioDTO propietario;
 
         // TODO sacar de la entidad, hacerlo en el servicio
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -157,7 +157,7 @@ public class Articulo {
             this.tipoCosto = articulo.getTipoCosto();
             this.maximoUsuarios = articulo.getMaximoUsuarios();
             this.minimoUsuarios = articulo.getMinimoUsuarios();
-            this.idPropietario = articulo.getPropietario().getId();
+            this.propietario = articulo.getPropietario().convertirADTO();
             this.anotaciones = articulo.getAnotaciones();
         }
 
