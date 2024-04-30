@@ -10,6 +10,8 @@ import TACS.TACS.usuarios.repositorios.RepositorioDeUsuariosEnMemoria;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 
+import java.util.stream.Collectors;
+
 @Path("/reportes")
 public class ReporteServicio {
 	private RepositorioDeUsuarios repo = new RepositorioDeUsuariosEnMemoria();
@@ -30,18 +32,18 @@ public class ReporteServicio {
     @GET
     @Path("/total/success")
     public int getTotalArticuloExito() {
-        return repositorioDeArticulos.listarArticulos().stream().filter(Articulo::fueCerradoConExito).toList().size();
+        return (int) repositorioDeArticulos.listarArticulos().stream().filter(Articulo::fueCerradoConExito).count();
     }
     
     @GET
     @Path("/total/fail")
     public int getTotalArticulosFallo() {
-        return repositorioDeArticulos.listarArticulos().stream().filter(articulo -> !articulo.fueCerradoConExito()).toList().size();
+        return (int) repositorioDeArticulos.listarArticulos().stream().filter(articulo -> !articulo.fueCerradoConExito()).count();
     }
 
     @GET
     @Path("/usuarios")
     public int getUsuarios() {
-        return repo.listarUsuarios().stream().filter(Usuario::interactuo).toList().size();
+        return (int) repo.listarUsuarios().stream().filter(Usuario::interactuo).count();
     }
 }

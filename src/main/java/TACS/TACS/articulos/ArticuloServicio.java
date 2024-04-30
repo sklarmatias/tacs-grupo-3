@@ -1,6 +1,7 @@
 package TACS.TACS.articulos;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import TACS.TACS.anotaciones.Anotacion;
 import TACS.TACS.anotaciones.repositorio.RepositorioDeAnotaciones;
@@ -23,7 +24,7 @@ public class ArticuloServicio {
 		@GET
 	    @Produces("application/json")
 	    public List<Articulo.ArticuloDTO> getArticulos() {
-	        return repo.listarArticulos().stream().map(Articulo::convertirADTO).toList();
+	        return repo.listarArticulos().stream().map(Articulo::convertirADTO).collect(Collectors.toList());
 	    }
 		
 	    @GET
