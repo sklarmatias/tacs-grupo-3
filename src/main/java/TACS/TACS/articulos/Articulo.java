@@ -98,6 +98,36 @@ public class Articulo {
         this.maximoUsuarios = maximoUsuarios;
     }
 
+    public void anotarUsuario(Usuario usuario){
+        if (!this.estaAbierto())
+            throw new IllegalArgumentException("El articulo está cerrado.");
+        if (this.estaCompleto())
+            throw new IllegalArgumentException("El articulo llegó a la cantidad máxima de usuarios anotados.");
+        if (this.getPropietario() == usuario)
+            throw new IllegalArgumentException("El propietario del artículo no se puede anotar a su propio artículo.");
+        Anotacion anotacion = new Anotacion(usuario);
+        this.anotaciones.add(anotacion);
+    }
+
+    public boolean estaCompleto(){
+        return this.cantidadDeAnotaciones >= this.maximoUsuarios;
+    }
+
+    public boolean estaAbierto(){
+        return this.estado == EstadoArticulo.OPEN;
+    }
+
+    public boolean estaVencido(){
+        return new Date().after(this.deadline);
+    }
+
+    public void cerrar(){
+        // TODO notificar a los usuarios
+        if (this.cantidadDeAnotaciones > this.minimoUsuarios)
+            this.estado = EstadoArticulo.CLOSED_SUCCESS;
+        else this.estado = EstadoArticulo.CLOSED_FAILED;
+    }
+
     public boolean fueCerradoConExito(){
         return this.estado.equals(EstadoArticulo.CLOSED_SUCCESS);
     }

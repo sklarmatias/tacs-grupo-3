@@ -37,6 +37,11 @@ public class Usuario {
         this.anotaciones = new ArrayList<>();
         this.articulosPublicados = new ArrayList<>();
     }
+
+    public void agregarAnotacion(Anotacion anotacion){
+        this.getAnotaciones().add(anotacion);
+    }
+
     public void actualizarValores(Usuario other) {
         if (other.getNombre() != null) {
             this.setNombre(other.getNombre());

@@ -23,6 +23,7 @@ public class Anotacion {
     public Anotacion(Usuario usuario){
         this.usuario = usuario;
         this.fecha = new Date();
+        usuario.agregarAnotacion(this);
     }
 
 }

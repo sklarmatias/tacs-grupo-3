@@ -70,18 +70,16 @@ public class ArticuloServicio {
 		return Response.created(articuloURIBuilder.build()).build();
 	}
 
+	// devuelve un NoContent
 	@POST
-	@Path("/{id}/usuarios")
+	@Path("/{idArticulo}/usuarios/{idUsuario}")
 	@Consumes("application/json")
-	public void addUsuarioEnArticulo(@PathParam("id") int id,Anotacion anotacion) {
-		Usuario usuarioAnotado = repoUsuarios.obtenerUsuario(anotacion.getUsuario().getId());
-		Anotacion anotacion1 = new Anotacion(usuarioAnotado);
-		repositorioDeAnotaciones.guardarAnotacion(anotacion1);
-		usuarioAnotado.getAnotaciones().add(anotacion1);
-		repoUsuarios.guardarUsuario(usuarioAnotado);
-		Articulo articulo = repo.obtenerArticulo(id);
-		articulo.agregarAnotacion(anotacion1);
-		repo.actualizarArticulo(id, articulo);
+	public void addUsuarioEnArticulo(@PathParam("idArticulo") int idAtriculo,
+									 @PathParam("idUsuario") int idUsuario,
+									 @Context UriInfo uriInfo) {
+		Articulo articulo = repo.obtenerArticulo(idAtriculo);
+		Usuario usuario = repoUsuarios.obtenerUsuario(idUsuario);
+		articulo.anotarUsuario(usuario);
 	}
 
 	@GET
