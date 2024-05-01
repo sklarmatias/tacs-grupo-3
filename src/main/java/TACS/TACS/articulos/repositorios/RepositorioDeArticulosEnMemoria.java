@@ -44,9 +44,6 @@ public class RepositorioDeArticulosEnMemoria implements RepositorioDeArticulos{
         if (other.getUsuarioRecibe() != null) {
             artoriginal.setUsuarioRecibe(other.getUsuarioRecibe());
         }
-        if (other.getEstado() != null) {
-            artoriginal.setEstado(other.getEstado());
-        }
         if (other.getDeadline() != null) {
             artoriginal.setDeadline(other.getDeadline());
         }

@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 public class Articulo {
 
@@ -98,6 +98,10 @@ public class Articulo {
         this.maximoUsuarios = maximoUsuarios;
     }
 
+    private boolean estaAnotado(Usuario usuario){
+        return this.getAnotaciones().stream().anyMatch(anotacion -> anotacion.getUsuario().equals(usuario));
+    }
+
     public void anotarUsuario(Usuario usuario){
         if (!this.estaAbierto())
             throw new IllegalArgumentException("El articulo está cerrado.");
@@ -105,6 +109,8 @@ public class Articulo {
             throw new IllegalArgumentException("El articulo llegó a la cantidad máxima de usuarios anotados.");
         if (this.getPropietario() == usuario)
             throw new IllegalArgumentException("El propietario del artículo no se puede anotar a su propio artículo.");
+        if (estaAnotado(usuario))
+            throw new IllegalArgumentException("El usuario ya está anotado.");
         Anotacion anotacion = new Anotacion(usuario);
         this.anotaciones.add(anotacion);
         this.cantidadDeAnotaciones ++;
@@ -123,8 +129,10 @@ public class Articulo {
     }
 
     public void cerrar(){
+        if (!estaAbierto())
+            throw new IllegalArgumentException("El artículo ya está cerrado.");
         // TODO notificar a los usuarios
-        if (this.cantidadDeAnotaciones > this.minimoUsuarios)
+        if (this.cantidadDeAnotaciones >= this.minimoUsuarios)
             this.estado = EstadoArticulo.CLOSED_SUCCESS;
         else this.estado = EstadoArticulo.CLOSED_FAILED;
     }

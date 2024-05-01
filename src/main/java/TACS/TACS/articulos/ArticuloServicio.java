@@ -77,6 +77,17 @@ public class ArticuloServicio {
 		articulo.anotarUsuario(usuario);
 	}
 
+	// devuelve un NoContent
+	@PATCH
+	@Path("/{idArticulo}/cerrar")
+	@Produces("application/json")
+	public Articulo.ArticuloDTO cerrarArticulo(@PathParam("idArticulo") int idAtriculo) {
+		//TODO validar que el usuario sea el propietario
+		Articulo articulo = repo.obtenerArticulo(idAtriculo);
+		articulo.cerrar();
+		return articulo.convertirADTO();
+	}
+
 	@GET
 	@Path("/{id}/usuarios")
 	@Produces("application/json")
