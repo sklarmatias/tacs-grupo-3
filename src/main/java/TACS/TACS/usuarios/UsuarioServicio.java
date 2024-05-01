@@ -37,12 +37,6 @@ public class UsuarioServicio {
     @POST
     @Consumes("application/json")
     public Response addUsuario(Usuario usuario,@Context UriInfo uriInfo) {
-        if (usuario.getNombre() == null)
-            throw new IllegalArgumentException("El valor del campo \"nombre\" es obligatorio");
-        if (usuario.getApellido() == null)
-            throw new IllegalArgumentException("El valor del campo \"apellido\" es obligatorio");
-        if (usuario.getMail() == null)
-            throw new IllegalArgumentException("El valor del campo \"email\" es obligatorio");
         int idUsuario = repo.guardarUsuario(new Usuario(usuario.getNombre(), usuario.getApellido(), usuario.getMail()));
         // creo la URI con la que se obtendría el recurso creado
         UriBuilder usuarioURIBuilder = uriInfo.getAbsolutePathBuilder();

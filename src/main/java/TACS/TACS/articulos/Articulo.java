@@ -107,6 +107,7 @@ public class Articulo {
             throw new IllegalArgumentException("El propietario del artículo no se puede anotar a su propio artículo.");
         Anotacion anotacion = new Anotacion(usuario);
         this.anotaciones.add(anotacion);
+        this.cantidadDeAnotaciones ++;
     }
 
     public boolean estaCompleto(){
@@ -160,8 +161,6 @@ public class Articulo {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date fechaDeCreacion;
 
-        public List<Anotacion> anotaciones;
-
         public Integer cantidadDeAnotaciones;
 
         public Double costo;
@@ -188,7 +187,6 @@ public class Articulo {
             this.maximoUsuarios = articulo.getMaximoUsuarios();
             this.minimoUsuarios = articulo.getMinimoUsuarios();
             this.propietario = articulo.getPropietario().convertirADTO();
-            this.anotaciones = articulo.getAnotaciones();
         }
 
     }

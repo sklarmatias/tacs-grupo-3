@@ -23,11 +23,25 @@ public class RepositorioDeUsuariosEnMemoria implements RepositorioDeUsuarios{
     @Override
     public void actualizarUsuario(Integer id, Usuario usuario) {
         Usuario useroriginal = usuarios.stream().filter(us -> us.getId().equals(id)).findFirst().get();
-        useroriginal.actualizarValores(usuario);
+        if (usuario.getNombre() != null) {
+            useroriginal.setNombre(usuario.getNombre());
+        }
+        if (usuario.getApellido() != null) {
+            useroriginal.setApellido(usuario.getApellido());
+        }
+        if (usuario.getMail() != null) {
+            useroriginal.setMail(usuario.getMail());
+        }
     }
 
     @Override
     public Integer guardarUsuario(Usuario usuario) {
+        if (usuario.getNombre() == null)
+            throw new IllegalArgumentException("El valor del campo \"nombre\" es obligatorio");
+        if (usuario.getApellido() == null)
+            throw new IllegalArgumentException("El valor del campo \"apellido\" es obligatorio");
+        if (usuario.getMail() == null)
+            throw new IllegalArgumentException("El valor del campo \"email\" es obligatorio");
         clave += 1;
         usuario.setId(clave);
         usuarios.add(usuario);

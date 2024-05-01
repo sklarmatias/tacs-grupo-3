@@ -3,8 +3,6 @@ package TACS.TACS.articulos;
 import java.util.List;
 import java.util.stream.Collectors;
 import TACS.TACS.anotaciones.Anotacion;
-import TACS.TACS.anotaciones.repositorio.RepositorioDeAnotaciones;
-import TACS.TACS.anotaciones.repositorio.RepositorioDeAnotacionesEnMemoria;
 import TACS.TACS.articulos.repositorios.RepositorioDeArticulos;
 import TACS.TACS.articulos.repositorios.RepositorioDeArticulosEnMemoria;
 import TACS.TACS.usuarios.Usuario;
@@ -20,9 +18,6 @@ import jakarta.ws.rs.core.UriInfo;
 public class ArticuloServicio {
 	private RepositorioDeArticulos repo = new RepositorioDeArticulosEnMemoria();
 	private RepositorioDeUsuarios repoUsuarios = new RepositorioDeUsuariosEnMemoria();
-
-	private RepositorioDeAnotaciones repositorioDeAnotaciones = new RepositorioDeAnotacionesEnMemoria();
-
 
 	@GET
 	@Produces("application/json")
@@ -85,9 +80,9 @@ public class ArticuloServicio {
 	@GET
 	@Path("/{id}/usuarios")
 	@Produces("application/json")
-	public List<Anotacion> getUsuariosEnArticulo(@PathParam("id") int id) {
+	public List<Anotacion.AnotacionDTO> getUsuariosEnArticulo(@PathParam("id") int id) {
 		Articulo articulo = repo.obtenerArticulo(id);
-		return articulo.getAnotaciones();
+		return articulo.getAnotaciones().stream().map(Anotacion::convertirADTO).collect(Collectors.toList());
 	}
 
 	@DELETE

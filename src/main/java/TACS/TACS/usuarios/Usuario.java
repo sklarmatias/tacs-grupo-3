@@ -42,18 +42,6 @@ public class Usuario {
         this.getAnotaciones().add(anotacion);
     }
 
-    public void actualizarValores(Usuario other) {
-        if (other.getNombre() != null) {
-            this.setNombre(other.getNombre());
-        }
-        if (other.getApellido() != null) {
-            this.setApellido(other.getApellido());
-        }
-        if (other.getMail() != null) {
-            this.setMail(other.getMail());
-        }
-    }
-
     public UsuarioDTO convertirADTO(){
         return new UsuarioDTO(this);
     }
