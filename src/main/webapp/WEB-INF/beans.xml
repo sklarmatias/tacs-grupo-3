@@ -10,14 +10,14 @@
     <bean class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer"/>
     <jaxrs:server id="services" address="/">
         <jaxrs:serviceBeans>
-            <bean class="TACS.TACS.usuarios.UsuarioServicio"/>
-	    <bean class="TACS.TACS.articulos.ArticuloServicio"/>
-	    <bean class="TACS.TACS.reportes.ReporteServicio"/>
+            <bean class="ar.edu.utn.frba.tacs.controller.UserController"/>
+	    <bean class="ar.edu.utn.frba.tacs.controller.ArticleController"/>
+	    <bean class="ar.edu.utn.frba.tacs.controller.ReportsController"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
-            <bean class="TACS.TACS.mappers.IllegalArgumentExceptionMapper"/>
-            <bean class="TACS.TACS.mappers.NoSuchElementExceptionMapper"/>
+            <bean class="ar.edu.utn.frba.tacs.mappers.IllegalArgumentExceptionMapper"/>
+            <bean class="ar.edu.utn.frba.tacs.mappers.NoSuchElementExceptionMapper"/>
         </jaxrs:providers>
     </jaxrs:server>
 </beans>
