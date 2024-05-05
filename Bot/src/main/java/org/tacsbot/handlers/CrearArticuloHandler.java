@@ -1,5 +1,12 @@
 package org.tacsbot.handlers;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.BotPrincipal;
 import org.tacsbot.CostType;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -18,6 +25,7 @@ public class CrearArticuloHandler implements CommandsHandler {
     private Integer cantidadMaximaUsuarios;
     private Integer cantidadMinimaUsuarios;
     private String image;
+    private String recibeUsuario = "1";
 
     // Enum para representar los diferentes pasos del proceso de creación del artículo
     private enum PasoCreacionArticulo {
@@ -94,10 +102,34 @@ public class CrearArticuloHandler implements CommandsHandler {
                 }
                 break;
             case SOLICITAR_IMAGEN:
-                //todo logica para guardar imagen y articulo
+                //todo logica para guardar imagen
+                // TODO pedir lo que recibe cada usuario
                 image = respuesta.getText();
-//                Article nuevoArticulo = new Article(nombreArticulo,image,null,null,null,fechaLimite,costo,CostType.TOTAL,cantidadMinimaUsuarios,cantidadMaximaUsuarios);
-//                System.out.println(nuevoArticulo);
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String jsonrequest = "{\n" +
+                        "  \"name\": \"" + nombreArticulo + "\",\n" +
+                        "  \"image\": \"" + image + "\",\n" +
+                        "  \"deadline\": \"" + formatter.format(fechaLimite) + "\",\n" +
+                        "  \"usersMax\": " + cantidadMaximaUsuarios.toString() + ",\n" +
+                        "  \"usersMin\": " + cantidadMinimaUsuarios.toString() + ",\n" +
+                        "  \"cost\": " + costo + ",\n" +
+                        "  \"costType\": \"" + tipoCosto.toString() + "\",\n" +
+                        "  \"userGets\": \"" + recibeUsuario + "\",\n" +
+                        "  \"owner\":1\n" +
+                        "}";
+                WebClient client = WebClient.create("https://localhost:7263/Articulo");
+                System.out.println(jsonrequest);
+                Response response = client.type("application/json").post(jsonrequest);
+                System.out.println(response.getStatus());
+                System.out.println(response.readEntity(String.class));
+                if (response.getStatus() == 201) {
+                    System.out.println("articulo creado");
+                    bot.sendText(userId, "articulo creado");
+                }
+                    else{
+                    System.out.println("articulo no creado");
+                    bot.sendText(userId, "articulo no creado");
+                }
                 bot.resetUserHandlers(userId);
 
         }
