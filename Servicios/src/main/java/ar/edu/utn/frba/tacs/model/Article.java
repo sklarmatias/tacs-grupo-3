@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Setter
 @Getter
@@ -28,7 +29,7 @@ public class Article {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date deadline;
 
-    private int owner;
+    private User owner;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date creationDate;
@@ -45,7 +46,7 @@ public class Article {
 
     private Integer usersMax;
 
-    public Article(String name, String image, String link, String userGets, int owner,
+    public Article(String name, String image, String link, String userGets, User owner,
                    Date deadline, Double cost, CostType costType, Integer usersMin, Integer usersMax) {
         if (usersMin <= 0)
             throw new IllegalArgumentException("usersMin has to be >= 0.");
@@ -80,7 +81,7 @@ public class Article {
             throw new IllegalArgumentException("Article is closed.");
         if (this.isFull())
             throw new IllegalArgumentException("Article is full.");
-        if (this.getOwner() == user.getId())
+        if (Objects.equals(this.getOwner().getId(), user.getId()))
             throw new IllegalArgumentException("Article owner can't sign up to his own article.");
         if (isSignedUp(user))
             throw new IllegalArgumentException("User already signed up.");
@@ -165,7 +166,7 @@ public class Article {
             this.costType = article.getCostType();
             this.usersMax = article.getUsersMax();
             this.usersMin = article.getUsersMin();
-            this.owner = article.getOwner();
+            this.owner = article.getOwner().getId();
         }
 
     }

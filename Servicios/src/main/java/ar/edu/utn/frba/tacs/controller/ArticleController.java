@@ -9,6 +9,8 @@ import ar.edu.utn.frba.tacs.repository.articles.impl.InMemoryArticlesRepository;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
+import ar.edu.utn.frba.tacs.service.ArticleService;
+import ar.edu.utn.frba.tacs.service.UserService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
@@ -17,27 +19,29 @@ import jakarta.ws.rs.core.UriInfo;
 
 @Path("/articles")
 public class ArticleController {
-	private final ArticlesRepository articlesRepository = new InMemoryArticlesRepository();
-	private final UsersRepository usersRepository = new InMemoryUsersRepository();
+
+	private final ArticleService articleService = new ArticleService();
+
+	private final UserService userService = new UserService();
 
 	@GET
 	@Produces("application/json")
 	public List<Article.ArticleDTO> listArticles() {
-		return articlesRepository.findAll().stream().map(Article::convertToDTO).collect(Collectors.toList());
+		return articleService.listArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("/{id}")
 	@Produces("application/json")
 	public Article.ArticleDTO getArticle(@PathParam("id") Integer id) {
-		return articlesRepository.find(id).convertToDTO();
+		return articleService.getArticle(id).convertToDTO();
 	}
 
 	@PATCH
 	@Path("/{id}")
 	@Consumes("application/json")
 	public void updateArticle(@PathParam("id") Integer id, Article article) {
-		articlesRepository.update(id,article);
+		articleService.updateArticle(id,article);
 	}
 
 
@@ -46,35 +50,23 @@ public class ArticleController {
 	@POST
 	@Consumes("application/json")
 	public Response saveArticle(Article article, @Context UriInfo uriInfo){
-		User user = usersRepository.find(article.getOwner());
-		user.getPostedArticles().add(article);
-		int articleId = articlesRepository.save(new Article(
-				article.getName(),
-				article.getImage(),
-				article.getLink(),
-				article.getUserGets(),
-				article.getOwner(),
-				article.getDeadline(),
-				article.getCost(),
-				article.getCostType(),
-				article.getUsersMin(),
-				article.getUsersMax())
-		);
-		// get URI
+		User user = userService.getUser(article.getOwner().getId());
+		int articleId = articleService.saveArticle(article,user);
+		// get Location URI
 		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
 		articleURIBuilder.path(Integer.toString(articleId));
 		return Response.created(articleURIBuilder.build()).build();
 	}
 
-	// NoContent
+	// 204 NoContent
 	@POST
 	@Path("/{articleId}/users/{userId}")
 	@Consumes("application/json")
 	public void signUpUser(@PathParam("articleId") int articleId,
 						   @PathParam("userId") int userId) {
-		Article article = articlesRepository.find(articleId);
-		User user = usersRepository.find(userId);
-		article.signUpUser(user);
+		Article article = articleService.getArticle(articleId);
+		User user = userService.getUser(userId);
+		articleService.signUpUser(article,user);
 	}
 
 	// NoContent
@@ -83,8 +75,8 @@ public class ArticleController {
 	@Produces("application/json")
 	public Article.ArticleDTO closeArticle(@PathParam("articleId") int articleId) {
 		//TODO validate user is owner
-		Article article = articlesRepository.find(articleId);
-		article.close();
+		Article article = articleService.getArticle(articleId);
+		articleService.closeArticle(article);
 		return article.convertToDTO();
 	}
 
@@ -92,12 +84,12 @@ public class ArticleController {
 	@Path("/{id}/users")
 	@Produces("application/json")
 	public List<Annotation.AnnotationDTO> getUsersSignedUp(@PathParam("id") int id) {
-		Article article = articlesRepository.find(id);
-		return article.getAnnotations().stream().map(Annotation::convertToDTO).collect(Collectors.toList());
+		Article article = articleService.getArticle(id);
+		return articleService.getUsersSignedUp(article).stream().map(Annotation::convertToDTO).collect(Collectors.toList());
 	}
 
 	@DELETE
 	public void deleteArticles(){
-		articlesRepository.delete();
+		articleService.clearArticles();
 	}
 }
