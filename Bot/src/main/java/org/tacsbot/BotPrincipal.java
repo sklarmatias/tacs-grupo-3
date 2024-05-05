@@ -60,13 +60,9 @@ public class BotPrincipal extends TelegramLongPollingBot {
         // Inicialización del mapa commandActions con las acciones asociadas a los comandos
         commandActions.put("/crear_articulo", this::crearArticulo);
         commandActions.put("/obtener_articulos", this::obtenerArticulos);
+        commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
         commandActions.put("/menu", this::mostrarMenu);
     }
-
-
-
-
-
 
     @Override
     public String getBotUsername() {
@@ -75,7 +71,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "6725740198:AAHp4qUGFKv8dAtVj1rCOPqoG-_1c3LcYFA";
+        return System.getenv("BOT_TOKEN");
     }
 
     @Override
@@ -138,12 +134,23 @@ public class BotPrincipal extends TelegramLongPollingBot {
     // Método para obtener artículos
     private void obtenerArticulos(Long id, String commandText) {
         // Aca iría la lógica para obtener y mostrar los artículos al usuario
-        WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
+        WebClient client = WebClient.create(System.getenv("ARTICLE_RESOURCE_URL"));
         Response response = client.accept("application/json").get();
         sendText(id, "Estos son los articulos disponibles");
         sendText(id,parsearJson(response.readEntity(String.class)));
         System.out.println("Artículos obtenidos por el usuario " + id);
     }
+
+    private void seeSignUpsInArticle(Long chatId, String commandText){
+        // Aca iría la lógica para obtener y mostrar los artículos al usuario
+        int articleId = Integer.parseInt(commandText);
+        WebClient client = WebClient.create(String.format("%s/%d",System.getenv("ARTICLE_RESOURCE_URL"), articleId));
+        Response response = client.accept("application/json").get();
+        String message = STR."Estos son los usuarios anotados al articulo:\n\{response.readEntity(String.class)}";
+        sendText(chatId, message);
+        System.out.printf("Artículos obtenidos por el usuario %d", chatId);
+    }
+
     private String parsearJson(String json) {
         String result = "";
         ObjectMapper mapper = new ObjectMapper();

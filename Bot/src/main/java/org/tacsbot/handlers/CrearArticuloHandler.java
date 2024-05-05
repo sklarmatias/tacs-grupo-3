@@ -117,7 +117,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                         "  \"userGets\": \"" + recibeUsuario + "\",\n" +
                         "  \"owner\":1\n" +
                         "}";
-                WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
+                WebClient client = WebClient.create(System.getenv("ARTICLE_RESOURCE_URL"));
                 System.out.println(jsonrequest);
                 Response response = client.type("application/json").post(jsonrequest);
                 System.out.println(response.getStatus());

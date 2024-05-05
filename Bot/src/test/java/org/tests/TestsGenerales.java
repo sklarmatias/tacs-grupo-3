@@ -39,7 +39,7 @@ public class TestsGenerales {
 //        Response r = client.type("application/json").post(jsonrequest);
 //        Assert.assertEquals(r.getStatus(), 201);
         String result = "";
-        WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
+        WebClient client = WebClient.create(System.getenv("ARTICLE_RESOURCE_URL"));
         Response response = client.type("application/json").get();
         String articulosString = response.readEntity(String.class);
         List<Article> articulos =mapper.readValue(articulosString, new TypeReference<List<Article>>(){});
