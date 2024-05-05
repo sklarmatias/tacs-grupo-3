@@ -1,4 +1,4 @@
-package org.tacsbot;
+package org.tacsbot.clases;
 
 public enum CostType {
 

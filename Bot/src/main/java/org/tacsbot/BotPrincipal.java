@@ -1,4 +1,11 @@
 package org.tacsbot;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.json.JSONArray;
+import org.tacsbot.clases.Article;
 import org.tacsbot.handlers.CommandAction;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.handlers.CrearArticuloHandler;
@@ -131,11 +138,26 @@ public class BotPrincipal extends TelegramLongPollingBot {
     // Método para obtener artículos
     private void obtenerArticulos(Long id, String commandText) {
         // Aca iría la lógica para obtener y mostrar los artículos al usuario
-        //TODO
+        WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
+        Response response = client.accept("application/json").get();
         sendText(id, "Estos son los articulos disponibles");
+        sendText(id,parsearJson(response.readEntity(String.class)));
         System.out.println("Artículos obtenidos por el usuario " + id);
     }
+    private String parsearJson(String json) {
+        String result = "";
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            List<Article> articulos = mapper.readValue(json, new TypeReference<List<Article>>(){});
+            for (Article art : articulos){
+                result += art.getString() + "\n";
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
+        return result;
+    }
     // Método para mostrar el menú
     private void mostrarMenu(Long id, String commandText) {
         // Aca iría la lógica para mostrar el menú al usuario
@@ -147,6 +169,17 @@ public class BotPrincipal extends TelegramLongPollingBot {
     public void sendText(Long who, String what){
         SendMessage sm = SendMessage.builder()
                 .chatId(who.toString()) //Who are we sending a message to
+                .text(what).build();    //Message content
+        try {
+            this.execute(sm);                        //Actually sending the message
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);      //Any error will be printed here
+        }
+    }
+    public void sendTextHtml(Long who, String what){
+        SendMessage sm = SendMessage.builder()
+                .chatId(who.toString()) //Who are we sending a message to
+                .parseMode("HTML")
                 .text(what).build();    //Message content
         try {
             this.execute(sm);                        //Actually sending the message
@@ -169,8 +202,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
     }
     public void sendMenu(Long who, String txt, InlineKeyboardMarkup kb){
         SendMessage sm = SendMessage.builder().chatId(who.toString())
-                .parseMode("HTML").text(txt)
-                .replyMarkup(kb).build();
+                .parseMode("HTML").text(txt).build();
 
         try {
             execute(sm);

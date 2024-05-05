@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.BotPrincipal;
-import org.tacsbot.CostType;
+import org.tacsbot.clases.CostType;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;

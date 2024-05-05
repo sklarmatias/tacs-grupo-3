@@ -1,15 +1,22 @@
 package org.tests;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.Test;
+import org.tacsbot.clases.Article;
+
+import java.util.Dictionary;
+import java.util.List;
 
 public class TestsGenerales {
     ObjectMapper mapper = new ObjectMapper();
@@ -31,5 +38,14 @@ public class TestsGenerales {
 //        WebClient client = WebClient.create("https://localhost:7263/Articulo");
 //        Response r = client.type("application/json").post(jsonrequest);
 //        Assert.assertEquals(r.getStatus(), 201);
+        String result = "";
+        WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
+        Response response = client.type("application/json").get();
+        String articulosString = response.readEntity(String.class);
+        List<Article> articulos =mapper.readValue(articulosString, new TypeReference<List<Article>>(){});
+        for (Article art : articulos){
+            result += art.getString() + "\n";
+        }
+        Assert.assertEquals(response.getStatus(),200);
     }
 }
