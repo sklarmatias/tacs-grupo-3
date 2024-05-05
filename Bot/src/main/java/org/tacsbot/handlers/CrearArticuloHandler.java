@@ -105,7 +105,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                 //todo logica para guardar imagen
                 // TODO pedir lo que recibe cada usuario
                 image = respuesta.getText();
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + nombreArticulo + "\",\n" +
                         "  \"image\": \"" + image + "\",\n" +
@@ -117,7 +117,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                         "  \"userGets\": \"" + recibeUsuario + "\",\n" +
                         "  \"owner\":1\n" +
                         "}";
-                WebClient client = WebClient.create("https://localhost:7263/Articulo");
+                WebClient client = WebClient.create("http://localhost:8080/restapp/articles");
                 System.out.println(jsonrequest);
                 Response response = client.type("application/json").post(jsonrequest);
                 System.out.println(response.getStatus());

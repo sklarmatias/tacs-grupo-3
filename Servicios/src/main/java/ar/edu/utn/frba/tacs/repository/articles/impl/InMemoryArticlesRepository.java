@@ -47,7 +47,7 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
         if (other.getDeadline() != null) {
             artoriginal.setDeadline(other.getDeadline());
         }
-        if (other.getOwner() != null) {
+        if (other.getOwner() != 0) {
             artoriginal.setOwner(other.getOwner());
         }
         if (other.getCost() != null) {

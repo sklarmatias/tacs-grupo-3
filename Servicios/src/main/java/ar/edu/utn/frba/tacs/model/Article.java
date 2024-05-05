@@ -28,7 +28,7 @@ public class Article {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date deadline;
 
-    private User owner;
+    private int owner;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date creationDate;
@@ -45,7 +45,7 @@ public class Article {
 
     private Integer usersMax;
 
-    public Article(String name, String image, String link, String userGets, User owner,
+    public Article(String name, String image, String link, String userGets, int owner,
                    Date deadline, Double cost, CostType costType, Integer usersMin, Integer usersMax) {
         if (usersMin <= 0)
             throw new IllegalArgumentException("usersMin has to be >= 0.");
@@ -80,7 +80,7 @@ public class Article {
             throw new IllegalArgumentException("Article is closed.");
         if (this.isFull())
             throw new IllegalArgumentException("Article is full.");
-        if (this.getOwner().equals(user))
+        if (this.getOwner() == user.getId())
             throw new IllegalArgumentException("Article owner can't sign up to his own article.");
         if (isSignedUp(user))
             throw new IllegalArgumentException("User already signed up.");
@@ -135,7 +135,7 @@ public class Article {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date deadline;
 
-        public User.UserDTO owner;
+        public int owner;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date creationDate;
@@ -165,7 +165,7 @@ public class Article {
             this.costType = article.getCostType();
             this.usersMax = article.getUsersMax();
             this.usersMin = article.getUsersMin();
-            this.owner = article.getOwner().convertToDTO();
+            this.owner = article.getOwner();
         }
 
     }

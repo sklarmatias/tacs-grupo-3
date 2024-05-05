@@ -46,14 +46,14 @@ public class ArticleController {
 	@POST
 	@Consumes("application/json")
 	public Response saveArticle(Article article, @Context UriInfo uriInfo){
-		User user = usersRepository.find(article.getOwner().getId());
+		User user = usersRepository.find(article.getOwner());
 		user.getPostedArticles().add(article);
 		int articleId = articlesRepository.save(new Article(
 				article.getName(),
 				article.getImage(),
 				article.getLink(),
 				article.getUserGets(),
-				usersRepository.find(article.getOwner().getId()),
+				article.getOwner(),
 				article.getDeadline(),
 				article.getCost(),
 				article.getCostType(),
