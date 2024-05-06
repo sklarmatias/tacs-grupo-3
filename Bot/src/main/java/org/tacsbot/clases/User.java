@@ -6,13 +6,15 @@ import java.util.List;
 
 public class User {
 
-    private Integer id;
+    public Integer id;
 
-    private String name;
+    public String name;
 
-    private String surname;
+    public String surname;
 
-    private String email;
+    public String email;
+
+    public String pass;
 
     private List<Article> postedArticles;
 

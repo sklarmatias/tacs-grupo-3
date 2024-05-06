@@ -18,6 +18,8 @@ public class UserService {
         return usersRepository.find(id);
     }
 
+    public User loginUser(String email, String pass) { return usersRepository.find(email, pass); }
+
     public List<User> listUsers() {
         return usersRepository.findAll();
     }
@@ -26,8 +28,8 @@ public class UserService {
         usersRepository.update(id, user);
     }
 
-    public Integer saveUser(String name, String surname, String email) {
-        return usersRepository.save(new User(name, surname, email));
+    public Integer saveUser(String name, String surname, String email, String pass) {
+        return usersRepository.save(new User(name, surname, email,pass));
     }
 
     // TODO delete this method

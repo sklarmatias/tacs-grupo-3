@@ -22,6 +22,8 @@ public class InMemoryUsersRepository implements UsersRepository {
     }
 
     @Override
+    public User find(String email, String pass){ return USERS.stream().filter(us->us.getEmail().equals(email) && us.getPass().equals(pass)).findFirst().get();}
+    @Override
     public void update(Integer id, User user) {
         User useroriginal = USERS.stream().filter(us -> us.getId().equals(id)).findFirst().get();
         if (user.getName() != null) {

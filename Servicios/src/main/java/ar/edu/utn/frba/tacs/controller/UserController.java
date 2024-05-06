@@ -39,11 +39,17 @@ public class UserController {
     @POST
     @Consumes("application/json")
     public Response saveUser(User user, @Context UriInfo uriInfo) {
-        int userId = userService.saveUser(user.getName(), user.getSurname(), user.getEmail());
+        int userId = userService.saveUser(user.getName(), user.getSurname(), user.getEmail(),user.getPass());
         // URI
         UriBuilder userURIBuilder = uriInfo.getAbsolutePathBuilder();
         userURIBuilder.path(Integer.toString(userId));
         return Response.created(userURIBuilder.build()).build();
+    }
+    @POST
+    @Path("/login")
+    @Consumes("application/json")
+    public User.UserDTO loginUser(User user, @Context UriInfo uriInfo) {
+        return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
     }
 
     // TODO delete this method

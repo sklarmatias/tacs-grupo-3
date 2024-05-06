@@ -9,6 +9,7 @@ import org.tacsbot.clases.Article;
 import org.tacsbot.handlers.CommandAction;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.handlers.CrearArticuloHandler;
+import org.tacsbot.handlers.LoginHandler;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -53,6 +54,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
     private final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
+    public final Map<Long, Long> UsersLoginMap = new HashMap<>();
 
 
 
@@ -62,6 +64,8 @@ public class BotPrincipal extends TelegramLongPollingBot {
         commandActions.put("/obtener_articulos", this::obtenerArticulos);
         commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
         commandActions.put("/menu", this::mostrarMenu);
+        commandActions.put("/login", this::login);
+        commandActions.put("/logout", this::logout);
     }
 
     @Override
@@ -71,7 +75,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return System.getenv("BOT_TOKEN");
+        return "6725740198:AAHp4qUGFKv8dAtVj1rCOPqoG-_1c3LcYFA";
     }
 
     @Override
@@ -121,14 +125,14 @@ public class BotPrincipal extends TelegramLongPollingBot {
     }
 
     // Método para crear un artículo
-    private void crearArticulo(Long userId, String commandText) {
+    private void crearArticulo(Long chatId, String commandText) {
         // Aquí iría la lógica para crear y guardar el artículo en la base de datos
         //TODO
-        CrearArticuloHandler handler = new CrearArticuloHandler(userId);
-        commandsHandlerMap.put(userId, handler);
-        sendText(userId, "Ingrese el nombre del articulo: ");
+        CrearArticuloHandler handler = new CrearArticuloHandler(chatId);
+        commandsHandlerMap.put(chatId, handler);
+        sendText(chatId, "Ingrese el nombre del articulo: ");
 
-        //System.out.println("Artículo creado por el usuario " + userId);
+        //System.out.println("Artículo creado por el usuario " + chatId);
     }
 
     // Método para obtener artículos
@@ -149,6 +153,26 @@ public class BotPrincipal extends TelegramLongPollingBot {
         String message = STR."Estos son los usuarios anotados al articulo:\n\{response.readEntity(String.class)}";
         sendText(chatId, message);
         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
+    }
+    private void login(Long chatId, String commandText){
+        if(UsersLoginMap.containsKey(chatId)){
+            sendText(chatId, "Ya se encuentra logueado");
+        }
+        else{
+            LoginHandler handler = new LoginHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
+            sendText(chatId, "Ingrese su mail: ");
+        }
+    }
+    private void logout(Long chatId, String commandText){
+        if(UsersLoginMap.containsKey(chatId)){
+            UsersLoginMap.remove(chatId);
+            sendText(chatId, "Se ha deslogueado");
+        }
+        else{
+            sendText(chatId, "No se encuentra logueado");
+        }
+
     }
 
     private String parsearJson(String json) {

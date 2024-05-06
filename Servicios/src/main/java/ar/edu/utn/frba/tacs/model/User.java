@@ -19,6 +19,8 @@ public class User {
 
     private String email;
 
+    private String pass;
+
     private List<Article> postedArticles;
 
     private List<Annotation> annotations;
@@ -27,10 +29,11 @@ public class User {
         return !(this.postedArticles.isEmpty() && this.annotations.isEmpty());
     }
 
-    public User(String name, String surname, String email){
+    public User(String name, String surname, String email, String pass){
         this.name = name;
         this.surname = surname;
         this.email=email;
+        this.pass = pass;
         this.annotations = new ArrayList<>();
         this.postedArticles = new ArrayList<>();
     }
@@ -54,11 +57,14 @@ public class User {
 
         public String email;
 
+        public String pass;
+
         public UserDTO(User user){
             this.id = user.getId();
             this.name = user.getName();
             this.surname = user.getSurname();
             this.email = user.getEmail();
+            this.pass = user.getPass();
         }
     }
 
