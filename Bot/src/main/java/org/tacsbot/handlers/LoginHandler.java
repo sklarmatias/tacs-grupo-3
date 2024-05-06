@@ -29,7 +29,7 @@ public class LoginHandler implements CommandsHandler {
                         "  \"email\": \"" + email + "\",\n" +
                         "  \"pass\": \"" + pass + "\"\n" +
                         "}";
-                WebClient client = WebClient.create("http://localhost:8080/restapp/users/login");
+                WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/users/login");
                 System.out.println(jsonrequest);
                 Response response = client.type("application/json").post(jsonrequest);
                 System.out.println(response.getStatus());
