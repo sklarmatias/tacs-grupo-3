@@ -52,7 +52,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                 pasoActual = PasoCreacionArticulo.SOLICITAR_FECHA_LIMITE;
                 bot.sendText(userId, "Por favor ingresa la fecha límite (YYYY-MM-DD):");
                 }else {
-                    bot.sendText(userId, mensajeDeError);
+                    bot.sendText(userId, mensajeDeError + "Ingrese un nombre nuevamente...");
                 }
                 break;
             case SOLICITAR_FECHA_LIMITE:
@@ -62,7 +62,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                     pasoActual = PasoCreacionArticulo.SOLICITAR_TIPO_COSTO;
                     bot.sendText(userId, "Por favor ingresa el tipo de costo (Total o Per_user):");
                 } catch (ParseException e) {
-                    bot.sendText(userId, "Formato de fecha incorrecto. Por favor, usa el formato YYYY-MM-DD");
+                    bot.sendText(userId, "Formato de fecha incorrecto. Por favor, ingrese la fecha nuevamente usando el formato YYYY-MM-DD");
                 }
                 break;
             case SOLICITAR_TIPO_COSTO:
@@ -74,7 +74,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                     pasoActual = PasoCreacionArticulo.SOLICITAR_COSTO;
                     bot.sendText(userId, "Por favor ingresa el costo:");
                 }else {
-                    bot.sendText(userId, mensajeDeError);
+                    bot.sendText(userId, mensajeDeError + "Ingrese el tipo de costo nuevamente...");
                 }
                 break;
             case SOLICITAR_COSTO:
