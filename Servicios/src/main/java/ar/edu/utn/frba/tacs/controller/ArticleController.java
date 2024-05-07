@@ -29,6 +29,12 @@ public class ArticleController {
 	public List<Article.ArticleDTO> listArticles() {
 		return articleService.listArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
 	}
+	@GET
+	@Path("/user/{id}")
+	@Produces("application/json")
+	public List<Article.ArticleDTO> listUserArticles(@PathParam("id") Integer id) {
+		return articleService.listUserArticles(id).stream().map(Article::convertToDTO).collect(Collectors.toList());
+	}
 
 	@GET
 	@Path("/{id}")
@@ -50,7 +56,7 @@ public class ArticleController {
 	@POST
 	@Consumes("application/json")
 	public Response saveArticle(Article article, @Context UriInfo uriInfo){
-		User user = userService.getUser(article.getOwner().getId());
+		User user = userService.getUser(article.getOwner());
 		int articleId = articleService.saveArticle(article,user);
 		// get Location URI
 		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();

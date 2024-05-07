@@ -20,6 +20,10 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     public Article find(Integer id) {
         return ARTICLES.stream().filter(art -> art.getId().equals(id)).findFirst().get();
     }
+    @Override
+    public List<Article> filter(int userid) {
+        return ARTICLES.stream().filter(art -> art.getOwner()==userid).toList();
+    }
 
     @Override
     public Integer save(Article article) {
@@ -47,7 +51,7 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
         if (other.getDeadline() != null) {
             artoriginal.setDeadline(other.getDeadline());
         }
-        if (other.getOwner().getId() != 0) {
+        if (other.getOwner() != 0) {
             artoriginal.setOwner(other.getOwner());
         }
         if (other.getCost() != null) {

@@ -25,7 +25,7 @@ public class CrearArticuloHandler implements CommandsHandler {
     private Integer cantidadMaximaUsuarios;
     private Integer cantidadMinimaUsuarios;
     private String image;
-    private String recibeUsuario = "1";
+    private Long recibeUsuario;
 
     // Enum para representar los diferentes pasos del proceso de creación del artículo
     private enum PasoCreacionArticulo {
@@ -105,6 +105,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                 //todo logica para guardar imagen
                 // TODO pedir lo que recibe cada usuario
                 image = respuesta.getText();
+                this.recibeUsuario = bot.UsersLoginMap.get(userId);
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + nombreArticulo + "\",\n" +
@@ -115,7 +116,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                         "  \"cost\": " + costo + ",\n" +
                         "  \"costType\": \"" + tipoCosto.toString() + "\",\n" +
                         "  \"userGets\": \"" + recibeUsuario + "\",\n" +
-                        "  \"owner\":1\n" +
+                        "  \"owner\": " + recibeUsuario.toString() + "\n" +
                         "}";
                 WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
                 System.out.println(jsonrequest);

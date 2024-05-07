@@ -17,6 +17,9 @@ public class ArticleService {
     public List<Article> listArticles() {
         return articlesRepository.findAll();
     }
+    public List<Article> listUserArticles(int user) {
+        return articlesRepository.filter(user);
+    }
 
     public Article getArticle(Integer id) {
         return articlesRepository.find(id);

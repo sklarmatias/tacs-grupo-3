@@ -4,12 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.json.JSONArray;
 import org.tacsbot.clases.Article;
-import org.tacsbot.handlers.CommandAction;
-import org.tacsbot.handlers.CommandsHandler;
-import org.tacsbot.handlers.CrearArticuloHandler;
-import org.tacsbot.handlers.LoginHandler;
+import org.tacsbot.handlers.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -53,7 +49,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
 
-    private final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
+    public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
     public final Map<Long, Long> UsersLoginMap = new HashMap<>();
 
 
@@ -62,7 +58,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
         // Inicialización del mapa commandActions con las acciones asociadas a los comandos
         commandActions.put("/crear_articulo", this::crearArticulo);
         commandActions.put("/obtener_articulos", this::obtenerArticulos);
-        commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
+//        commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
         commandActions.put("/menu", this::mostrarMenu);
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
@@ -127,22 +123,34 @@ public class BotPrincipal extends TelegramLongPollingBot {
     // Método para crear un artículo
     private void crearArticulo(Long chatId, String commandText) {
         // Aquí iría la lógica para crear y guardar el artículo en la base de datos
-        //TODO
-        CrearArticuloHandler handler = new CrearArticuloHandler(chatId);
-        commandsHandlerMap.put(chatId, handler);
-        sendText(chatId, "Ingrese el nombre del articulo: ");
-
+        if(UsersLoginMap.containsKey(chatId)) {
+            commandsHandlerMap.remove(chatId);
+            CrearArticuloHandler handler = new CrearArticuloHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
+            sendText(chatId, "Ingrese el nombre del articulo: ");
+        }
+        else{
+            sendText(chatId, "No se encuentra logueado");
+        }
         //System.out.println("Artículo creado por el usuario " + chatId);
     }
 
     // Método para obtener artículos
-    private void obtenerArticulos(Long id, String commandText) {
+    private void obtenerArticulos(Long chatId, String commandText) {
         // Aca iría la lógica para obtener y mostrar los artículos al usuario
-        WebClient client = WebClient.create(System.getenv("ARTICLE_RESOURCE_URL"));
-        Response response = client.accept("application/json").get();
-        sendText(id, "Estos son los articulos disponibles");
-        sendText(id,parsearJson(response.readEntity(String.class)));
-        System.out.println("Artículos obtenidos por el usuario " + id);
+
+        if(UsersLoginMap.containsKey(chatId)) {
+            commandsHandlerMap.remove(chatId);
+            ArticulosHandler handler = new ArticulosHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
+            sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS): ");
+        }
+        else{
+            WebClient client = WebClient.create(System.getenv("RESOURCE_URL"));
+            Response response = client.accept("application/json").get();
+            sendText(chatId, "Estos son los articulos disponibles");
+            sendText(chatId,parsearJson(response.readEntity(String.class)));
+        }
     }
 
     private void seeSignUpsInArticle(Long chatId, String commandText){
@@ -159,6 +167,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
             sendText(chatId, "Ya se encuentra logueado");
         }
         else{
+            commandsHandlerMap.remove(chatId);
             LoginHandler handler = new LoginHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
             sendText(chatId, "Ingrese su mail: ");
@@ -175,7 +184,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
     }
 
-    private String parsearJson(String json) {
+    public String parsearJson(String json) {
         String result = "";
         ObjectMapper mapper = new ObjectMapper();
         try {
