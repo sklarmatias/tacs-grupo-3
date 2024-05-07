@@ -105,17 +105,26 @@ public class BotPrincipal extends TelegramLongPollingBot {
             String command = msg.getText();
 
             // Obtenemos la acción asociada al comando
-
-            CommandAction action = commandActions.get(command);
-            if (action != null) {
-                // Ejecutamos la acción si está definida
-                action.execute(id, txt);
+            if (command.equals("/help")){
+                sendText(id, "/crear_articulo - Crea un articulo\n" +
+                        "/obtener_articulos - Devuelve una coleccion de articulos\n" +
+                        "/login - Iniciar sesión\n" +
+                        "/logout - Cerrar sesión\n");
+            }else {
+                CommandAction action = commandActions.get(command);
+                if (action != null) {
+                    // Ejecutamos la acción si está definida
+                    action.execute(id, txt);
+                }
             }
+
+
+
 
         }else if (commandsHandlerMap.containsKey(id)){
             commandsHandlerMap.get(id).procesarRespuesta(msg, this);
 
-        }else{sendText(id,"Mensaje no valido");}
+        }else{sendText(id,"Mensaje no valido. Para visualisar los comandos disponibles ingrese /help");}
 
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
     }
