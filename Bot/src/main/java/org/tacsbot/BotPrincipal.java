@@ -50,7 +50,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final Map<Long, Long> UsersLoginMap = new HashMap<>();
+    public final Map<Long, Long> usersLoginMap = new HashMap<>();
 
 
 
@@ -123,13 +123,17 @@ public class BotPrincipal extends TelegramLongPollingBot {
     // Método para crear un artículo
     private void crearArticulo(Long chatId, String commandText) {
         // Aquí iría la lógica para crear y guardar el artículo en la base de datos
-        if(UsersLoginMap.containsKey(chatId)) {
+
+        if(usersLoginMap.containsKey(chatId)) {
+            System.out.println("Esta logueado");
             commandsHandlerMap.remove(chatId);
             CrearArticuloHandler handler = new CrearArticuloHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
             sendText(chatId, "Ingrese el nombre del articulo: ");
         }
         else{
+
+            System.out.println();
             sendText(chatId, "No se encuentra logueado");
         }
         //System.out.println("Artículo creado por el usuario " + chatId);
@@ -139,7 +143,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
     private void obtenerArticulos(Long chatId, String commandText) {
         // Aca iría la lógica para obtener y mostrar los artículos al usuario
 
-        if(UsersLoginMap.containsKey(chatId)) {
+        if(usersLoginMap.containsKey(chatId)) {
             commandsHandlerMap.remove(chatId);
             ArticulosHandler handler = new ArticulosHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -158,12 +162,12 @@ public class BotPrincipal extends TelegramLongPollingBot {
         int articleId = Integer.parseInt(commandText);
         WebClient client = WebClient.create(String.format("%s/%d",System.getenv("ARTICLE_RESOURCE_URL"), articleId));
         Response response = client.accept("application/json").get();
-        String message = STR."Estos son los usuarios anotados al articulo:\n\{response.readEntity(String.class)}";
+        String message = "Estos son los usuarios anotados al articulo:{response.readEntity(String.class)}";
         sendText(chatId, message);
         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
     }
     private void login(Long chatId, String commandText){
-        if(UsersLoginMap.containsKey(chatId)){
+        if(usersLoginMap.containsKey(chatId)){
             sendText(chatId, "Ya se encuentra logueado");
         }
         else{
@@ -174,8 +178,8 @@ public class BotPrincipal extends TelegramLongPollingBot {
         }
     }
     private void logout(Long chatId, String commandText){
-        if(UsersLoginMap.containsKey(chatId)){
-            UsersLoginMap.remove(chatId);
+        if(usersLoginMap.containsKey(chatId)){
+            usersLoginMap.remove(chatId);
             sendText(chatId, "Se ha deslogueado");
         }
         else{

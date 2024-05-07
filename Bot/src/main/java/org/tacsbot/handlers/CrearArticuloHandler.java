@@ -1,13 +1,9 @@
 package org.tacsbot.handlers;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.BotPrincipal;
+import org.tacsbot.Validador;
 import org.tacsbot.clases.CostType;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -45,29 +41,41 @@ public class CrearArticuloHandler implements CommandsHandler {
 
     @Override
     public void procesarRespuesta(Message respuesta, BotPrincipal bot) {
+        String mensajeDeError = null;
         switch (pasoActual) {
             case SOLICITAR_NOMBRE:
                 // Paso 1: Solicitar el nombre del artículo
+                mensajeDeError = Validador.validarNombreArticulo(respuesta.getText());
+                if (mensajeDeError == null){
                 nombreArticulo = respuesta.getText();
+
                 pasoActual = PasoCreacionArticulo.SOLICITAR_FECHA_LIMITE;
-                bot.sendText(userId, "Por favor ingresa la fecha límite (YYYY-MM-DD HH:mm:ss):");
+                bot.sendText(userId, "Por favor ingresa la fecha límite (YYYY-MM-DD):");
+                }else {
+                    bot.sendText(userId, mensajeDeError);
+                }
                 break;
             case SOLICITAR_FECHA_LIMITE:
                 // Paso 2: Solicitar la fecha límite del artículo
                 try {
-                    fechaLimite = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(respuesta.getText());
+                    fechaLimite = new SimpleDateFormat("yyyy-MM-dd").parse(respuesta.getText());
                     pasoActual = PasoCreacionArticulo.SOLICITAR_TIPO_COSTO;
-                    bot.sendText(userId, "Por favor ingresa el tipo de costo (Total o Individual):");
+                    bot.sendText(userId, "Por favor ingresa el tipo de costo (Total o Per_user):");
                 } catch (ParseException e) {
-                    bot.sendText(userId, "Formato de fecha incorrecto. Por favor, usa el formato YYYY-MM-DD HH:mm:ss");
+                    bot.sendText(userId, "Formato de fecha incorrecto. Por favor, usa el formato YYYY-MM-DD");
                 }
                 break;
             case SOLICITAR_TIPO_COSTO:
                 // Paso 3: Solicitar el tipo de costo del artículo
                 String tipoCostoString = respuesta.getText().toUpperCase();
-                tipoCosto = CostType.valueOf(tipoCostoString);
-                pasoActual = PasoCreacionArticulo.SOLICITAR_COSTO;
-                bot.sendText(userId, "Por favor ingresa el costo:");
+                mensajeDeError = Validador.validarTipoCosto(tipoCostoString);
+                if (mensajeDeError == null) {
+                    tipoCosto = CostType.valueOf(tipoCostoString);
+                    pasoActual = PasoCreacionArticulo.SOLICITAR_COSTO;
+                    bot.sendText(userId, "Por favor ingresa el costo:");
+                }else {
+                    bot.sendText(userId, mensajeDeError);
+                }
                 break;
             case SOLICITAR_COSTO:
                 // Paso 4: Solicitar el costo del artículo
@@ -76,7 +84,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                     pasoActual = PasoCreacionArticulo.SOLICITAR_CANTIDAD_MAXIMA;
                     bot.sendText(userId, "Por favor ingresa la cantidad máxima de usuarios:");
                 } catch (NumberFormatException e) {
-                    bot.sendText(userId, "Formato de costo incorrecto. Por favor, ingresa un número válido.");
+                    bot.sendText(userId, "Formato de costo incorrecto. Por favor, ingresa un número válido (xxxx.xx)");
                 }
                 break;
             case SOLICITAR_CANTIDAD_MAXIMA:
@@ -93,10 +101,14 @@ public class CrearArticuloHandler implements CommandsHandler {
                 // Paso 6: Solicitar la cantidad mínima de usuarios del artículo
                 try {
                     cantidadMinimaUsuarios = Integer.parseInt(respuesta.getText());
-                    pasoActual = PasoCreacionArticulo.SOLICITAR_IMAGEN;
-                    // TODO: Asignar el propietario y la fecha de creación al artículo
-                    bot.sendText(userId, "Adjunte la imagen");
+                    mensajeDeError = Validador.validarCantidadMinimaUsers(cantidadMinimaUsuarios, cantidadMaximaUsuarios);
+                    if ( mensajeDeError == null) {
+                        pasoActual = PasoCreacionArticulo.SOLICITAR_IMAGEN;
 
+                        bot.sendText(userId, "Adjunte la imagen");
+                    }else {
+                        bot.sendText(userId, mensajeDeError);
+                    }
                 } catch (NumberFormatException e) {
                     bot.sendText(userId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
                 }
@@ -104,8 +116,9 @@ public class CrearArticuloHandler implements CommandsHandler {
             case SOLICITAR_IMAGEN:
                 //todo logica para guardar imagen
                 // TODO pedir lo que recibe cada usuario
+                // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = respuesta.getText();
-                this.recibeUsuario = bot.UsersLoginMap.get(userId);
+                this.recibeUsuario = bot.usersLoginMap.get(userId);
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + nombreArticulo + "\",\n" +

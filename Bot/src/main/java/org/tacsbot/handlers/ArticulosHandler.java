@@ -1,6 +1,5 @@
 package org.tacsbot.handlers;
 
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.BotPrincipal;
@@ -18,7 +17,7 @@ public class ArticulosHandler implements CommandsHandler {
         WebClient client;
         Response response;
         String url = System.getenv("RESOURCE_URL") + "/articles";
-        user = bot.UsersLoginMap.get(chatId);
+        user = bot.usersLoginMap.get(chatId);
         switch (pasoActual) {
             case ELEGIR_TIPO:
                 tipoArticulos = TipoArticulos.valueOf(respuesta.getText());
@@ -74,7 +73,7 @@ public class ArticulosHandler implements CommandsHandler {
                         url += "/"+ idArticulo + "/users";
                         client = WebClient.create(url);
                         response = client.accept("application/json").get();
-                        String message = STR."Estos son los usuarios anotados al articulo:\n\{response.readEntity(String.class)}";
+                        String message = "Estos son los usuarios anotados al articulo:response.readEntity(String.class)}";
                         bot.sendText(chatId, message);
                         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
                         break;

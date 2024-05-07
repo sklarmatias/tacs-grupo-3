@@ -43,9 +43,9 @@ public class LoginHandler implements CommandsHandler {
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                    bot.UsersLoginMap.put(chatId,user.id.longValue());
+                    bot.usersLoginMap.put(chatId,user.id.longValue());
                     System.out.println(user.id);
-                    System.out.println(bot.UsersLoginMap.get(chatId));
+                    System.out.println(bot.usersLoginMap.get(chatId));
                     bot.sendText(chatId,"Se ha logueado el usuario " + user.id.toString());
                 }
                 else{
