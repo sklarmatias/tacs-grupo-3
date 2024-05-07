@@ -61,7 +61,7 @@ public class ArticulosHandler implements CommandsHandler {
                     case "CERRAR":
                         url +=  "/"+ idArticulo + "/close";
                         client = WebClient.create(url);
-                        response = client.type("application/json").post("");
+                        response = client.type("application/json").invoke("PATCH", "");
                         if(response.getStatus() == 200){
                             bot.sendText(chatId, "Se ha cerrado correctamente.");
                         }
@@ -73,7 +73,7 @@ public class ArticulosHandler implements CommandsHandler {
                         url += "/"+ idArticulo + "/users";
                         client = WebClient.create(url);
                         response = client.accept("application/json").get();
-                        String message = "Estos son los usuarios anotados al articulo:response.readEntity(String.class)}";
+                        String message = "Estos son los usuarios anotados al articulo:" + response.readEntity(String.class);
                         bot.sendText(chatId, message);
                         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
                         break;
