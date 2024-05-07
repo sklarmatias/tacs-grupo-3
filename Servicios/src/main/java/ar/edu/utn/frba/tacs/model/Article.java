@@ -48,9 +48,9 @@ public class Article {
 
     public Article(String name, String image, String link, String userGets, int owner,
                    Date deadline, Double cost, CostType costType, Integer usersMin, Integer usersMax) {
-        if (usersMin <= 0)
+        if (usersMin < 0)
             throw new IllegalArgumentException("usersMin has to be >= 0.");
-        if (usersMax <= 0)
+        if (usersMax < 0)
             throw new IllegalArgumentException("usersMax has to be >= 0.");
         if (usersMin > usersMax)
             throw new IllegalArgumentException("usersMin has to be <= usersMax.");
