@@ -21,30 +21,23 @@ import static org.junit.Assert.*;
 
 public class UserTest {
     @Test
-    public void testAddUsuarioLocal() {
+    public void testAddUsuario() {
         MongoDBConnector dbConnector = new MongoDBConnector();
         User user = new User("juan","perez","jp@gmail.com","123456");
-        String id = dbConnector.insert(user.toDocument(),"users");
-        User newuser = new User();
-        newuser.fromDocument(dbConnector.selectById("users",id));
-        assertEquals(id,newuser.getId());
-        dbConnector.deleteById("users",id);
-        assertNull(dbConnector.selectById("users",id));
+        User newuser = new User(user.getId());
+        assertEquals(user.getId(),newuser.getId());
+        dbConnector.deleteById("users",user.getId());
+        assertNull(dbConnector.selectById("users",user.getId()));
         dbConnector.closeConnection();
     }
     @Test
     public void testLogin(){
         MongoDBConnector dbConnector = new MongoDBConnector();
         User user = new User("juan","perez","jp@gmail.com","123456");
-        String id = dbConnector.insert(user.toDocument(),"users");
-        Map<String,Object> conditions = new HashMap<>();
-        conditions.put("email",user.getEmail());
-        conditions.put("pass",user.getPass());
-        User newuser = new User();
-        newuser.fromDocument(dbConnector.selectByCondition("users",conditions).getFirst());
-        assertEquals(id, newuser.getId());
-        dbConnector.deleteById("users",id);
-        assertNull(dbConnector.selectById("users",id));
+        User newuser = new User(user.getEmail(),user.getPass());
+        assertEquals(user.getId(), newuser.getId());
+        dbConnector.deleteById("users",user.getId());
+        assertNull(dbConnector.selectById("users",user.getId()));
         dbConnector.closeConnection();
     }
 }

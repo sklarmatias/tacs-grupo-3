@@ -1,17 +1,23 @@
 package ar.edu.utn.frba.tacs.model;
 
+import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class User {
+
+    static MongoDBConnector dbConnector = new MongoDBConnector();
     @Setter
     private String id;
 
@@ -38,6 +44,19 @@ public class User {
         this.pass = pass;
         this.annotations = new ArrayList<>();
         this.postedArticles = new ArrayList<>();
+        this.id = dbConnector.insert("users",toDocument());
+    }
+    public User(String id){
+        fromDocument(dbConnector.selectById("users",id));
+    }
+    public User(String email,String pass){
+        Map<String,Object> conditions = new HashMap<>();
+        conditions.put("email",email);
+        conditions.put("pass",pass);
+        fromDocument((dbConnector.selectByCondition("users",conditions).getFirst()));
+    }
+    public User(Document document){
+        fromDocument(document);
     }
 
     public void addAnnotation(Annotation annotation){
@@ -68,11 +87,32 @@ public class User {
             this.email = user.getEmail();
             this.pass = user.getPass();
         }
+        public Document toDocument() {
+            Document document = new Document();
+            if (id != null) {
+                document.append("_id", new ObjectId(id));
+            }
+            document.append("name", name)
+                    .append("surname", surname)
+                    .append("email", email)
+                    .append("pass", pass);
+
+            return document;
+        }
+
+        public void fromDocument(Document document) {
+            this.id = document.getObjectId("_id").toString();
+            this.name = document.getString("name");
+            this.surname = document.getString("surname");
+            this.email = document.getString("email");
+            this.pass = document.getString("pass");
+        }
     }
+
     public Document toDocument() {
         Document document = new Document();
         if (id != null) {
-            document.append("_id", id);
+            document.append("_id", new ObjectId(id));
         }
         document.append("name", name)
                 .append("surname", surname)
@@ -98,7 +138,6 @@ public class User {
         return document;
     }
 
-    // Method to populate the class with data from a MongoDB document
     public void fromDocument(Document document) {
         this.id = document.getObjectId("_id").toString();
         this.name = document.getString("name");
@@ -125,5 +164,13 @@ public class User {
                 this.annotations.add(annotation);
             }
         }
+    }
+
+    public static List<UserDTO> getAllUsers(){
+        List<Document> documents = dbConnector.selectAll("users");
+        return documents.stream().map(User::DocumentToUser).toList();
+    }
+    private static User.UserDTO DocumentToUser(Document doc){
+        return new User(doc).convertToDTO();
     }
 }

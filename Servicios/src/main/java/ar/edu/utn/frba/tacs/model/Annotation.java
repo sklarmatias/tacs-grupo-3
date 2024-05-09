@@ -6,43 +6,26 @@ import lombok.NoArgsConstructor;
 import org.bson.Document;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class Annotation {
 
-    private User user;
+    private User.UserDTO user;
 
-    private Article article;
+    private Article.ArticleDTO article;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date date;
 
-    public Annotation(User user,Article article){
+    public Annotation(User.UserDTO user, Article.ArticleDTO article){
         this.user = user;
         this.date = new Date();
         this.article = article;
-        user.addAnnotation(this);
     }
 
-    public AnnotationDTO convertToDTO(){
-        return new AnnotationDTO(this);
-    }
 
-    public static class AnnotationDTO{
-
-        public User.UserDTO user;
-        public Article.ArticleDTO article;
-
-        public Date date;
-
-        public AnnotationDTO(Annotation annotation){
-            user = annotation.getUser().convertToDTO();
-            date = annotation.getDate();
-            article = annotation.getArticle().convertToDTO();
-        }
-
-    }
     public Document toDocument() {
         Document document = new Document();
         if (user != null) {
@@ -59,14 +42,14 @@ public class Annotation {
     public void fromDocument(Document document) {
         Document userDoc = (Document) document.get("user");
         if (userDoc != null) {
-            User u = new User();
+            User.UserDTO u = new User.UserDTO();
             u.fromDocument(userDoc);
             this.user = u;
         }
 
         Document articleDoc = (Document) document.get("article");
         if (articleDoc != null) {
-            Article a = new Article();
+            Article.ArticleDTO a = new Article.ArticleDTO();
             a.fromDocument(articleDoc);
             this.article = a;
         }

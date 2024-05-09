@@ -1,21 +1,21 @@
 package ar.edu.utn.frba.tacs.model;
 
+import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.ws.rs.PathParam;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Setter
 @Getter
 @NoArgsConstructor
 public class Article {
+    static MongoDBConnector dbConnector = new MongoDBConnector();
 
     private String id;
 
@@ -32,7 +32,7 @@ public class Article {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date deadline;
 
-    private int owner;
+    private String owner;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date creationDate;
@@ -49,7 +49,7 @@ public class Article {
 
     private Integer usersMax;
 
-    public Article(String name, String image, String link, String userGets, int owner,
+    public Article(String name, String image, String link, String userGets, String owner,
                    Date deadline, Double cost, CostType costType, Integer usersMin, Integer usersMax) {
         if (usersMin < 0)
             throw new IllegalArgumentException("usersMin has to be >= 0.");
@@ -73,6 +73,13 @@ public class Article {
         this.costType = costType;
         this.usersMin = usersMin;
         this.usersMax = usersMax;
+        this.id = dbConnector.insert("articles",toDocument());
+    }
+    public Article(String id){
+        fromDocument(dbConnector.selectById("articles",id));
+    }
+    public Article(Document document){
+        fromDocument(document);
     }
 
     private boolean isSignedUp(User user){
@@ -88,9 +95,14 @@ public class Article {
             throw new IllegalArgumentException("Article owner can't sign up to his own article.");
         if (isSignedUp(user))
             throw new IllegalArgumentException("User already signed up.");
-        Annotation annotation = new Annotation(user,this);
+        Annotation annotation = new Annotation(user.convertToDTO(),this.convertToDTO());
         this.annotations.add(annotation);
         this.annotationsCounter ++;
+        dbConnector.updateInsertInArray("articles",id,"annotations",annotation.toDocument());
+        dbConnector.update("articles",id,"annotationsCounter",annotationsCounter);
+        if(Objects.equals(annotationsCounter, usersMax)){
+            close();
+        }
     }
 
     public boolean isFull(){
@@ -112,6 +124,7 @@ public class Article {
         if (this.annotationsCounter >= this.usersMin)
             this.status = ArticleStatus.CLOSED_SUCCESS;
         else this.status = ArticleStatus.CLOSED_FAILED;
+        dbConnector.update("articles",id,"status",status.toString());
     }
 
     public boolean wasClosedSuccessfully(){
@@ -122,6 +135,7 @@ public class Article {
         return new Article.ArticleDTO(this);
     }
 
+    @NoArgsConstructor
     public static class ArticleDTO{
 
         public String id;
@@ -139,7 +153,7 @@ public class Article {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date deadline;
 
-        public int owner;
+        public String owner;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date creationDate;
@@ -172,6 +186,45 @@ public class Article {
             this.owner = article.getOwner();
         }
 
+
+        public Document toDocument() {
+            Document document = new Document();
+            if (id != null) {
+                document.append("_id", new ObjectId(id));
+            }
+            document.append("name", name)
+                    .append("image", image)
+                    .append("link", link)
+                    .append("userGets", userGets)
+                    .append("status", status.toString())
+                    .append("deadline", deadline)
+                    .append("owner", owner)
+                    .append("creationDate", creationDate)
+                    .append("annotationsCounter", annotationsCounter)
+                    .append("cost", cost)
+                    .append("costType", costType.toString())
+                    .append("usersMin", usersMin)
+                    .append("usersMax", usersMax);
+
+            return document;
+        }
+
+        public void fromDocument(Document document) {
+            this.id = document.getObjectId("_id").toString();
+            this.name = document.getString("name");
+            this.image = document.getString("image");
+            this.link = document.getString("link");
+            this.userGets = document.getString("userGets");
+            this.status = ArticleStatus.valueOf(document.getString("status"));
+            this.deadline = document.getDate("deadline");
+            this.owner = document.getString("owner");
+            this.creationDate = document.getDate("creationDate");
+            this.annotationsCounter = document.getInteger("annotationsCounter");
+            this.cost = document.getDouble("cost");
+            this.costType = CostType.valueOf(document.getString("costType"));
+            this.usersMin = document.getInteger("usersMin");
+            this.usersMax = document.getInteger("usersMax");
+        }
     }
 
     public Document toDocument() {
@@ -204,7 +257,6 @@ public class Article {
         return document;
     }
 
-    // Method to populate the class with data from a MongoDB document
     public void fromDocument(Document document) {
         this.id = document.getObjectId("_id").toString();
         this.name = document.getString("name");
@@ -213,7 +265,7 @@ public class Article {
         this.userGets = document.getString("userGets");
         this.status = ArticleStatus.valueOf(document.getString("status"));
         this.deadline = document.getDate("deadline");
-        this.owner = document.getInteger("owner");
+        this.owner = document.getString("owner");
         this.creationDate = document.getDate("creationDate");
         this.annotationsCounter = document.getInteger("annotationsCounter");
         this.cost = document.getDouble("cost");
@@ -230,5 +282,19 @@ public class Article {
                 this.annotations.add(annotation);
             }
         }
+    }
+
+    public static List<ArticleDTO> getAllArticles(){
+        List<Document> documents = dbConnector.selectAll("articles");
+        return documents.stream().map(Article::DocumentToArticle).toList();
+    }
+    private static ArticleDTO DocumentToArticle(Document doc){
+        return new Article(doc).convertToDTO();
+    }
+    public static List<ArticleDTO> listUserArticles(String id) {
+		Map<String,Object> conditions = new HashMap<>();
+        conditions.put("owner",id);
+        List<Document> documents = dbConnector.selectByCondition("articles",conditions);
+        return documents.stream().map(Article::DocumentToArticle).toList();
     }
 }

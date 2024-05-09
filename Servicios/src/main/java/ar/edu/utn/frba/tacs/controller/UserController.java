@@ -19,18 +19,15 @@ import org.bson.Document;
 public class UserController {
 
 //    private final UserService userService = new UserService();
-    MongoDBConnector dbConnector = new MongoDBConnector();
     @GET
     public List<User.UserDTO> listUsers() {
 //        return userService.listUsers().stream().map(User::convertToDTO).collect(Collectors.toList());
-        List<Document> documents = dbConnector.selectAll("users");
-        return documents.stream().map(document -> dbConnector.DocumentToUser(document)).toList();
+        return User.getAllUsers();
     }
     @GET
     @Path("/{id}")
     public User.UserDTO getUser(@PathParam("id") String id) {
-        Document document = dbConnector.selectById("users",id);
-        return dbConnector.DocumentToUser(document);
+        return new User(id).convertToDTO();
 //        return userService.getUser(id).convertToDTO();
     }
 
@@ -49,19 +46,22 @@ public class UserController {
     @Consumes("application/json")
     public Response saveUser(User user, @Context UriInfo uriInfo) {
 //        int userId = userService.saveUser(user.getName(), user.getSurname(), user.getEmail(),user.getPass());
-        String userId = dbConnector.insert(user.toDocument(),"users");
+        User newuser = new User(user.getName(),user.getSurname(),user.getEmail(),user.getPass());
+        if(newuser.getId() != null){
+            return Response.ok().build();
+        }
+        else{
+            return Response.serverError().build();
+        }
         // URI
-        return Response.ok().build();
+
     }
     @POST
     @Path("/login")
     @Consumes("application/json")
     public User.UserDTO loginUser(User user, @Context UriInfo uriInfo) {
 //        return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
-        Map<String,Object> conditions = new HashMap<>();
-        conditions.put("email",user.getEmail());
-        conditions.put("pass",user.getPass());
-        return dbConnector.DocumentToUser(dbConnector.selectByCondition("users",conditions).getFirst());
+        return new User(user.getEmail(),user.getPass()).convertToDTO();
     }
 
     // TODO delete this method
