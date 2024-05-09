@@ -46,7 +46,7 @@ public class InMemoryUsersRepository implements UsersRepository {
         if (user.getEmail() == null)
             throw new IllegalArgumentException("\"email\" field required");
         key += 1;
-        user.setId(key);
+//        user.setId(key);
         USERS.add(user);
         return key;
     }

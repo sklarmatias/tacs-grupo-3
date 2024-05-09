@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class User {
     @Setter
-    private Integer id;
+    private String id;
 
     private String name;
 
@@ -51,7 +51,7 @@ public class User {
     @NoArgsConstructor
     public static class UserDTO{
 
-        public Integer id;
+        public String id;
 
         public String name;
 
@@ -82,7 +82,7 @@ public class User {
         if (postedArticles != null) {
             List<Document> articleDocs = new ArrayList<>();
             for (Article article : postedArticles) {
-//                articleDocs.add(article.toDocument());
+                articleDocs.add(article.toDocument());
             }
             document.append("postedArticles", articleDocs);
         }
@@ -90,7 +90,7 @@ public class User {
         if (annotations != null) {
             List<Document> annotationDocs = new ArrayList<>();
             for (Annotation annotation : annotations) {
-//                annotationDocs.add(annotation.toDocument());
+                annotationDocs.add(annotation.toDocument());
             }
             document.append("annotations", annotationDocs);
         }
@@ -100,7 +100,7 @@ public class User {
 
     // Method to populate the class with data from a MongoDB document
     public void fromDocument(Document document) {
-//        this.id = document.getInteger("_id");
+        this.id = document.getObjectId("_id").toString();
         this.name = document.getString("name");
         this.surname = document.getString("surname");
         this.email = document.getString("email");
@@ -111,7 +111,7 @@ public class User {
             this.postedArticles = new ArrayList<>();
             for (Document articleDoc : articleDocs) {
                 Article article = new Article();
-//                article.fromDocument(articleDoc);
+                article.fromDocument(articleDoc);
                 this.postedArticles.add(article);
             }
         }
@@ -121,7 +121,7 @@ public class User {
             this.annotations = new ArrayList<>();
             for (Document annotationDoc : annotationDocs) {
                 Annotation annotation = new Annotation();
-//                annotation.fromDocument(annotationDoc);
+                annotation.fromDocument(annotationDoc);
                 this.annotations.add(annotation);
             }
         }

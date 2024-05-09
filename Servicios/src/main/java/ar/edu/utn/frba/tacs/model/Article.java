@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Article {
 
-    private Integer id;
+    private String id;
 
     private String name;
 
@@ -85,7 +88,7 @@ public class Article {
             throw new IllegalArgumentException("Article owner can't sign up to his own article.");
         if (isSignedUp(user))
             throw new IllegalArgumentException("User already signed up.");
-        Annotation annotation = new Annotation(user);
+        Annotation annotation = new Annotation(user,this);
         this.annotations.add(annotation);
         this.annotationsCounter ++;
     }
@@ -121,7 +124,7 @@ public class Article {
 
     public static class ArticleDTO{
 
-        public Integer id;
+        public String id;
 
         public String name;
 
@@ -171,4 +174,61 @@ public class Article {
 
     }
 
+    public Document toDocument() {
+        Document document = new Document();
+        if (id != null) {
+            document.append("_id", new ObjectId(id));
+        }
+        document.append("name", name)
+                .append("image", image)
+                .append("link", link)
+                .append("userGets", userGets)
+                .append("status", status.toString())
+                .append("deadline", deadline)
+                .append("owner", owner)
+                .append("creationDate", creationDate)
+                .append("annotationsCounter", annotationsCounter)
+                .append("cost", cost)
+                .append("costType", costType.toString())
+                .append("usersMin", usersMin)
+                .append("usersMax", usersMax);
+
+        if (annotations != null) {
+            List<Document> annotationDocs = new ArrayList<>();
+            for (Annotation annotation : annotations) {
+                annotationDocs.add(annotation.toDocument());
+            }
+            document.append("annotations", annotationDocs);
+        }
+
+        return document;
+    }
+
+    // Method to populate the class with data from a MongoDB document
+    public void fromDocument(Document document) {
+        this.id = document.getObjectId("_id").toString();
+        this.name = document.getString("name");
+        this.image = document.getString("image");
+        this.link = document.getString("link");
+        this.userGets = document.getString("userGets");
+        this.status = ArticleStatus.valueOf(document.getString("status"));
+        this.deadline = document.getDate("deadline");
+        this.owner = document.getInteger("owner");
+        this.creationDate = document.getDate("creationDate");
+        this.annotationsCounter = document.getInteger("annotationsCounter");
+        this.cost = document.getDouble("cost");
+        this.costType = CostType.valueOf(document.getString("costType"));
+        this.usersMin = document.getInteger("usersMin");
+        this.usersMax = document.getInteger("usersMax");
+
+        List<Document> annotationDocs = (List<Document>) document.get("annotations");
+        if (annotationDocs != null) {
+            this.annotations = new ArrayList<>();
+            for (Document annotationDoc : annotationDocs) {
+                Annotation annotation = new Annotation();
+                annotation.fromDocument(annotationDoc);
+                this.annotations.add(annotation);
+            }
+        }
+    }
 }

@@ -28,7 +28,7 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     @Override
     public Integer save(Article article) {
         key++;
-        article.setId(key);
+//        article.setId(key);
         ARTICLES.add(article);
         return key;
     }
