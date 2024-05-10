@@ -33,3 +33,6 @@ Body para crear un usuario de prueba:
   "email": "b@b.com",
   "pass": "123456"
 }
+
+REQUIRED ENVIROMENT VARIABLES:
+connectionString
