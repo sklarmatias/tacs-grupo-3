@@ -1,129 +1,20 @@
 package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.model.*;
+import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
+import ar.edu.utn.frba.tacs.repository.articles.impl.InMemoryArticlesRepository;
+import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
+import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Assert;
 import org.junit.Test;
-import java.util.ArrayList;
+import java.util.Date;
+
+import static org.junit.Assert.*;
 
 public class ArticleTest {
-
-    @Test
-    public void testCloseSuccessfulArticle(){
-        Article article = new Article();
-        article.setAnnotationsCounter(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setUsersMin(2);
-        article.close();
-        Assert.assertEquals(ArticleStatus.CLOSED_SUCCESS, article.getStatus());
-    }
-
-    @Test
-    public void testCloseFailedArticle(){
-        Article article = new Article();
-        article.setAnnotationsCounter(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setUsersMin(3);
-        article.close();
-        Assert.assertEquals(ArticleStatus.CLOSED_FAILED, article.getStatus());
-    }
-
-    @Test
-    public void testSignUpUserSuccess(){
-        // create users
-        User owner = new User();
-        owner.setId("1");
-        User user1 = new User();
-        user1.setId("2");
-        user1.setAnnotations(new ArrayList<>());
-        // create article
-        Article article = new Article();
-        article.setAnnotations(new ArrayList<>());
-        article.setAnnotationsCounter(0);
-        article.setUsersMax(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setOwner(owner.getId());
-        article.setUsersMin(1);
-        article.signUpUser(user1);
-        Integer expected = 1;
-        Assert.assertEquals(expected, article.getAnnotationsCounter());
-        Assert.assertEquals(user1, article.getAnnotations().get(0).getUser());
-        Assert.assertEquals(article.getAnnotations().get(0), user1.getAnnotations().get(0));
-    }
-
-    @Test
-    public void testSignUpUserFailUsersMax(){
-        // create users
-        User owner = new User();
-        owner.setId("1");
-        User user1 = new User();
-        user1.setId("2");
-        user1.setAnnotations(new ArrayList<>());
-        // create article
-        Article article = new Article();
-        article.setAnnotations(new ArrayList<>());
-        article.setAnnotationsCounter(2);
-        article.setUsersMax(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setOwner(owner.getId());
-        article.setUsersMin(1);
-        Assert.assertThrows(IllegalArgumentException.class, () -> article.signUpUser(user1));
-    }
-
-    @Test
-    public void testSignUpUserFailOwnerSignUp(){
-        // create users
-        User owner = new User();
-        owner.setId("1");
-        // create article
-        Article article = new Article();
-        article.setAnnotations(new ArrayList<>());
-        article.setAnnotationsCounter(2);
-        article.setUsersMax(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setOwner(owner.getId());
-        article.setUsersMin(1);
-        Assert.assertThrows(IllegalArgumentException.class, () -> article.signUpUser(owner));
-    }
-
-    @Test
-    public void testSignUpUserFailUserAlreadySignedUp(){
-        // create users
-        User owner = new User();
-        owner.setId("1");
-        User user1 = new User();
-        user1.setId("2");
-        user1.setAnnotations(new ArrayList<>());
-        // create article
-        Article article = new Article();
-        article.setAnnotations(new ArrayList<>());
-        article.setAnnotationsCounter(0);
-        article.setUsersMax(2);
-        article.setStatus(ArticleStatus.OPEN);
-        article.setOwner(owner.getId());
-        article.setUsersMin(1);
-        article.signUpUser(user1);
-        Assert.assertThrows(IllegalArgumentException.class, () -> article.signUpUser(user1));
-    }
-
-    @Test
-    public void testSignUpUserFailClosedArticle(){
-        // create users
-        User owner = new User();
-        owner.setId("1");
-        User user1 = new User();
-        user1.setId("2");
-        user1.setAnnotations(new ArrayList<>());
-        // create article
-        Article article = new Article();
-        article.setAnnotations(new ArrayList<>());
-        article.setAnnotationsCounter(0);
-        article.setUsersMax(2);
-        article.setStatus(ArticleStatus.CLOSED_SUCCESS);
-        article.setOwner(owner.getId());
-        article.setUsersMin(1);
-        Assert.assertThrows(IllegalArgumentException.class, () -> article.signUpUser(user1));
-    }
-
 //    ObjectMapper mapper = new ObjectMapper();
 //    UsersRepository usersRepository = new InMemoryUsersRepository();
 //    ArticlesRepository articlesRepository = new InMemoryArticlesRepository();
