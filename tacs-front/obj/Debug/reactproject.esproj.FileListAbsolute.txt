@@ -1,0 +1,2 @@
+C:\Users\MEM_1\source\Workspaces\Workspace\ReactProject\ReactProject\obj\Debug\reactproject.esproj.CoreCompileInputs.cache
+C:\Users\MEM_1\Documents\GitHub\tacs-grupo-3\tacs-front\obj\Debug\reactproject.esproj.CoreCompileInputs.cache
