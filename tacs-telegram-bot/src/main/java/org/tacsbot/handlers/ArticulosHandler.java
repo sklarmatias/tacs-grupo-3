@@ -11,7 +11,7 @@ public class ArticulosHandler implements CommandsHandler {
     private int idArticulo;
     private TipoArticulos tipoArticulos;
     private String acciones;
-    private Long user;
+    private String user;
     @Override
     public void procesarRespuesta(Message respuesta, BotPrincipal bot) {
         WebClient client;

@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CrearArticuloHandler implements CommandsHandler {
-    private Long userId;
+    private Long chatId;
     private PasoCreacionArticulo pasoActual;
     private String nombreArticulo;
     private Date fechaLimite;
@@ -21,7 +21,7 @@ public class CrearArticuloHandler implements CommandsHandler {
     private Integer cantidadMaximaUsuarios;
     private Integer cantidadMinimaUsuarios;
     private String image;
-    private Long recibeUsuario;
+    private String recibeUsuario;
 
     // Enum para representar los diferentes pasos del proceso de creación del artículo
     private enum PasoCreacionArticulo {
@@ -35,7 +35,7 @@ public class CrearArticuloHandler implements CommandsHandler {
     }
 
     public CrearArticuloHandler(Long userId) {
-        this.userId = userId;
+        this.chatId = userId;
         this.pasoActual = PasoCreacionArticulo.SOLICITAR_NOMBRE;
     }
 
@@ -50,9 +50,9 @@ public class CrearArticuloHandler implements CommandsHandler {
                 nombreArticulo = respuesta.getText();
 
                 pasoActual = PasoCreacionArticulo.SOLICITAR_FECHA_LIMITE;
-                bot.sendText(userId, "Por favor ingresa la fecha límite (YYYY-MM-DD):");
+                bot.sendText(chatId, "Por favor ingresa la fecha límite (YYYY-MM-DD):");
                 }else {
-                    bot.sendText(userId, mensajeDeError + "Ingrese un nombre nuevamente...");
+                    bot.sendText(chatId, mensajeDeError + "Ingrese un nombre nuevamente...");
                 }
                 break;
             case SOLICITAR_FECHA_LIMITE:
@@ -60,9 +60,9 @@ public class CrearArticuloHandler implements CommandsHandler {
                 try {
                     fechaLimite = new SimpleDateFormat("yyyy-MM-dd").parse(respuesta.getText());
                     pasoActual = PasoCreacionArticulo.SOLICITAR_TIPO_COSTO;
-                    bot.sendText(userId, "Por favor ingresa el tipo de costo (Total o Per_user):");
+                    bot.sendText(chatId, "Por favor ingresa el tipo de costo (Total o Per_user):");
                 } catch (ParseException e) {
-                    bot.sendText(userId, "Formato de fecha incorrecto. Por favor, ingrese la fecha nuevamente usando el formato YYYY-MM-DD");
+                    bot.sendText(chatId, "Formato de fecha incorrecto. Por favor, ingrese la fecha nuevamente usando el formato YYYY-MM-DD");
                 }
                 break;
             case SOLICITAR_TIPO_COSTO:
@@ -72,9 +72,9 @@ public class CrearArticuloHandler implements CommandsHandler {
                 if (mensajeDeError == null) {
                     tipoCosto = CostType.valueOf(tipoCostoString);
                     pasoActual = PasoCreacionArticulo.SOLICITAR_COSTO;
-                    bot.sendText(userId, "Por favor ingresa el costo:");
+                    bot.sendText(chatId, "Por favor ingresa el costo:");
                 }else {
-                    bot.sendText(userId, mensajeDeError + "Ingrese el tipo de costo nuevamente...");
+                    bot.sendText(chatId, mensajeDeError + "Ingrese el tipo de costo nuevamente...");
                 }
                 break;
             case SOLICITAR_COSTO:
@@ -82,9 +82,9 @@ public class CrearArticuloHandler implements CommandsHandler {
                 try {
                     costo = Double.parseDouble(respuesta.getText());
                     pasoActual = PasoCreacionArticulo.SOLICITAR_CANTIDAD_MAXIMA;
-                    bot.sendText(userId, "Por favor ingresa la cantidad máxima de usuarios:");
+                    bot.sendText(chatId, "Por favor ingresa la cantidad máxima de usuarios:");
                 } catch (NumberFormatException e) {
-                    bot.sendText(userId, "Formato de costo incorrecto. Por favor, ingresa un número válido (xxxx.xx)");
+                    bot.sendText(chatId, "Formato de costo incorrecto. Por favor, ingresa un número válido (xxxx.xx)");
                 }
                 break;
             case SOLICITAR_CANTIDAD_MAXIMA:
@@ -92,9 +92,9 @@ public class CrearArticuloHandler implements CommandsHandler {
                 try {
                     cantidadMaximaUsuarios = Integer.parseInt(respuesta.getText());
                     pasoActual = PasoCreacionArticulo.SOLICITAR_CANTIDAD_MINIMA;
-                    bot.sendText(userId, "Por favor ingresa la cantidad mínima de usuarios:");
+                    bot.sendText(chatId, "Por favor ingresa la cantidad mínima de usuarios:");
                 } catch (NumberFormatException e) {
-                    bot.sendText(userId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
+                    bot.sendText(chatId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
                 }
                 break;
             case SOLICITAR_CANTIDAD_MINIMA:
@@ -105,12 +105,12 @@ public class CrearArticuloHandler implements CommandsHandler {
                     if ( mensajeDeError == null) {
                         pasoActual = PasoCreacionArticulo.SOLICITAR_IMAGEN;
 
-                        bot.sendText(userId, "Adjunte la imagen");
+                        bot.sendText(chatId, "Adjunte la imagen");
                     }else {
-                        bot.sendText(userId, mensajeDeError);
+                        bot.sendText(chatId, mensajeDeError);
                     }
                 } catch (NumberFormatException e) {
-                    bot.sendText(userId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
+                    bot.sendText(chatId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
                 }
                 break;
             case SOLICITAR_IMAGEN:
@@ -118,7 +118,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                 // TODO pedir lo que recibe cada usuario
                 // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = respuesta.getText();
-                this.recibeUsuario = bot.usersLoginMap.get(userId);
+                this.recibeUsuario = bot.usersLoginMap.get(chatId);
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + nombreArticulo + "\",\n" +
@@ -129,7 +129,7 @@ public class CrearArticuloHandler implements CommandsHandler {
                         "  \"cost\": " + costo + ",\n" +
                         "  \"costType\": \"" + tipoCosto.toString() + "\",\n" +
                         "  \"userGets\": \"" + recibeUsuario + "\",\n" +
-                        "  \"owner\": " + recibeUsuario.toString() + "\n" +
+                        "  \"owner\": " + recibeUsuario + "\n" +
                         "}";
                 WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
                 System.out.println(jsonrequest);
@@ -138,13 +138,13 @@ public class CrearArticuloHandler implements CommandsHandler {
                 System.out.println(response.readEntity(String.class));
                 if (response.getStatus() == 201) {
                     System.out.println("articulo creado");
-                    bot.sendText(userId, "articulo creado");
+                    bot.sendText(chatId, "articulo creado");
                 }
                     else{
                     System.out.println("articulo no creado");
-                    bot.sendText(userId, "articulo no creado");
+                    bot.sendText(chatId, "articulo no creado");
                 }
-                bot.resetUserHandlers(userId);
+                bot.resetUserHandlers(chatId);
 
         }
     }

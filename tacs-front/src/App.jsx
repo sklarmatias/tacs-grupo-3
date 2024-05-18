@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 import ArticleList from './articlesList.jsx';
 import ArticleForm from './createArticle.jsx';
+import LoginForm from './login.jsx';
 
 const router = createBrowserRouter([
     {
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
     {
         path: "create",
         element: <ArticleForm />,
+    },
+    {
+        path: "login",
+        element: <LoginForm />,
     },
 ]);
 function App() {

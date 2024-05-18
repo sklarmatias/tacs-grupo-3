@@ -50,7 +50,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final Map<Long, Long> usersLoginMap = new HashMap<>();
+    public final Map<Long, String> usersLoginMap = new HashMap<>();
 
 
 

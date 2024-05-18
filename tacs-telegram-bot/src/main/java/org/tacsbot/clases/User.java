@@ -6,7 +6,7 @@ import java.util.List;
 
 public class User {
 
-    public Integer id;
+    public String id;
 
     public String name;
 
