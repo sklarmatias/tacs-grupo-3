@@ -3,16 +3,23 @@ URLS REST
 /articles
 
 POST /articles // crear un nuevo articulo
+Header: user
 
 GET /articles // obtener colección de articulos
+Header: user
 
 GET /articles/{idArticulo}
 
-POST /articles/{idArticulo}/users/{idUsuario} // crear anotacion
+PATCH /articles/{idArticulo}
+Header: user
+
+POST /articles/{idArticulo}/users/ // crear anotacion
+Header: user
 
 GET /articles/{idArticulo}/users // ver usuarios anotados en una publicación
 
 PATCH /articles/{idArticulo}/close // actualizar articulo (para por ejemplo, cerrar la publicacion)
+Header: user
 
 /users
 
@@ -33,3 +40,7 @@ Body para crear un usuario de prueba:
   "email": "b@b.com",
   "pass": "123456"
 }
+
+REQUIRED ENVIROMENT VARIABLES:
+CON_STRING
+MONGO_DB
