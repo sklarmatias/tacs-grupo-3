@@ -39,7 +39,7 @@ public class UserController {
     @POST
     @Consumes("application/json")
     public Response saveUser(User user, @Context UriInfo uriInfo) {
-        String userId = userService.saveUser(user.getName(), user.getSurname(), user.getEmail(),user.getPass());
+        String userId = userService.saveUser(user);
         // URI
         UriBuilder userURIBuilder = uriInfo.getAbsolutePathBuilder();
         userURIBuilder.path(userId);
@@ -54,8 +54,9 @@ public class UserController {
 
     // TODO delete this method
     @DELETE
-    public void cleanUsers(){
-        userService.cleanUsers();
+    @Path("/{id}/")
+    public void cleanUsers(@PathParam("id") String id){
+        userService.cleanUser(id);
     }
 }
 

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.repository.articles.impl;
 
+import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import java.util.ArrayList;
@@ -69,7 +70,12 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     }
 
     @Override
-    public void delete(){
+    public void delete(String id){
         ARTICLES.clear();
+    }
+
+    @Override
+    public void updateAddAnnotation(String id, Annotation annotation) {
+
     }
 }

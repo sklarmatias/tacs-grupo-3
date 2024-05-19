@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.model;
 
+import ar.edu.utn.frba.tacs.service.UserService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,12 +27,10 @@ public class Article {
 
     private ArticleStatus status;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date deadline;
 
     private String owner;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date creationDate;
 
     private List<Annotation> annotations;
@@ -56,6 +55,10 @@ public class Article {
             throw new IllegalArgumentException("usersMin has to be <= usersMax.");
         if (deadline != null && deadline.before(new Date()))
             throw new IllegalArgumentException("Deadline has to be in the future.");
+        UserService userService = new UserService();
+        if (userService.getUser(owner) == null){
+            throw new IllegalArgumentException("Owner doesn't exist.");
+        }
         this.name = name;
         this.image = image;
         this.link = link;
@@ -72,22 +75,23 @@ public class Article {
         this.usersMax = usersMax;
     }
 
-    private boolean isSignedUp(User user){
-        return this.getAnnotations().stream().anyMatch(annotation -> annotation.getUser().equals(user));
+    private boolean isSignedUp(User.UserDTO user){
+        return this.getAnnotations().stream().anyMatch(annotation -> annotation.getUser().getId().equals(user.getId()));
     }
 
-    public void signUpUser(User user){
+    public Annotation signUpUser(User.UserDTO user){
         if (this.isClosed())
             throw new IllegalArgumentException("Article is closed.");
         if (this.isFull())
             throw new IllegalArgumentException("Article is full.");
         if (Objects.equals(this.getOwner(), user.getId()))
             throw new IllegalArgumentException("Article owner can't sign up to his own article.");
-        if (isSignedUp(user))
+       if (isSignedUp(user))
             throw new IllegalArgumentException("User already signed up.");
         Annotation annotation = new Annotation(user);
         this.annotations.add(annotation);
         this.annotationsCounter ++;
+        return annotation;
     }
 
     public boolean isFull(){

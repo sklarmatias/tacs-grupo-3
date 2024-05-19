@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.tacs.repository.user.impl;
 
+import ar.edu.utn.frba.tacs.model.Annotation;
+import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.model.User;
 
@@ -52,7 +54,17 @@ public class InMemoryUsersRepository implements UsersRepository {
     }
 
     @Override
-    public void delete(){
+    public void delete(String id){
         USERS.clear();
+    }
+
+    @Override
+    public void updateAddArticle(String id, Article article) {
+
+    }
+
+    @Override
+    public void updateAddAnnotation(String id, Annotation annotation) {
+
     }
 }

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.repository.articles;
 
+import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface ArticlesRepository {
 
     void update(String id, Article article);
 
-    void delete();
+    void delete(String id);
+    void updateAddAnnotation(String id, Annotation annotation);
+
 
 }

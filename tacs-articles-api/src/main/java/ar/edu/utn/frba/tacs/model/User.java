@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.model;
 
+import ar.edu.utn.frba.tacs.service.UserService;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,7 +46,8 @@ public class User {
     public UserDTO convertToDTO(){
         return new UserDTO(this);
     }
-
+    @Getter
+    @Setter
     @NoArgsConstructor
     public static class UserDTO{
 

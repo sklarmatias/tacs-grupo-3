@@ -1,6 +1,10 @@
 package ar.edu.utn.frba.tacs.service;
 
+import ar.edu.utn.frba.tacs.model.Annotation;
+import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
+import ar.edu.utn.frba.tacs.repository.objectMappers.MongoAnnotationMapper;
+import ar.edu.utn.frba.tacs.repository.objectMappers.MongoArticleMapper;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
@@ -29,13 +33,19 @@ public class UserService {
         usersRepository.update(id, user);
     }
 
-    public String saveUser(String name, String surname, String email, String pass) {
-        return usersRepository.save(new User(name, surname, email,pass));
+    public String saveUser(User user) {
+        return usersRepository.save(user);
+    }
+    // TODO delete this method
+    public void cleanUser(String id){
+        usersRepository.delete(id);
     }
 
-    // TODO delete this method
-    public void cleanUsers(){
-        usersRepository.delete();
+    public void updateUserAddArticle(String id, Article article){
+        usersRepository.updateAddArticle(id,article);
+    }
+    public void updateAddAnnotation(String id, Annotation annotation){
+        usersRepository.updateAddAnnotation(id, annotation);
     }
 
 }

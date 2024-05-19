@@ -10,7 +10,6 @@ import java.util.List;
 public class ArticleService {
 
     private final ArticlesRepository articlesRepository = new MongoArticlesRepository();
-
     public List<Article> listArticles() {
         return articlesRepository.findAll();
     }
@@ -27,37 +26,31 @@ public class ArticleService {
     }
 
     // returns created article ID
-    public String saveArticle(Article article, User user){
-        user.getPostedArticles().add(article);
-        return articlesRepository.save(new Article(
-                article.getName(),
-                article.getImage(),
-                article.getLink(),
-                article.getUserGets(),
-                article.getOwner(),
-                article.getDeadline(),
-                article.getCost(),
-                article.getCostType(),
-                article.getUsersMin(),
-                article.getUsersMax())
-        );
+    public String saveArticle(Article article){
+
+        return articlesRepository.save(article);
     }
 
-    public void signUpUser(Article article, User user) {
-        article.signUpUser(user);
+    public void signUpUser(Article article, User.UserDTO user) {
+        Annotation annotation = article.signUpUser(user);
+        articlesRepository.updateAddAnnotation(article.getId(),annotation);
+        articlesRepository.update(article.getId(),article);
     }
 
-    public void closeArticle(Article article) {
-        //TODO validate user is owner
+    public Article closeArticle(Article article){
         article.close();
+        articlesRepository.update(article.getId(),article);
+        return article;
     }
 
-    public List<Annotation> getUsersSignedUp(Article article) {
+
+    public List<Annotation> getUsersSignedUp(String articleId) {
+        Article article = getArticle(articleId);
         return article.getAnnotations();
     }
 
-    public void clearArticles(){
-        articlesRepository.delete();
+    public void clearArticle(String id){
+        articlesRepository.delete(id);
     }
 
 }

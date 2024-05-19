@@ -3,7 +3,11 @@ package ar.edu.utn.frba.tacs.repository.articles.impl;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
+import ar.edu.utn.frba.tacs.repository.objectMappers.MongoAnnotationMapper;
 import ar.edu.utn.frba.tacs.repository.objectMappers.MongoArticleMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.bson.Document;
 import java.util.HashMap;
 import java.util.List;
@@ -46,13 +50,16 @@ public class MongoArticlesRepository implements ArticlesRepository {
 
     @Override
     public void update(String id, Article article) {
-        Document doc = MongoArticleMapper.convertArticleToDocument(article);
-        dbConnector.update("articles", id, "", doc);
+        dbConnector.update("articles", id, MongoArticleMapper.convertArticleToDocument(article));
+    }
+    @Override
+    public void updateAddAnnotation(String id, Annotation annotation){
+        dbConnector.updateInsertInArray("articles",id,"annotations", MongoAnnotationMapper.convertAnnotationToDocument(annotation));
     }
 
     @Override
-    public void delete() {
-
+    public void delete(String id) {
+        dbConnector.deleteById("articles",id);
     }
 
 }

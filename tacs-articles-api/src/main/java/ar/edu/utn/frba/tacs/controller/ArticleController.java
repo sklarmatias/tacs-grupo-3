@@ -8,10 +8,7 @@ import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.*;
 
 @Path("/articles")
 public class ArticleController {
@@ -53,7 +50,16 @@ public class ArticleController {
 	@Consumes("application/json")
 	public Response saveArticle(Article article, @Context UriInfo uriInfo){
 		User user = userService.getUser(article.getOwner());
-		String articleId = articleService.saveArticle(article,user);
+		if(user == null){
+			return Response
+					.status(Response.Status.BAD_REQUEST)
+					.entity("No existe el usuario")
+					.type( MediaType.TEXT_PLAIN)
+					.build();
+		}
+		String articleId = articleService.saveArticle(article);
+		article.setId(articleId);
+		userService.updateUserAddArticle(user.getId(),article);
 		// get Location URI
 		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
 		articleURIBuilder.path(articleId);
@@ -66,9 +72,8 @@ public class ArticleController {
 	@Consumes("application/json")
 	public void signUpUser(@PathParam("articleId") String articleId,
 						   @PathParam("userId") String userId) {
-		Article article = articleService.getArticle(articleId);
-		User user = userService.getUser(userId);
-		articleService.signUpUser(article,user);
+
+		articleService.signUpUser(articleService.getArticle(articleId),userService.getUser(userId).convertToDTO());
 	}
 
 	// NoContent
@@ -77,21 +82,21 @@ public class ArticleController {
 	@Produces("application/json")
 	public Article.ArticleDTO closeArticle(@PathParam("articleId") String articleId) {
 		//TODO validate user is owner
-		Article article = articleService.getArticle(articleId);
-		articleService.closeArticle(article);
-		return article.convertToDTO();
+
+		return articleService.closeArticle(articleService.getArticle(articleId)).convertToDTO();
 	}
 
 	@GET
 	@Path("/{id}/users")
 	@Produces("application/json")
-	public List<Annotation.AnnotationDTO> getUsersSignedUp(@PathParam("id") String id) {
-		Article article = articleService.getArticle(id);
-		return articleService.getUsersSignedUp(article).stream().map(Annotation::convertToDTO).collect(Collectors.toList());
+	public List<Annotation> getUsersSignedUp(@PathParam("id") String id) {
+
+		return articleService.getUsersSignedUp(id);
 	}
 
 	@DELETE
-	public void deleteArticles(){
-		articleService.clearArticles();
+	@Path("/{id}/")
+	public void deleteArticle(@PathParam("id") String id){
+		articleService.clearArticle(id);
 	}
 }

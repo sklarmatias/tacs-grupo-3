@@ -34,7 +34,7 @@ public class MongoUserMapper {
 
         List<Document> annotationDocs = (List<Document>) document.get("annotations");
         if (annotationDocs != null) {
-            user.setAnnotations(new ArrayList<>());
+            user.setAnnotations(new ArrayList<Annotation>());
             for (Document annotationDoc : annotationDocs) {
                 Annotation annotation = new Annotation();
                 MongoAnnotationMapper.convertDocumentToAnnotation(annotationDoc);
@@ -74,5 +74,26 @@ public class MongoUserMapper {
 
         return document;
     }
+    public static Document convertUserDTOToDocument(User.UserDTO user) {
+        Document document = new Document();
+        if (user.getId() != null) {
+            System.out.println("CONVERTING USER TO DOC");
+            document.append("_id", new ObjectId(String.valueOf(user.getId())));
+        }
+        document.append("name", user.getName())
+                .append("surname", user.getSurname())
+                .append("email", user.getEmail())
+                .append("pass", user.getPass());
+        return document;
+    }
 
+    public static User.UserDTO convertDocumentToUserDTO(Document document) {
+        User.UserDTO user = new User.UserDTO();
+        user.setId(document.getObjectId("_id").toString());
+        user.setName(document.getString("name"));
+        user.setSurname(document.getString("surname"));
+        user.setEmail(document.getString("email"));
+        user.setPass(document.getString("pass"));
+        return user;
+    }
 }
