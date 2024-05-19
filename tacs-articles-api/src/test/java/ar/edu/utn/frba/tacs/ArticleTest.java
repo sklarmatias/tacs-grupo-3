@@ -98,6 +98,7 @@ public class ArticleTest {
         userService.cleanUser(user1.getId());
         userService.cleanUser(user2.getId());
         userService.cleanUser(user3.getId());
+        userService.cleanUser(user4.getId());
         userService.cleanUser(owner.getId());
 
     }
