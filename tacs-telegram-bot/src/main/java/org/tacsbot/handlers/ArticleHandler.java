@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public class ArticleHandler implements CommandsHandler {
     private Long chatId;
     private CurrentStep currentStep;
-    private int articleId;
+    private String articleId;
     private ArticleType articleType;
     private String action;
     private String user;
@@ -32,23 +32,30 @@ public class ArticleHandler implements CommandsHandler {
                 }
                 client = WebClient.create(url);
                 response = client.header("user",user).accept("application/json").get();
-                if (response.getStatus() == 201) {
+                System.out.println(response.getStatus());
+                String articleList = bot.parseJson(response.readEntity(String.class));
+                if (response.getStatus() == 200) {
                     System.out.println("articulos obtenidos");
-                    bot.sendText(chatId, "articulos obtenidos con exitos");
+                    System.out.println(articleList);
+                    bot.sendText(chatId, "articulos obtenidos con exito");
+                    bot.sendText(chatId, articleList);
                 }
                 else{
                     System.out.println("articulos no obtenidos");
                     System.out.println(response.getStatus());
                     System.out.println(response.readEntity(String.class));
+                    System.out.println("articulos obtenidos");
+                    System.out.println(articleList);
                     bot.sendText(chatId, "articulos no obtenidos");
                 }
                 bot.sendText(chatId, "Estos son los articulos disponibles");
-                bot.sendText(chatId,bot.parseJson(response.readEntity(String.class)));
+                bot.sendText(chatId,articleList);
                 currentStep = CurrentStep.CHOOSE_ARTICLE;
+                bot.sendText(chatId, "Elegir el articulo indicando su id");
                 break;
             case CHOOSE_ARTICLE:
 
-                articleId = Integer.parseInt(message.getText());
+                articleId = message.getText();
                 bot.sendText(chatId, "Elegir la accion. " + action);
                 currentStep = CurrentStep.CHOOSE_ACTION;
                 break;

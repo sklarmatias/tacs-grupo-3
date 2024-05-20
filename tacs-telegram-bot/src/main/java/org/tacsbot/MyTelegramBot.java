@@ -165,7 +165,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private void seeSignUpsInArticle(Long chatId, String commandText){
-        // Aca iría la lógica para obtener y mostrar los artículos al usuario
+
         int articleId = Integer.parseInt(commandText);
         WebClient client = WebClient.create(String.format("%s/%d",System.getenv("ARTICLE_RESOURCE_URL"), articleId));
         Response response = client.accept("application/json").get();
@@ -204,6 +204,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 result += art.getString() + "\n";
             }
         } catch (JsonProcessingException e) {
+            System.out.println(e.getMessage());
+
             throw new RuntimeException(e);
         }
 

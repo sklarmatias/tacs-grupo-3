@@ -8,7 +8,7 @@ import java.util.List;
 public class Article {
 
 
-    public Integer id;
+    public String id;
 
     public String name;
 
@@ -23,7 +23,7 @@ public class Article {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public Date deadline;
 
-    public int owner;
+    public String owner;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public Date creationDate;
