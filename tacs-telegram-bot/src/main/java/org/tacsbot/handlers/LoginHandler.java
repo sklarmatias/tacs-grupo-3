@@ -6,25 +6,25 @@ import jakarta.ws.rs.core.Response;
 import org.tacsbot.clases.User;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.BotPrincipal;
+import org.tacsbot.MyTelegramBot;
 
 public class LoginHandler implements CommandsHandler {
     private Long chatId;
-    private PasoLogin pasoActual;
+    private LoginStep currentStep;
     private String email;
     private String pass;
 
     @Override
-    public void procesarRespuesta(Message respuesta, BotPrincipal bot) {
-        switch (pasoActual) {
-            case SOLICITAR_MAIL:
-                // Paso 1: Solicitar el nombre del artículo
-                email = respuesta.getText();
-                pasoActual = PasoLogin.SOLICITAR_CLAVE;
+    public void processResponse(Message message, MyTelegramBot bot) {
+        switch (currentStep) {
+            case REQUEST_EMAIL:
+                // Step 1: Request the article's name
+                email = message.getText();
+                currentStep = LoginStep.REQUEST_PASSWORD;
                 bot.sendText(chatId, "Por favor ingresa la clave:");
                 break;
-            case SOLICITAR_CLAVE:
-                pass = respuesta.getText();
+            case REQUEST_PASSWORD:
+                pass = message.getText();
                 String jsonrequest = "{\n" +
                         "  \"email\": \"" + email + "\",\n" +
                         "  \"pass\": \"" + pass + "\"\n" +
@@ -56,13 +56,13 @@ public class LoginHandler implements CommandsHandler {
         }
     }
 
-    private enum PasoLogin {
-        SOLICITAR_MAIL,
-        SOLICITAR_CLAVE
+    private enum LoginStep {
+        REQUEST_EMAIL,
+        REQUEST_PASSWORD
     }
 
     public LoginHandler(Long userId) {
         this.chatId = userId;
-        this.pasoActual = PasoLogin.SOLICITAR_MAIL;
+        this.currentStep = LoginStep.REQUEST_EMAIL;
     }
 }

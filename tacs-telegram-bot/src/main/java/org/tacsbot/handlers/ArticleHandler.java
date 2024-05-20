@@ -2,52 +2,52 @@ package org.tacsbot.handlers;
 
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.BotPrincipal;
+import org.tacsbot.MyTelegramBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-public class ArticulosHandler implements CommandsHandler {
+public class ArticleHandler implements CommandsHandler {
     private Long chatId;
-    private PasoArticulo pasoActual;
-    private int idArticulo;
-    private TipoArticulos tipoArticulos;
-    private String acciones;
+    private CurrentStep currentStep;
+    private int articleId;
+    private ArticleType articleType;
+    private String action;
     private String user;
     @Override
-    public void procesarRespuesta(Message respuesta, BotPrincipal bot) {
+    public void processResponse(Message message, MyTelegramBot bot) {
         WebClient client;
         Response response;
         String url = System.getenv("RESOURCE_URL") + "/articles";
         user = bot.usersLoginMap.get(chatId);
-        switch (pasoActual) {
-            case ELEGIR_TIPO:
-                tipoArticulos = TipoArticulos.valueOf(respuesta.getText());
-                switch (tipoArticulos){
+        switch (currentStep) {
+            case CHOOSE_ARTICLE_TYPE:
+                articleType = ArticleType.valueOf(message.getText());
+                switch (articleType){
                     case TODOS:
-                        acciones = "SUSCRIBIRSE";
+                        action = "SUSCRIBIRSE";
                         break;
                     case PROPIOS:
-                        acciones = "VER_SUSCRIPTOS, CERRAR";
+                        action = "VER_SUSCRIPTOS, CERRAR";
                         url += "/user/" + user.toString();
                         break;
                 }
                 client = WebClient.create(url);
                 response = client.accept("application/json").get();
                 bot.sendText(chatId, "Estos son los articulos disponibles");
-                bot.sendText(chatId,bot.parsearJson(response.readEntity(String.class)));
-                pasoActual = PasoArticulo.ELEGIR_ARTICULO;
+                bot.sendText(chatId,bot.parseJson(response.readEntity(String.class)));
+                currentStep = CurrentStep.CHOOSE_ARTICLE;
                 break;
-            case ELEGIR_ARTICULO:
-                // Paso 1: Solicitar el nombre del artículo
-                idArticulo = Integer.parseInt(respuesta.getText());
-                bot.sendText(chatId, "Elegir la accion. " + acciones);
-                pasoActual = PasoArticulo.ELEGIR_ACCION;
+            case CHOOSE_ARTICLE:
+
+                articleId = Integer.parseInt(message.getText());
+                bot.sendText(chatId, "Elegir la accion. " + action);
+                currentStep = CurrentStep.CHOOSE_ACTION;
                 break;
-            case ELEGIR_ACCION:
-                String accion = respuesta.getText();
-                System.out.println(accion);
-                switch (accion){
+            case CHOOSE_ACTION:
+                String action = message.getText();
+                System.out.println(action);
+                switch (action){
                     case "SUSCRIBIRSE":
-                        url +=  "/"+ idArticulo + "/users/" + user.toString();
+                        url +=  "/"+ articleId + "/users/" + user.toString();
                         client = WebClient.create(url);
                         response = client.type("application/json").post("");
                         System.out.println(response.getStatus());
@@ -59,7 +59,7 @@ public class ArticulosHandler implements CommandsHandler {
                         }
                         break;
                     case "CERRAR":
-                        url +=  "/"+ idArticulo + "/close";
+                        url +=  "/"+ articleId + "/close";
                         client = WebClient.create(url);
                         response = client.type("application/json").invoke("PATCH", "");
                         if(response.getStatus() == 200){
@@ -70,28 +70,28 @@ public class ArticulosHandler implements CommandsHandler {
                         }
                         break;
                     case "VER_SUSCRIPTOS":
-                        url += "/"+ idArticulo + "/users";
+                        url += "/"+ articleId + "/users";
                         client = WebClient.create(url);
                         response = client.accept("application/json").get();
-                        String message = "Estos son los usuarios anotados al articulo:" + response.readEntity(String.class);
-                        bot.sendText(chatId, message);
+                        String responseMessage = "Estos son los usuarios anotados al articulo:" + response.readEntity(String.class);
+                        bot.sendText(chatId, responseMessage);
                         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
                         break;
                 }
         }
     }
 
-    private enum PasoArticulo {
-        ELEGIR_TIPO,
-        ELEGIR_ARTICULO,
-        ELEGIR_ACCION
+    private enum CurrentStep {
+        CHOOSE_ARTICLE_TYPE,
+        CHOOSE_ARTICLE,
+        CHOOSE_ACTION
     }
-    private enum TipoArticulos{
+    private enum ArticleType {
         TODOS,
         PROPIOS
     }
-    public ArticulosHandler(Long userId) {
+    public ArticleHandler(Long userId) {
         this.chatId = userId;
-        this.pasoActual = PasoArticulo.ELEGIR_TIPO;
+        this.currentStep = CurrentStep.CHOOSE_ARTICLE_TYPE;
     }
 }

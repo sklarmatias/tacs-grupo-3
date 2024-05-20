@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BotPrincipal extends TelegramLongPollingBot {
+public class MyTelegramBot extends TelegramLongPollingBot {
 
     private final Map<String, CommandAction> commandActions = new HashMap<>();
     InlineKeyboardButton next = InlineKeyboardButton.builder()
@@ -54,12 +54,12 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
 
-    public BotPrincipal() {
-        // Inicialización del mapa commandActions con las acciones asociadas a los comandos
-        commandActions.put("/crear_articulo", this::crearArticulo);
-        commandActions.put("/obtener_articulos", this::obtenerArticulos);
+    public MyTelegramBot() {
+        // Initialization of the commandActions map with the actions associated with the commands
+        commandActions.put("/crear_articulo", this::createArticle);
+        commandActions.put("/obtener_articulos", this::searchArticles);
 //        commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
-        commandActions.put("/menu", this::mostrarMenu);
+        commandActions.put("/menu", this::showMenu);
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
     }
@@ -82,7 +82,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
         var txt = msg.getText();
 
         if (update.hasCallbackQuery()) {
-            System.out.println("Se oprimio un boton");
+            System.out.println("A button was pressed");
             var callbackQuery = update.getCallbackQuery();
             var queryData = callbackQuery.getData();
             var queryId = callbackQuery.getId();
@@ -104,7 +104,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
             resetUserHandlers(id);
             String command = msg.getText();
 
-            // Obtenemos la acción asociada al comando
+            // Obtain the action associated with the command
             if (command.equals("/help")){
                 sendText(id, "/crear_articulo - Crea un articulo\n" +
                         "/obtener_articulos - Devuelve una coleccion de articulos\n" +
@@ -113,7 +113,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
             }else {
                 CommandAction action = commandActions.get(command);
                 if (action != null) {
-                    // Ejecutamos la acción si está definida
+                    // Execute the action if it is defined
                     action.execute(id, txt);
                 }
             }
@@ -122,21 +122,20 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
 
         }else if (commandsHandlerMap.containsKey(id)){
-            commandsHandlerMap.get(id).procesarRespuesta(msg, this);
+            commandsHandlerMap.get(id).processResponse(msg, this);
 
-        }else{sendText(id,"Mensaje no valido. Para visualisar los comandos disponibles ingrese /help");}
+        }else{sendText(id,"Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help");}
 
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
     }
 
-    // Método para crear un artículo
-    private void crearArticulo(Long chatId, String commandText) {
-        // Aquí iría la lógica para crear y guardar el artículo en la base de datos
+
+    private void createArticle(Long chatId, String commandText) {
 
         if(usersLoginMap.containsKey(chatId)) {
-            System.out.println("Esta logueado");
+            System.out.println("User is logged in");
             commandsHandlerMap.remove(chatId);
-            CrearArticuloHandler handler = new CrearArticuloHandler(chatId);
+            ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
             sendText(chatId, "Ingrese el nombre del articulo: ");
         }
@@ -145,16 +144,15 @@ public class BotPrincipal extends TelegramLongPollingBot {
             System.out.println();
             sendText(chatId, "No se encuentra logueado");
         }
-        //System.out.println("Artículo creado por el usuario " + chatId);
+
     }
 
-    // Método para obtener artículos
-    private void obtenerArticulos(Long chatId, String commandText) {
-        // Aca iría la lógica para obtener y mostrar los artículos al usuario
+
+    private void searchArticles(Long chatId, String commandText) {
 
         if(usersLoginMap.containsKey(chatId)) {
             commandsHandlerMap.remove(chatId);
-            ArticulosHandler handler = new ArticulosHandler(chatId);
+            ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
             sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS): ");
         }
@@ -162,7 +160,7 @@ public class BotPrincipal extends TelegramLongPollingBot {
             WebClient client = WebClient.create(System.getenv("RESOURCE_URL"));
             Response response = client.accept("application/json").get();
             sendText(chatId, "Estos son los articulos disponibles");
-            sendText(chatId,parsearJson(response.readEntity(String.class)));
+            sendText(chatId, parseJson(response.readEntity(String.class)));
         }
     }
 
@@ -197,12 +195,12 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
     }
 
-    public String parsearJson(String json) {
+    public String parseJson(String json) {
         String result = "";
         ObjectMapper mapper = new ObjectMapper();
         try {
-            List<Article> articulos = mapper.readValue(json, new TypeReference<List<Article>>(){});
-            for (Article art : articulos){
+            List<Article> articles = mapper.readValue(json, new TypeReference<List<Article>>(){});
+            for (Article art : articles){
                 result += art.getString() + "\n";
             }
         } catch (JsonProcessingException e) {
@@ -211,8 +209,8 @@ public class BotPrincipal extends TelegramLongPollingBot {
 
         return result;
     }
-    // Método para mostrar el menú
-    private void mostrarMenu(Long id, String commandText) {
+
+    private void showMenu(Long id, String commandText) {
         // Aca iría la lógica para mostrar el menú al usuario
         //TODO
         sendText(id, "Este es el menu");
