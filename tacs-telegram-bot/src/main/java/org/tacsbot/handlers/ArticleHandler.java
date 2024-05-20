@@ -27,11 +27,21 @@ public class ArticleHandler implements CommandsHandler {
                         break;
                     case PROPIOS:
                         action = "VER_SUSCRIPTOS, CERRAR";
-                        url += "/user/" + user.toString();
+                        url += "/user/" + user;
                         break;
                 }
                 client = WebClient.create(url);
-                response = client.accept("application/json").get();
+                response = client.header("user",user).accept("application/json").get();
+                if (response.getStatus() == 201) {
+                    System.out.println("articulos obtenidos");
+                    bot.sendText(chatId, "articulos obtenidos con exitos");
+                }
+                else{
+                    System.out.println("articulos no obtenidos");
+                    System.out.println(response.getStatus());
+                    System.out.println(response.readEntity(String.class));
+                    bot.sendText(chatId, "articulos no obtenidos");
+                }
                 bot.sendText(chatId, "Estos son los articulos disponibles");
                 bot.sendText(chatId,bot.parseJson(response.readEntity(String.class)));
                 currentStep = CurrentStep.CHOOSE_ARTICLE;
@@ -47,9 +57,9 @@ public class ArticleHandler implements CommandsHandler {
                 System.out.println(action);
                 switch (action){
                     case "SUSCRIBIRSE":
-                        url +=  "/"+ articleId + "/users/" + user.toString();
+                        url +=  "/"+ articleId + "/users/" + user;
                         client = WebClient.create(url);
-                        response = client.type("application/json").post("");
+                        response = client.header("user",user).type("application/json").post("");
                         System.out.println(response.getStatus());
                         if(response.getStatus() == 204){
                             bot.sendText(chatId, "Se ha suscripto correctamente.");
@@ -61,7 +71,7 @@ public class ArticleHandler implements CommandsHandler {
                     case "CERRAR":
                         url +=  "/"+ articleId + "/close";
                         client = WebClient.create(url);
-                        response = client.type("application/json").invoke("PATCH", "");
+                        response = client.header("user",user).type("application/json").invoke("PATCH", "");
                         if(response.getStatus() == 200){
                             bot.sendText(chatId, "Se ha cerrado correctamente.");
                         }

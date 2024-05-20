@@ -120,21 +120,22 @@ public class ArticleCreationHandler implements CommandsHandler {
                 // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = message.getText();
                 this.userGets = bot.usersLoginMap.get(chatId);
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + articleName + "\",\n" +
                         "  \"image\": \"" + image + "\",\n" +
+                        "  \"link\": \"" + "image" + "\",\n" +
                         "  \"deadline\": \"" + formatter.format(deadLine) + "\",\n" +
                         "  \"usersMax\": " + maxNumUsers.toString() + ",\n" +
                         "  \"usersMin\": " + minNumUsers.toString() + ",\n" +
-                        "  \"cost\": " + cost + ",\n" +
+                        "  \"cost\": " + cost.toString() + ",\n" +
                         "  \"costType\": \"" + costType.toString() + "\",\n" +
                         "  \"userGets\": \"" + userGets + "\",\n" +
-                        "  \"owner\": " + userGets + "\n" +
+                        "  \"owner\": \"" + userGets + "\"\n" +
                         "}";
                 WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
                 System.out.println(jsonrequest);
-                Response response = client.type("application/json").post(jsonrequest);
+                Response response = client.header("user",userGets).type("application/json").post(jsonrequest);
                 System.out.println(response.getStatus());
                 System.out.println(response.readEntity(String.class));
                 if (response.getStatus() == 201) {
