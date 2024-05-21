@@ -60,18 +60,6 @@ public class ArticleController {
 	@POST
 	@Consumes("application/json")
 	public Response saveArticle(@HeaderParam("user") String userId, Article article, @Context UriInfo uriInfo){
-		Article completeNewArticle = new Article(
-				article.getName(),
-				article.getImage(),
-				article.getLink(),
-				article.getUserGets(),
-				article.getOwner(),
-				article.getDeadline(),
-				article.getCost(),
-				article.getCostType(),
-				article.getUsersMin(),
-				article.getUsersMax()
-		);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -79,7 +67,18 @@ public class ArticleController {
 		if(user == null){
 			return Response.status(Response.Status.BAD_REQUEST).entity("No existe el usuario").type( MediaType.TEXT_PLAIN).build();
 		}
-		//completeNewArticle.setOwner(userId);
+		Article completeNewArticle = new Article(
+				article.getName(),
+				article.getImage(),
+				article.getLink(),
+				article.getUserGets(),
+				userId,
+				article.getDeadline(),
+				article.getCost(),
+				article.getCostType(),
+				article.getUsersMin(),
+				article.getUsersMax()
+		);
 		String articleId = articleService.saveArticle(completeNewArticle);
 		completeNewArticle.setId(articleId);
 		userService.updateUserAddArticle(user.getId(),completeNewArticle);

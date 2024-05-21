@@ -3,13 +3,13 @@ package org.tacsbot.handlers.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
+import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.model.User;
-import org.tacsbot.handlers.CommandHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.bot.MyTelegramBot;
 
-public class LoginHandler implements CommandHandler {
+public class LoginHandler implements CommandsHandler {
     private Long chatId;
     private LoginStep currentStep;
     private String email;

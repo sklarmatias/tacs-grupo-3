@@ -3,16 +3,17 @@ package org.tacsbot.handlers.impl;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.ArticleValidatorHelper;
 import org.tacsbot.model.CostType;
-import org.tacsbot.handlers.CommandHandler;
+import org.tacsbot.handlers.CommandsHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ArticleCreationHandler implements CommandHandler {
+public class ArticleCreationHandler implements CommandsHandler {
     private Long chatId;
     private ArticleCreationStep currentStep;
     private String articleName;
@@ -23,6 +24,7 @@ public class ArticleCreationHandler implements CommandHandler {
     private Integer minNumUsers;
     private String image;
     private String userGets;
+    private String userId;
 
     // Enum to represent the different steps of the article creation process
     private enum ArticleCreationStep {
@@ -30,6 +32,7 @@ public class ArticleCreationHandler implements CommandHandler {
         REQUEST_DEADLINE,
         REQUEST_COST_TYPE,
         REQUEST_COST,
+        REQUEST_USERGETS,
         REQUEST_MIN_USERS,
         REQUEST_MAX_USERS,
         REQUEST_IMAGE, FINALIZAR
@@ -83,12 +86,24 @@ public class ArticleCreationHandler implements CommandHandler {
                 // Step 4: Request the article's cost
                 try {
                     cost = Double.parseDouble(message.getText());
-                    currentStep = ArticleCreationStep.REQUEST_MAX_USERS;
-                    bot.sendText(chatId, "Por favor ingresa la cantidad máxima de usuarios:");
+                    currentStep = ArticleCreationStep.REQUEST_USERGETS;
+                    bot.sendText(chatId, "Por favor ingresa lo que obtiene cada usuario:");
                 } catch (NumberFormatException e) {
                     bot.sendText(chatId, "Formato de costo incorrecto. Por favor, ingresa un número válido (xxxx.xx)");
                 }
                 break;
+            case REQUEST_USERGETS:
+                errorMessage = ArticleValidatorHelper.validateUserGets(message.getText());
+                if (errorMessage == null){
+                    userGets = message.getText();
+
+                    currentStep = ArticleCreationStep.REQUEST_MAX_USERS;
+                    bot.sendText(chatId, "Por favor ingresa la cantidad máxima de usuarios:");
+                }else {
+                    bot.sendText(chatId, errorMessage + "Ingrese un texto nuevamente...");
+                }
+                break;
+                // TO DO ingresar link
             case REQUEST_MAX_USERS:
                 // Paso 5: Solicitar la cantidad máxima de usuarios del artículo
                 try {
@@ -120,7 +135,7 @@ public class ArticleCreationHandler implements CommandHandler {
                 // TODO pedir lo que recibe cada usuario
                 // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = message.getText();
-                this.userGets = bot.usersLoginMap.get(chatId);
+                this.userId = bot.usersLoginMap.get(chatId);
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String jsonrequest = "{\n" +
                         "  \"name\": \"" + articleName + "\",\n" +
@@ -131,12 +146,11 @@ public class ArticleCreationHandler implements CommandHandler {
                         "  \"usersMin\": " + minNumUsers.toString() + ",\n" +
                         "  \"cost\": " + cost.toString() + ",\n" +
                         "  \"costType\": \"" + costType.toString() + "\",\n" +
-                        "  \"userGets\": \"" + userGets + "\",\n" +
-                        "  \"owner\": \"" + userGets + "\"\n" +
+                        "  \"userGets\": \"" + userGets + "\"\n" +
                         "}";
                 WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
                 System.out.println(jsonrequest);
-                Response response = client.header("user",userGets).type("application/json").post(jsonrequest);
+                Response response = client.header("user",userId).type("application/json").post(jsonrequest);
                 System.out.println(response.getStatus());
                 System.out.println(response.readEntity(String.class));
                 if (response.getStatus() == 201) {

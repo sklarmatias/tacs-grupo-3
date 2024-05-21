@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.tacsbot.handlers.impl.RegisterHandler;
 import org.tacsbot.model.Article;
 import org.tacsbot.handlers.*;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
@@ -52,7 +53,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
 
 
-    public final Map<Long, CommandHandler> commandsHandlerMap = new HashMap<>();
+    public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
     public final Map<Long, String> usersLoginMap = new HashMap<>();
 
 
@@ -158,7 +159,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS): ");
         }
         else{
-            WebClient client = WebClient.create(System.getenv("RESOURCE_URL"));
+            WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
             Response response = client.accept("application/json").get();
             sendText(chatId, "Estos son los articulos disponibles");
             sendText(chatId, parseJson(response.readEntity(String.class)));

@@ -1,6 +1,6 @@
 package org.tacsbot.helper;
 
-public class ArticleValidatorHelper {
+public class RegisterValidatorHelper {
     public static String validateArticleName(String articleName){
         if (articleName.isEmpty() || articleName.isBlank()) {
             return "El nombre del artículo no puede estar vacío.";
@@ -17,21 +17,11 @@ public class ArticleValidatorHelper {
 
         return null;
     }
-    public static String validateUserGets(String text){
-        if (text.isEmpty() || text.isBlank()) {
-            return "El texto no puede estar vacío.";
-        }
-        if (!text.matches("[a-zA-Z0-9ÁáÉéÍíÓóÚúÜü][a-zA-Z0-9ÁáÉéÍíÓóÚúÜü'&()¡¿?!\"° ñ-]*")) {
-            return "contiene caracteres no permitidos";
-        }
-
-        return null;
-    }
     public static String validateCostType(String costType){
         if (costType.toUpperCase().equals("TOTAL") || costType.toUpperCase().equals("PER_USER")){
             return null;
         }
-            return "Tipo de Costo ingresado no valido";
+        return "Tipo de Costo ingresado no valido";
     }
 
     public static String validateMinNumUsers(Integer minNumUsers, Integer MaxNumUsers){

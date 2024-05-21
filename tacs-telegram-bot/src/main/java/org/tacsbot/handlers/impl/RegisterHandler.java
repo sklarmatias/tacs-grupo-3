@@ -1,12 +1,11 @@
-package org.tacsbot;
+package org.tacsbot.handlers.impl;
 
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.handlers.ArticleCreationHandler;
+import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
+import org.tacsbot.helper.RegisterValidatorHelper;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.util.Locale;
 
 public class RegisterHandler implements CommandsHandler {
     private Long chatId;
@@ -21,7 +20,7 @@ public class RegisterHandler implements CommandsHandler {
 
     private RegistrationStep currentStep;
 
-    RegisterHandler(Long chatId) {
+    public RegisterHandler(Long chatId) {
         this.chatId = chatId;
         this.currentStep = RegistrationStep.REQUEST_USER_NAME;
     }
@@ -40,7 +39,7 @@ public class RegisterHandler implements CommandsHandler {
         switch (currentStep) {
 
             case REQUEST_USER_NAME:
-                errorMessage = Validator.validateUserName(message.getText());
+                errorMessage = RegisterValidatorHelper.validateUserName(message.getText());
                 if (errorMessage == null){
                     this.userName = message.getText();
 
@@ -51,7 +50,7 @@ public class RegisterHandler implements CommandsHandler {
                 }
                 break;
             case REQUEST_USER_SURNAME:
-                errorMessage = Validator.validateUserSurname(message.getText());
+                errorMessage = RegisterValidatorHelper.validateUserSurname(message.getText());
                 if (errorMessage == null){
                     this.userSurname = message.getText();
                     this.currentStep = RegistrationStep.REQUEST_EMAIL;
@@ -65,7 +64,7 @@ public class RegisterHandler implements CommandsHandler {
 
                 break;
             case REQUEST_EMAIL:
-                errorMessage = Validator.validateEmail(message.getText());
+                errorMessage = RegisterValidatorHelper.validateEmail(message.getText());
                 if (errorMessage == null){
                     this.userEmail = message.getText().toLowerCase();
                     this.currentStep = RegistrationStep.REQUEST_PASSWORD;
@@ -77,7 +76,7 @@ public class RegisterHandler implements CommandsHandler {
 
                 break;
             case REQUEST_PASSWORD:
-                errorMessage = Validator.validatePassword(message.getText());
+                errorMessage = RegisterValidatorHelper.validatePassword(message.getText());
                 if (errorMessage == null){
                     this.userPassword = message.getText();
                     this.currentStep = RegistrationStep.REQUEST_PASSWORD;

@@ -1,12 +1,13 @@
-package org.tacsbot.handlers;
+package org.tacsbot.handlers.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.MyTelegramBot;
-import org.tacsbot.clases.Article;
+import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.handlers.CommandsHandler;
+import org.tacsbot.model.Article;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class ArticleHandler implements CommandsHandler {
                 }
 
                 if (response.getStatus() == 200) {
-                    System.out.println(articleList);
+                    //System.out.println(articleList);
                     bot.sendText(chatId, "Estos son los articulos vigentes:");
                     bot.sendText(chatId, articleList);
                     currentStep = CurrentStep.CHOOSE_ARTICLE;
