@@ -18,6 +18,8 @@ public class UserController {
 
     private final UserService userService = new UserService();
 
+
+
     @GET
     public List<User.UserDTO> listUsers() {
         return userService.listUsers().stream().map(User::convertToDTO).collect(Collectors.toList());
@@ -39,6 +41,7 @@ public class UserController {
     // 201
     // Location header -> get URL
     @POST
+    @Path("/register")
     @Consumes("application/json")
     public Response saveUser(User user, @Context UriInfo uriInfo) {
         String userId = userService.saveUser(user);

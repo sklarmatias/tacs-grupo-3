@@ -66,7 +66,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         commandActions.put("/menu", this::showMenu);
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
+        commandActions.put("/registrarme", this::register);
     }
+
 
     @Override
     public String getBotUsername() {
@@ -172,6 +174,19 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         sendText(chatId, message);
         System.out.printf("Artículos obtenidos por el usuario %d", chatId);
     }
+    private void register(Long chatId, String commandText) {
+        if(usersLoginMap.containsKey(chatId)){
+            sendText(chatId, "Ya se encuentra logueado, ingrese /logout para desloguearse y poder crear un nuevo usuario");
+        }
+        else{
+            commandsHandlerMap.remove(chatId);
+            RegisterHandler handler = new RegisterHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
+            sendText(chatId, "Ingrese su nombre: ");
+        }
+
+
+    }
     private void login(Long chatId, String commandText){
         if(usersLoginMap.containsKey(chatId)){
             sendText(chatId, "Ya se encuentra logueado");
@@ -195,20 +210,26 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     public String parseJson(String json) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         try {
             List<Article> articles = mapper.readValue(json, new TypeReference<List<Article>>(){});
-            for (Article art : articles){
-                result += art.getString() + "\n";
+            System.out.println("Primer Id: " + articles.getFirst().id);
+
+            for (int i = 0; i < articles.size(); i++) {
+                Article art = articles.get(i);
+                result.append("*INDICE:* ").append(i).append("\n");
+                result.append(art.getDetailedString());
+                if (i < articles.size() - 1) {
+                    result.append("\n\n").append("__________________________").append("\n\n\n");
+                }
             }
         } catch (JsonProcessingException e) {
             System.out.println(e.getMessage());
-
             throw new RuntimeException(e);
         }
 
-        return result;
+        return result.toString();
     }
 
     private void showMenu(Long id, String commandText) {

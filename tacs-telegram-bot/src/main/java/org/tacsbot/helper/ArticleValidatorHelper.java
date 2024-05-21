@@ -33,4 +33,24 @@ public class ArticleValidatorHelper {
         }
         return null;
     }
+
+    public static String validateUserName(String text) {
+        //todo validar nombre de usuario
+        return null;
+    }
+
+    public static String validateUserSurname(String text) {
+        //todo validar apellido de usuario
+        return null;
+    }
+
+    public static String validateEmail(String text) {
+        //todo validar mail
+        return null;
+    }
+
+    public static String validatePassword(String text) {
+        //todo validar password
+        return null;
+    }
 }
