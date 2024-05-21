@@ -98,6 +98,7 @@ public class ArticleController {
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
+		System.out.println("Se recibio una solicitud de suscripcion: IdUsuario: " + userId + "\n IdArticulo: " + articleId);
 		articleService.signUpUser(articleService.getArticle(articleId),userService.getUser(userId).convertToDTO());
 		return Response.ok().build();
 	}
