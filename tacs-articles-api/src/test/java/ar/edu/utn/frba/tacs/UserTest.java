@@ -10,6 +10,8 @@ import org.junit.Test;
 import ar.edu.utn.frba.tacs.model.User;
 import jakarta.ws.rs.core.Response;
 
+import javax.security.auth.login.LoginException;
+
 public class UserTest {
     UserService userService = new UserService();
     @Test
@@ -21,7 +23,7 @@ public class UserTest {
         userService.cleanUser(user.getId());
     }
     @Test
-    public void testLogin(){
+    public void testLogin() throws LoginException {
         User user = createTestUser();
         User userLogin = userService.loginUser(user.getEmail(), user.getPass());
         assertEquals(user.getId(),userLogin.getId());

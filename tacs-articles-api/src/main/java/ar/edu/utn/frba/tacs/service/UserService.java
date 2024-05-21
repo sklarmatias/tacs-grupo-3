@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
+import javax.security.auth.login.LoginException;
 import java.util.List;
 
 public class UserService {
@@ -23,7 +24,13 @@ public class UserService {
         return usersRepository.find(id);
     }
 
-    public User loginUser(String email, String pass) { return usersRepository.find(email, pass); }
+    public User loginUser(String email, String pass) throws LoginException {
+        try{
+            return usersRepository.find(email, pass);
+        } catch(IndexOutOfBoundsException e){
+            throw new LoginException("Wrong username or password.");
+        }
+    }
 
     public List<User> listUsers() {
         return usersRepository.findAll();

@@ -10,6 +10,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
+import javax.security.auth.login.LoginException;
+
 @Path("/users")
 @Produces("application/json")
 public class UserController {
@@ -48,7 +50,7 @@ public class UserController {
     @POST
     @Path("/login")
     @Consumes("application/json")
-    public User.UserDTO loginUser(User user, @Context UriInfo uriInfo) {
+    public User.UserDTO loginUser(User user, @Context UriInfo uriInfo) throws LoginException {
         return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
     }
 

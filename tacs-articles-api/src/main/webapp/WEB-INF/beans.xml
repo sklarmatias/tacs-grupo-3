@@ -18,6 +18,7 @@
             <bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
             <bean class="ar.edu.utn.frba.tacs.mappers.IllegalArgumentExceptionMapper"/>
             <bean class="ar.edu.utn.frba.tacs.mappers.NoSuchElementExceptionMapper"/>
+            <bean class="ar.edu.utn.frba.tacs.mappers.LoginExceptionMapper"/>
         </jaxrs:providers>
     </jaxrs:server>
 </beans>
