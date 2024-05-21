@@ -1,11 +1,14 @@
-package org.tacsbot;
+package org.tacsbot.bot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.clases.Article;
+import org.tacsbot.model.Article;
 import org.tacsbot.handlers.*;
+import org.tacsbot.handlers.impl.ArticleCreationHandler;
+import org.tacsbot.handlers.impl.ArticleHandler;
+import org.tacsbot.handlers.impl.LoginHandler;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -49,12 +52,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
 
 
-    public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
+    public final Map<Long, CommandHandler> commandsHandlerMap = new HashMap<>();
     public final Map<Long, String> usersLoginMap = new HashMap<>();
 
 
 
     public MyTelegramBot() {
+        super(System.getenv("BOT_TOKEN"));
         // Initialization of the commandActions map with the actions associated with the commands
         commandActions.put("/crear_articulo", this::createArticle);
         commandActions.put("/obtener_articulos", this::searchArticles);
@@ -66,12 +70,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "TACS Bot";
-    }
-
-    @Override
-    public String getBotToken() {
-        return System.getenv("BOT_TOKEN");
+        return System.getenv("BOT_USERNAME");
     }
 
     @Override

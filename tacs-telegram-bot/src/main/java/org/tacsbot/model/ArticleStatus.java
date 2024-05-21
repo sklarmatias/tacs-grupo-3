@@ -1,4 +1,4 @@
-package org.tacsbot.clases;
+package org.tacsbot.model;
 
 public enum ArticleStatus {
 

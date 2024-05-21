@@ -1,25 +1,12 @@
 package org.tests;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.Test;
-import org.tacsbot.clases.Article;
-import org.tacsbot.clases.User;
 
-import java.util.Dictionary;
-import java.util.List;
-
-public class TestsGenerales {
+public class GeneralTests {
     ObjectMapper mapper = new ObjectMapper();
     @Test
     public void artCreationTest() throws Exception {

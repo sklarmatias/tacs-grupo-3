@@ -1,11 +1,12 @@
-package org.tacsbot.handlers;
+package org.tacsbot.handlers.impl;
 
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.MyTelegramBot;
+import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.handlers.CommandHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-public class ArticleHandler implements CommandsHandler {
+public class ArticleHandler implements CommandHandler {
     private Long chatId;
     private CurrentStep currentStep;
     private String articleId;

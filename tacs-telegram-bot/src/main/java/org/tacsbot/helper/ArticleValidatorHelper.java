@@ -1,6 +1,6 @@
-package org.tacsbot;
+package org.tacsbot.helper;
 
-public class Validator {
+public class ArticleValidatorHelper {
     public static String validateArticleName(String articleName){
         if (articleName.isEmpty() || articleName.isBlank()) {
             return "El nombre del artículo no puede estar vacío.";

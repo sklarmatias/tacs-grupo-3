@@ -1,17 +1,18 @@
-package org.tacsbot.handlers;
+package org.tacsbot.handlers.impl;
 
 import jakarta.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.tacsbot.MyTelegramBot;
-import org.tacsbot.Validator;
-import org.tacsbot.clases.CostType;
+import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.helper.ArticleValidatorHelper;
+import org.tacsbot.model.CostType;
+import org.tacsbot.handlers.CommandHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ArticleCreationHandler implements CommandsHandler {
+public class ArticleCreationHandler implements CommandHandler {
     private Long chatId;
     private ArticleCreationStep currentStep;
     private String articleName;
@@ -46,7 +47,7 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_NAME:
                 // Step 1: Request article's name
 
-                errorMessage = Validator.validateArticleName(message.getText());
+                errorMessage = ArticleValidatorHelper.validateArticleName(message.getText());
                 if (errorMessage == null){
                     articleName = message.getText();
 
@@ -69,7 +70,7 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_COST_TYPE:
                 // Step 3: Request the article's cost type
                 String tipoCostoString = message.getText().toUpperCase();
-                errorMessage = Validator.validateCostType(tipoCostoString);
+                errorMessage = ArticleValidatorHelper.validateCostType(tipoCostoString);
                 if (errorMessage == null) {
                     costType = CostType.valueOf(tipoCostoString);
                     currentStep = ArticleCreationStep.REQUEST_COST;
@@ -102,7 +103,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                 // Step 6: Request the article's minimum number of users
                 try {
                     minNumUsers = Integer.parseInt(message.getText());
-                    errorMessage = Validator.validateMinNumUsers(minNumUsers, maxNumUsers);
+                    errorMessage = ArticleValidatorHelper.validateMinNumUsers(minNumUsers, maxNumUsers);
                     if ( errorMessage == null) {
                         currentStep = ArticleCreationStep.REQUEST_IMAGE;
 

@@ -1,6 +1,5 @@
-package org.tacsbot.clases;
+package org.tacsbot.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
