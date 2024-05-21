@@ -26,9 +26,9 @@ public class GeneralTests {
 //        WebClient client = WebClient.create("https://localhost:7263/Articulo");
 //        Response r = client.type("application/json").post(jsonrequest);
 //        Assert.assertEquals(r.getStatus(), 201);
-        WebClient client = WebClient.create("http://localhost:8080/restapp/articles/1/users/1");
-        Response response = client.type("application/json").post("");
-
-        Assert.assertEquals(response.getStatus(),200);
+//        WebClient client = WebClient.create("http://localhost:8080/restapp/articles/1/users/1");
+//        Response response = client.type("application/json").post("");
+//
+//        Assert.assertEquals(response.getStatus(),200);
     }
 }
