@@ -55,12 +55,15 @@ public class LoginHandler implements CommandsHandler {
                             throw new RuntimeException(e);
                         }
                         bot.usersLoginMap.put(chatId,user.id);
+                        bot.loggedUsersMap.put(chatId, user);
                         System.out.println(user.id);
                         System.out.println(bot.usersLoginMap.get(chatId));
-                        bot.sendText(chatId,"Se ha logueado el usuario " + user.id.toString());
+                        bot.sendText(chatId,
+                                String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
+                                user.name));
                     }
                     else{
-                        bot.sendText(chatId,"Credenciales incorrectas");
+                        bot.sendText(chatId,"Credenciales incorrectas. Para intentarlo devuelta, ingresá /login.");
                     }
 
                 break;

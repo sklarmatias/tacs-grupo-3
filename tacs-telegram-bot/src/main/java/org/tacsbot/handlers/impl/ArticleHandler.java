@@ -76,10 +76,15 @@ public class ArticleHandler implements CommandsHandler {
 
                 if (response.statusCode() == 200) {
                     //System.out.println(articleList);
-                    bot.sendText(chatId, "Estos son los articulos vigentes:");
-                    bot.sendText(chatId, articleList);
-                    currentStep = CurrentStep.CHOOSE_ARTICLE;
-                    bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+                    if (!articleList.isEmpty()){
+                        bot.sendText(chatId, "Estos son los articulos vigentes:");
+                        bot.sendText(chatId, articleList, true);
+                        currentStep = CurrentStep.CHOOSE_ARTICLE;
+                        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+                    }
+                    else{
+                        bot.sendText(chatId, "Todavía no existen artículos! Podés crear un artículo con el comando /crear_articulo.");
+                    }
                 }
                 else{
                     System.out.println("articulos no obtenidos");

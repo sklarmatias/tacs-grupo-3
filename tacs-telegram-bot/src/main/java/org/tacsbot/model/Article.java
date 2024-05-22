@@ -44,8 +44,15 @@ public class Article {
         return str;
     }
 
+    private String translateStatus(){
+        if (status == ArticleStatus.OPEN)
+            return "ABIERTO";
+        return "CERRADO";
+    }
+
     public String getDetailedString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("*ESTADO:* ").append(translateStatus()).append("\n");
         sb.append("*NOMBRE:* ").append(name).append("\n");
         sb.append("*IMAGEN:* ").append(image).append("\n");
         sb.append("*ENLACE:* ").append(link).append("\n");
