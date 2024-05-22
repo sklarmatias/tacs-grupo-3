@@ -1,26 +1,27 @@
-version: '3'
-
 services:
   mongo:
     image: mongo
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
 
-  java_app_war:
+  api:
     build:
       context: ./tacs-articles-api
     ports:
       - "8080:8080"
     environment:
-      CON_STRING: "mongodb://root:example@mongo:27017/"
-      MONGO_DB: "admin"
+      CON_STRING: mongodb://root:example@mongo:27017/
+      MONGO_DB: admin
 
 
-  java_app_jar:
+  bot:
     build:
       context: ./tacs-telegram-bot
     environment:
-       RESOURCE_URL: "http://java_app_war:8080/"
-       BOT_TOKEN: "6725740198:AAHp4qUGFKv8dAtVj1rCOPqoG-_1c3LcYFA"
-       BOT_USERNAME: "BOT TACS"
+       RESOURCE_URL: http://api:8080/app
+       BOT_TOKEN: 6725740198:AAHp4qUGFKv8dAtVj1rCOPqoG-_1c3LcYFA
+       BOT_USERNAME: BOT TACS
       

@@ -2,8 +2,6 @@ package org.tacsbot.bot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.handlers.impl.RegisterHandler;
 import org.tacsbot.model.Article;
 import org.tacsbot.handlers.*;
@@ -21,6 +19,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +128,15 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
 
         }else if (commandsHandlerMap.containsKey(id)){
-            commandsHandlerMap.get(id).processResponse(msg, this);
+            try {
+                commandsHandlerMap.get(id).processResponse(msg, this);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
         }else{sendText(id,"Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help");}
 
@@ -159,22 +171,24 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS): ");
         }
         else{
-            WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
-            Response response = client.accept("application/json").get();
-            sendText(chatId, "Estos son los articulos disponibles");
-            sendText(chatId, parseJson(response.readEntity(String.class)));
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
+                        .GET()
+                        .build();
+                HttpClient client = HttpClient.newHttpClient();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                sendText(chatId, "Estos son los articulos disponibles");
+                sendText(chatId, parseJson(response.body()));
+            }
+            catch (Exception ex){
+                System.out.println(ex.getMessage());
+
+            }
+
         }
     }
 
-    private void seeSignUpsInArticle(Long chatId, String commandText){
-
-        int articleId = Integer.parseInt(commandText);
-        WebClient client = WebClient.create(String.format("%s/%d",System.getenv("ARTICLE_RESOURCE_URL"), articleId));
-        Response response = client.accept("application/json").get();
-        String message = "Estos son los usuarios anotados al articulo:{response.readEntity(String.class)}";
-        sendText(chatId, message);
-        System.out.printf("Artículos obtenidos por el usuario %d", chatId);
-    }
     private void register(Long chatId, String commandText) {
         if(usersLoginMap.containsKey(chatId)){
             sendText(chatId, "Ya se encuentra logueado, ingrese /logout para desloguearse y poder crear un nuevo usuario");

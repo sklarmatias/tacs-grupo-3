@@ -1,9 +1,6 @@
 package org.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class GeneralTests {

@@ -1,11 +1,16 @@
 package org.tacsbot.handlers.impl;
 
-import jakarta.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.RegisterValidatorHelper;
 import org.telegram.telegrambots.meta.api.objects.Message;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class RegisterHandler implements CommandsHandler {
     private Long chatId;
@@ -34,7 +39,7 @@ public class RegisterHandler implements CommandsHandler {
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) {
+    public void processResponse(Message message, MyTelegramBot bot) throws URISyntaxException, IOException, InterruptedException {
         String errorMessage = null;
         switch (currentStep) {
 
@@ -87,15 +92,22 @@ public class RegisterHandler implements CommandsHandler {
                             "  \"email\": \"" + this.userEmail + "\",\n" +
                             "  \"pass\": \"" + this.userPassword + "\"\n" +
                             "}";
-                    WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/users/register");
                     System.out.println(jsonrequest);
-                    Response response = client.type("application/json").post(jsonrequest);
-                    System.out.println(response.getStatus());
-                    System.out.println(response.readEntity(String.class));
-                    if (response.getStatus() == 201) {
-                        bot.sendText(chatId, "Usario creado correctamente");
+                        HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest request = HttpRequest.newBuilder()
+                                .uri(new URI(System.getenv("RESOURCE_URL") + "/users/register"))
+                                .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
+                                .header("Content-Type","application/json")
+                                .build();
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    System.out.println(response.statusCode());
+                        System.out.println(response.body());
+                        if (response.statusCode() == 201) {
+                            bot.sendText(chatId, "Usario creado correctamente");
+                        }
                     }
-                }else {
+
+                else {
                     bot.sendText(chatId, "Error al registrar usuario, intente nuevamente mas tarde.");
                 }
 

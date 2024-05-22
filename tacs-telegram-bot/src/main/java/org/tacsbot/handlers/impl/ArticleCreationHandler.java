@@ -1,7 +1,5 @@
 package org.tacsbot.handlers.impl;
 
-import jakarta.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.ArticleValidatorHelper;
@@ -9,6 +7,12 @@ import org.tacsbot.model.CostType;
 import org.tacsbot.handlers.CommandsHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +48,7 @@ public class ArticleCreationHandler implements CommandsHandler {
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) {
+    public void processResponse(Message message, MyTelegramBot bot) throws IOException, InterruptedException, URISyntaxException {
         String errorMessage = null;
         switch (currentStep) {
             case REQUEST_NAME:
@@ -148,12 +152,18 @@ public class ArticleCreationHandler implements CommandsHandler {
                         "  \"costType\": \"" + costType.toString() + "\",\n" +
                         "  \"userGets\": \"" + userGets + "\"\n" +
                         "}";
-                WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/articles");
                 System.out.println(jsonrequest);
-                Response response = client.header("user",userId).type("application/json").post(jsonrequest);
-                System.out.println(response.getStatus());
-                System.out.println(response.readEntity(String.class));
-                if (response.getStatus() == 201) {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                            .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
+                            .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
+                            .header("Content-Type","application/json")
+                            .header("user",userId)
+                            .build();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                System.out.println(response.statusCode());
+                System.out.println(response.body());
+                if (response.statusCode() == 201) {
                     System.out.println("articulo creado");
                     bot.sendText(chatId, "articulo creado");
                 }

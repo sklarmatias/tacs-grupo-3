@@ -2,12 +2,17 @@ package org.tacsbot.handlers.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.core.Response;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.tacsbot.bot.MyTelegramBot;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class LoginHandler implements CommandsHandler {
     private Long chatId;
@@ -16,7 +21,7 @@ public class LoginHandler implements CommandsHandler {
     private String pass;
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) {
+    public void processResponse(Message message, MyTelegramBot bot) throws IOException, InterruptedException, URISyntaxException {
         switch (currentStep) {
             case REQUEST_EMAIL:
                 // Step 1: Request the article's name
@@ -30,28 +35,33 @@ public class LoginHandler implements CommandsHandler {
                         "  \"email\": \"" + email + "\",\n" +
                         "  \"pass\": \"" + pass + "\"\n" +
                         "}";
-                WebClient client = WebClient.create(System.getenv("RESOURCE_URL") + "/users/login");
                 System.out.println(jsonrequest);
-                Response response = client.type("application/json").post(jsonrequest);
-                System.out.println(response.getStatus());
-                if(response.getStatus() == 200){
-                    String userString = response.readEntity(String.class);
-                    System.out.println(userString);
-                    ObjectMapper mapper = new ObjectMapper();
-                    User user = null;
-                    try {
-                        user = mapper.readValue(userString, User.class);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                            .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
+                            .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
+                            .header("Content-Type","application/json")
+                            .build();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                System.out.println(response.statusCode());
+                    if(response.statusCode() == 200){
+                        String userString = response.body();
+                        System.out.println(userString);
+                        ObjectMapper mapper = new ObjectMapper();
+                        User user = null;
+                        try {
+                            user = mapper.readValue(userString, User.class);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                        bot.usersLoginMap.put(chatId,user.id);
+                        System.out.println(user.id);
+                        System.out.println(bot.usersLoginMap.get(chatId));
+                        bot.sendText(chatId,"Se ha logueado el usuario " + user.id.toString());
                     }
-                    bot.usersLoginMap.put(chatId,user.id);
-                    System.out.println(user.id);
-                    System.out.println(bot.usersLoginMap.get(chatId));
-                    bot.sendText(chatId,"Se ha logueado el usuario " + user.id.toString());
-                }
-                else{
-                    bot.sendText(chatId,"Credenciales incorrectas");
-                }
+                    else{
+                        bot.sendText(chatId,"Credenciales incorrectas");
+                    }
 
                 break;
         }
