@@ -183,8 +183,16 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                         .build();
                 HttpClient client = HttpClient.newHttpClient();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                sendText(chatId, "Estos son los artículos:");
-                sendText(chatId, parseJson(response.body()), true);
+                String articles = response.body();
+                if (articles.isEmpty()) {
+                    sendText(chatId, "Todavía no existen artículos!" +
+                            " Podés crear un artículo con el comando" +
+                            " /crear_articulo luego de iniciar sesion (/login)");
+
+                }else {
+                    sendText(chatId, "Estos son los artículos:");
+                    sendText(chatId, parseJson(response.body()), true);
+                }
             }
             catch (Exception ex){
                 System.out.println(ex.getMessage());

@@ -149,9 +149,14 @@ public class ArticleHandler implements CommandsHandler {
                                 .GET()
                                 .build();
                         response = client.send(request,HttpResponse.BodyHandlers.ofString());
-                        String responseMessage = "Estos son los usuarios anotados al articulo:" + response.body();
-                        bot.sendText(chatId, responseMessage);
-                        System.out.printf("Artículos obtenidos por el usuario %d", chatId);
+                        if (response.body().isEmpty()) {
+                            bot.sendText(chatId, "Aun no hay usuarios subscriptos a este articulo");
+                        }else{
+                            String responseMessage = "Estos son los usuarios anotados al articulo:" + response.body();
+                            bot.sendText(chatId, responseMessage);
+                            System.out.printf("Artículos obtenidos por el usuario %d", chatId);
+                        }
+
                         break;
                 }
         }

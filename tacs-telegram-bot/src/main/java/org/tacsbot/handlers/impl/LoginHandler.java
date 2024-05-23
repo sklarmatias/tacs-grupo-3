@@ -25,7 +25,8 @@ public class LoginHandler implements CommandsHandler {
         switch (currentStep) {
             case REQUEST_EMAIL:
                 // Step 1: Request the article's name
-                email = message.getText();
+                email = message.getText().toLowerCase();
+                System.out.println(email);
                 currentStep = LoginStep.REQUEST_PASSWORD;
                 bot.sendText(chatId, "Por favor ingresa la clave:");
                 break;
