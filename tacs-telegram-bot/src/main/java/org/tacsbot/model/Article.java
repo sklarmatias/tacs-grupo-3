@@ -1,48 +1,58 @@
 package org.tacsbot.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
+import com.fasterxml.jackson.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Article {
 
+    private String id;
 
-    public String id;
+    private String name;
 
-    public String name;
+    private String image;
 
-    public String image;
+    private String link;
 
-    public String link;
+    @JsonProperty("user_gets")
+    private String userGets;
 
-    public String userGets;
-
-    public ArticleStatus status;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    public Date deadline;
-
-    public String owner;
+    private ArticleStatus status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    public Date creationDate;
+    private Date deadline;
 
-    public List<Annotation> annotations;
+    private String owner;
 
-    public Integer annotationsCounter;
+    @JsonProperty("creation_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date creationDate;
 
-    public Double cost;
+    private List<Annotation> annotations;
 
-    public CostType costType;
+    @JsonProperty("annotations_counter")
+    private Integer annotationsCounter;
 
-    public Integer usersMin;
+    private Double cost;
 
-    public Integer usersMax;
-    public String getString(){
-        String str = id.toString() + "\t" + name + "\t" + image + "\t" + link + "\t" + userGets + "\t" + cost;
-        return str;
-    }
+    @JsonProperty("cost_type")
+    private CostType costType;
+
+    @JsonProperty("users_min")
+    private Integer usersMin;
+
+    @JsonProperty("users_max")
+    private Integer usersMax;
 
     private String translateStatus(){
         if (status == ArticleStatus.OPEN)
@@ -50,6 +60,7 @@ public class Article {
         return "CERRADO";
     }
 
+    @JsonIgnore
     public String getDetailedString() {
         StringBuilder sb = new StringBuilder();
         sb.append("*ESTADO:* ").append(translateStatus()).append("\n");
@@ -66,4 +77,5 @@ public class Article {
         return sb.toString();
 
     }
+
 }

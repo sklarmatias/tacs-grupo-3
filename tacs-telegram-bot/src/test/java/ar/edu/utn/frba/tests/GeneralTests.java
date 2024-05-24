@@ -1,4 +1,4 @@
-package org.tests;
+package ar.edu.utn.frba.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;

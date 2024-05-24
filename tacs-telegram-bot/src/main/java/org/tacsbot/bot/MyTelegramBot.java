@@ -237,7 +237,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         ObjectMapper mapper = new ObjectMapper();
         try {
             List<Article> articles = mapper.readValue(json, new TypeReference<List<Article>>(){});
-            System.out.println("Primer Id: " + articles.getFirst().id);
+            System.out.println("Primer Id: " + articles.getFirst().getId());
 
             for (int i = 0; i < articles.size(); i++) {
                 Article art = articles.get(i);

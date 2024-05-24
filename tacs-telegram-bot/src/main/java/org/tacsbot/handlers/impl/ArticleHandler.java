@@ -64,7 +64,7 @@ public class ArticleHandler implements CommandsHandler {
                     System.out.println("Intento mapear json ListArticle");
                     this.articles = mapper.readValue(responseJson, new TypeReference<List<Article>>(){});
                     if (!articles.isEmpty()) {
-                        System.out.println("Id del primer articulo: " + articles.get(0).id);
+                        System.out.println("Id del primer articulo: " + articles.get(0).getId());
                     } else {
                         System.out.println("La lista de artículos está vacía.");
                     }
@@ -98,7 +98,7 @@ public class ArticleHandler implements CommandsHandler {
             case CHOOSE_ARTICLE:
 
                 selectedArticleIndex = Integer.valueOf(message.getText());
-                articleId = articles.get(selectedArticleIndex).id;
+                articleId = articles.get(selectedArticleIndex).getId();
 
                 bot.sendText(chatId, "Elegir la accion. " + action);
                 currentStep = CurrentStep.CHOOSE_ACTION;
