@@ -1,18 +1,16 @@
 package ar.edu.utn.frba.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.User;
 import org.tacsbot.service.parser.user.impl.UserJSONParser;
-
 import java.io.IOException;
 
 public class UserJSONParserTest {
 
-    private String testJSON = """
+    private final String testJSON = """
                 {
                   "name" : "thiago",
                   "surname" : "cabrera",
@@ -20,7 +18,7 @@ public class UserJSONParserTest {
                   "pass" : "tacs2024"
                 }""";
 
-    private User user = new User(
+    private final User user = new User(
             null,
             "thiago",
             "cabrera",
@@ -43,7 +41,7 @@ public class UserJSONParserTest {
     }
 
     private void basicUserToJSON(User user, String json) throws IOException {
-        String userJson = new UserJSONParser().parsUserToJSON(user);
+        String userJson = new UserJSONParser().parseUserToJSON(user);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -76,6 +74,20 @@ public class UserJSONParserTest {
                   "pass" : "tacs2024"
                 }""";
         basicUserToJSON(userNonNullId, testJSONNonNullId);
+    }
+
+    @Test
+    public void invalidJSONToUserTest(){
+        String invalidTestJSON = """
+                {
+                  "Name" : "thiago",
+                  "Surname" : "cabrera",
+                  "Email" : "thiago@tacs.com",
+                  "Pass" : "tacs2024"
+                }""";
+        Assert.assertThrows(IllegalArgumentException.class,  () ->{
+            new UserJSONParser().parseJSONToUser(invalidTestJSON);
+        });
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.TimeZone;
 
 public class UserJSONParser implements UserParser {
     @Override
-    public String parsUserToJSON(User user) throws IOException {
+    public String parseUserToJSON(User user) throws IOException {
         ObjectWriter objectMapper = new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))

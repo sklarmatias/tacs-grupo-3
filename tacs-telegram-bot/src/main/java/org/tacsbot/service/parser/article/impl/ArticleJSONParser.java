@@ -6,14 +6,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.tacsbot.model.Article;
+import org.tacsbot.service.parser.article.ArticleParser;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
-public class ArticleJSONParser {
+public class ArticleJSONParser implements ArticleParser {
 
-    public static String parseArticleToJSON(Article article) throws IOException {
+    public String parseArticleToJSON(Article article) throws IOException {
         ObjectWriter objectMapper = new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
@@ -27,7 +29,7 @@ public class ArticleJSONParser {
         }
     }
 
-    public static Article parseJSONToArticle(String json){
+    public Article parseJSONToArticle(String json){
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         df.setTimeZone(TimeZone.getDefault());
         ObjectMapper mapper = new ObjectMapper()
@@ -43,7 +45,7 @@ public class ArticleJSONParser {
         }
     }
 
-    public static List<Article> parseJSONToArticleList(String json){
+    public List<Article> parseJSONToArticleList(String json){
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(json, new TypeReference<>() {

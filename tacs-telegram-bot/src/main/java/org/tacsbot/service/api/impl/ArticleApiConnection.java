@@ -4,7 +4,6 @@ import org.apache.http.HttpException;
 import org.tacsbot.model.Article;
 import org.tacsbot.service.api.ArticleApi;
 import org.tacsbot.service.parser.article.impl.ArticleJSONParser;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,11 +16,11 @@ public class ArticleApiConnection implements ArticleApi {
 
     @Override
     public String createArticle(Article article) throws IllegalArgumentException, HttpException, IOException {
-        String JSONArticle = ArticleJSONParser.parseArticleToJSON(article);
+        String JSONArticle = new ArticleJSONParser().parseArticleToJSON(article);
         System.out.println(JSONArticle);
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://localhost:8080/tacsWSREST/articles"))
+                    .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
                     .POST(HttpRequest.BodyPublishers.ofString(JSONArticle))
                     .header("Content-Type", "application/json")
                     .header("user", article.getOwner())
@@ -41,11 +40,9 @@ public class ArticleApiConnection implements ArticleApi {
             System.out.println("URISyntaxException sending the following article:\n" + JSONArticle);
             throw new IllegalArgumentException(e);
         } catch (IOException e) {
-            System.out.println("IOException sending the following article:\n" + JSONArticle);
-            throw new IllegalArgumentException();
+            throw new HttpException("IOException sending the following article:\n" + JSONArticle);
         } catch (InterruptedException e) {
-            System.out.println("InterruptedException sending the following article:\n" + JSONArticle);
-            throw new IllegalArgumentException();
+            throw new HttpException("InterruptedException sending the following article:\n" + JSONArticle);
         }
     }
 
@@ -55,7 +52,7 @@ public class ArticleApiConnection implements ArticleApi {
     }
 
     @Override
-    public List<Article> getArticlesOf(String ownerId) throws IllegalArgumentException, HttpException {
+    public List<Article> getArticlesOf(String ownerId) throws IllegalArgumentException {
         try (HttpClient client = HttpClient.newHttpClient()){
             HttpRequest request;
             if (ownerId == null){
@@ -72,7 +69,7 @@ public class ArticleApiConnection implements ArticleApi {
             }
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200)
-                return ArticleJSONParser.parseJSONToArticleList(response.body());
+                return new ArticleJSONParser().parseJSONToArticleList(response.body());
             else{
                 System.out.printf("Status code %d requesting all articles of %s.\nResponse body:\n%s\n",
                         response.statusCode(),

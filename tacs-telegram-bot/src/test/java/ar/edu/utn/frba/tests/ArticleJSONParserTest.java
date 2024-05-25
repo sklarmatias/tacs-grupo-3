@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ArticleJSONParserTest {
 
-    private String testJSON = """
+    private final String testJSON = """
                 {
                   "name" : "name",
                   "image" : "image.jpg",
@@ -27,7 +27,47 @@ public class ArticleJSONParserTest {
                   "users_max" : 4
                 }""";
 
-    private String testJSONList = """
+    private final Article article1 = new Article(
+            null,
+            "name",
+            "image.jpg",
+            "link.com",
+            "user gets!",
+            null,
+            new Date(1717038000000L), //2024-05-30 00:00:00
+            "qwerty",
+            null,
+            null,
+            null,
+            200.5,
+            CostType.TOTAL,
+            2,
+            4
+    );
+
+    private final Article article2 = new Article(
+            null,
+            "name1",
+            "image1.jpg",
+            "link1.com",
+            "user gets1!",
+            null,
+            new Date(1727665200L), //2024-09-30 00:00:00
+            "qwerty1",
+            null,
+            null,
+            null,
+            2001.5,
+            CostType.TOTAL,
+            1,
+            2
+    );
+
+    @Test
+    public void JSONToArticlesTest(){
+
+        // Assert
+        String testJSONList = """
                 [{
                   "name" : "name",
                   "image" : "image.jpg",
@@ -52,48 +92,7 @@ public class ArticleJSONParserTest {
                   "users_min" : 1,
                   "users_max" : 2
                 }]""";
-
-    private Article article1 = new Article(
-            null,
-            "name",
-            "image.jpg",
-            "link.com",
-            "user gets!",
-            null,
-            new Date(1717038000000L), //2024-05-30 00:00:00
-            "qwerty",
-            null,
-            null,
-            null,
-            200.5,
-            CostType.TOTAL,
-            2,
-            4
-    );
-
-    private Article article2 = new Article(
-            null,
-            "name1",
-            "image1.jpg",
-            "link1.com",
-            "user gets1!",
-            null,
-            new Date(1727665200L), //2024-09-30 00:00:00
-            "qwerty1",
-            null,
-            null,
-            null,
-            2001.5,
-            CostType.TOTAL,
-            1,
-            2
-    );
-
-    @Test
-    public void JSONToArticlesTest(){
-
-        // Assert
-        List<Article> convertedArticles = ArticleJSONParser.parseJSONToArticleList(testJSONList);
+        List<Article> convertedArticles = new ArticleJSONParser().parseJSONToArticleList(testJSONList);
         assertArticlesEqual(article1, convertedArticles.get(0));
         assertArticlesEqual(article2, convertedArticles.get(1));
     }
@@ -113,14 +112,14 @@ public class ArticleJSONParserTest {
 
     @Test
     public void JSONToArticleTest(){
-        Article convertedArticle = ArticleJSONParser.parseJSONToArticle(testJSON);
+        Article convertedArticle = new ArticleJSONParser().parseJSONToArticle(testJSON);
         assertArticlesEqual(article1, convertedArticle);
     }
 
     @Test
     public void articleToJSONTotalTest() throws IOException {
 
-        String articleJson = ArticleJSONParser.parseArticleToJSON(article1);
+        String articleJson = new ArticleJSONParser().parseArticleToJSON(article1);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -134,7 +133,7 @@ public class ArticleJSONParserTest {
     @Test
     public void articleToJSONPerUserTest() throws IOException {
 
-        String articleJson = ArticleJSONParser.parseArticleToJSON(article1);
+        String articleJson = new ArticleJSONParser().parseArticleToJSON(article1);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -143,6 +142,60 @@ public class ArticleJSONParserTest {
 
         Assert.assertEquals(tree2, tree1);
 
+    }
+
+    @Test
+    public void InvalidJSONToArticleTest(){
+        String invalidTestJSON = """
+                {
+                  "name" : "name",
+                  "image" : "image.jpg",
+                  "link" : "link.com",
+                  "deadline" : "2024-05-30",
+                  "owner" : "qwerty",
+                  "cost" : 200.5,
+                  "userGets" : "user gets!",
+                  "costType" : "TOTAL",
+                  "usersMin" : 2,
+                  "usersMax" : 4
+                }""";
+
+        Assert.assertThrows(IllegalArgumentException.class,  () -> {
+            new ArticleJSONParser().parseJSONToArticle(invalidTestJSON);
+        });
+    }
+
+    @Test
+    public void InvalidJSONToArticleListTest(){
+        String invalidTestJSONList = """
+                [{
+                  "name" : "name",
+                  "image" : "image.jpg",
+                  "link" : "link.com",
+                  "deadline" : "2024-05-30",
+                  "owner" : "qwerty",
+                  "cost" : 200.5,
+                  "userGets" : "user gets!",
+                  "costType" : "TOTAL",
+                  "usersMin" : 2,
+                  "usersMax" : 4
+                },
+                {
+                  "name" : "name1",
+                  "image" : "image1.jpg",
+                  "link" : "link1.com",
+                  "deadline" : "2024-09-30",
+                  "owner" : "qwerty1",
+                  "cost" : 2001.5,
+                  "user_gets" : "user gets1!",
+                  "cost_type" : "TOTAL",
+                  "users_min" : 1,
+                  "users_max" : 2
+                }]""";
+
+        Assert.assertThrows(IllegalArgumentException.class,  () -> {
+            new ArticleJSONParser().parseJSONToArticleList(invalidTestJSONList);
+        });
     }
 
 }
