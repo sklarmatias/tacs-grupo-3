@@ -1,22 +1,30 @@
 package org.tacsbot.model;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class User {
 
-    public String id;
+    private String id;
 
-    public String name;
+    private String name;
 
-    public String surname;
+    private String surname;
 
-    public String email;
+    private String email;
 
-    public String pass;
+    private String pass;
 
-    private List<Article> postedArticles;
-
-    private List<Annotation> annotations;
+    @Override
+    public String toString(){
+        return String.format("id:%s;name:%s;surname:%s;email:%s;pass:%s;\n",
+                id, name, surname, email, pass);
+    }
 
 }

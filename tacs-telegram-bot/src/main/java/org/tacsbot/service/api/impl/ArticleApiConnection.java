@@ -1,8 +1,10 @@
-package org.tacsbot.service.impl;
+package org.tacsbot.service.api.impl;
 
 import org.apache.http.HttpException;
 import org.tacsbot.model.Article;
-import org.tacsbot.service.ArticleApi;
+import org.tacsbot.service.api.ArticleApi;
+import org.tacsbot.service.parser.article.impl.ArticleJSONParser;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,7 +21,7 @@ public class ArticleApiConnection implements ArticleApi {
         System.out.println(JSONArticle);
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
+                    .uri(new URI("http://localhost:8080/tacsWSREST/articles"))
                     .POST(HttpRequest.BodyPublishers.ofString(JSONArticle))
                     .header("Content-Type", "application/json")
                     .header("user", article.getOwner())
@@ -58,12 +60,12 @@ public class ArticleApiConnection implements ArticleApi {
             HttpRequest request;
             if (ownerId == null){
                 request = HttpRequest.newBuilder()
-                        .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
+                        .uri(new URI(System.getenv("http://localhost:8080/tacsWSREST") + "/articles"))
                         .GET()
                         .build();
             } else{
                 request = HttpRequest.newBuilder()
-                        .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
+                        .uri(new URI(System.getenv("http://localhost:8080/tacsWSREST") + "/articles"))
                         .header("user",ownerId)
                         .GET()
                         .build();

@@ -54,13 +54,13 @@ public class LoginHandler implements CommandsHandler {
                         } catch (JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }
-                        bot.usersLoginMap.put(chatId,user.id);
+                        bot.usersLoginMap.put(chatId,user.getId());
                         bot.loggedUsersMap.put(chatId, user);
-                        System.out.println(user.id);
+                        System.out.println(user.getId());
                         System.out.println(bot.usersLoginMap.get(chatId));
                         bot.sendText(chatId,
                                 String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
-                                user.name));
+                                user.getName()));
                     }
                     else{
                         bot.sendText(chatId,"Credenciales incorrectas. Para intentarlo devuelta, ingresá /login.");

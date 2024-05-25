@@ -1,4 +1,4 @@
-package org.tacsbot.service.impl;
+package org.tacsbot.service.parser.article.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -1,4 +1,4 @@
-package org.tacsbot.service;
+package org.tacsbot.service.api;
 
 import org.apache.http.HttpException;
 import org.tacsbot.model.Article;

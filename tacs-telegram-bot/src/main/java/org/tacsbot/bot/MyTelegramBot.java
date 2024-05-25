@@ -198,7 +198,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         if(usersLoginMap.containsKey(chatId)){
             User u = loggedUsersMap.get(chatId);
             sendText(chatId, String.format("Hola %s! Ya iniciaste sesión, ingresá /logout para cerrar sesión y poder crear un nuevo usuario.",
-                    u.name));
+                    u.getName()));
         }
         else{
             commandsHandlerMap.remove(chatId);

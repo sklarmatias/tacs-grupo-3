@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
-import org.tacsbot.service.impl.ArticleJSONParser;
+import org.tacsbot.service.parser.article.impl.ArticleJSONParser;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -90,7 +90,7 @@ public class ArticleJSONParserTest {
     );
 
     @Test
-    public void JSONToArticles(){
+    public void JSONToArticlesTest(){
 
         // Assert
         List<Article> convertedArticles = ArticleJSONParser.parseJSONToArticleList(testJSONList);
@@ -112,7 +112,7 @@ public class ArticleJSONParserTest {
     }
 
     @Test
-    public void JSONToArticle(){
+    public void JSONToArticleTest(){
         Article convertedArticle = ArticleJSONParser.parseJSONToArticle(testJSON);
         assertArticlesEqual(article1, convertedArticle);
     }
