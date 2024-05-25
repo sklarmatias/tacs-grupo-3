@@ -1,4 +1,4 @@
-package org.tacsbot.service.parser.user;
+package org.tacsbot.parser.user;
 
 import org.tacsbot.model.User;
 import java.io.IOException;

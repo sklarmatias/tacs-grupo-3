@@ -1,11 +1,12 @@
-package org.tacsbot.service.parser.user.impl;
+package org.tacsbot.parser.user.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.tacsbot.model.User;
-import org.tacsbot.service.parser.user.UserParser;
+import org.tacsbot.parser.user.UserParser;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;

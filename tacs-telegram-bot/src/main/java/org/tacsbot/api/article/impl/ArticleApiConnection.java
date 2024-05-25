@@ -1,9 +1,9 @@
-package org.tacsbot.service.api.impl;
+package org.tacsbot.api.article.impl;
 
 import org.apache.http.HttpException;
+import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.model.Article;
-import org.tacsbot.service.api.ArticleApi;
-import org.tacsbot.service.parser.article.impl.ArticleJSONParser;
+import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

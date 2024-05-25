@@ -1,4 +1,4 @@
-package org.tacsbot.service.parser.article;
+package org.tacsbot.parser.article;
 
 import org.tacsbot.model.Article;
 import java.io.IOException;

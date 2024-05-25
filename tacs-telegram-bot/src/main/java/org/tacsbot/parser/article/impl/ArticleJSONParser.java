@@ -1,4 +1,4 @@
-package org.tacsbot.service.parser.article.impl;
+package org.tacsbot.parser.article.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.tacsbot.model.Article;
-import org.tacsbot.service.parser.article.ArticleParser;
+import org.tacsbot.parser.article.ArticleParser;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

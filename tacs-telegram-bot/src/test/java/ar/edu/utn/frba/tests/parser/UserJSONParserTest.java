@@ -1,11 +1,11 @@
-package ar.edu.utn.frba.tests;
+package ar.edu.utn.frba.tests.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.User;
-import org.tacsbot.service.parser.user.impl.UserJSONParser;
+import org.tacsbot.parser.user.impl.UserJSONParser;
 import java.io.IOException;
 
 public class UserJSONParserTest {

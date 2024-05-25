@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tests;
+package ar.edu.utn.frba.tests.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
-import org.tacsbot.service.parser.article.impl.ArticleJSONParser;
+import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
