@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tests.parser;
 
+import ar.edu.utn.frba.tests.helpers.ArticleTestHelper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -93,27 +94,14 @@ public class ArticleJSONParserTest {
                   "users_max" : 2
                 }]""";
         List<Article> convertedArticles = new ArticleJSONParser().parseJSONToArticleList(testJSONList);
-        assertArticlesEqual(article1, convertedArticles.get(0));
-        assertArticlesEqual(article2, convertedArticles.get(1));
-    }
-
-    private void assertArticlesEqual(Article article1, Article article2){
-        Assert.assertEquals(article1.getId(), article2.getId());
-        Assert.assertEquals(article1.getName(), article2.getName());
-        Assert.assertEquals(article1.getImage(), article2.getImage());
-        Assert.assertEquals(article1.getLink(), article2.getLink());
-        Assert.assertEquals(article1.getCost(), article2.getCost());
-        Assert.assertEquals(article1.getCostType(), article2.getCostType());
-        Assert.assertEquals(article1.getAnnotations(), article2.getAnnotations());
-        Assert.assertEquals(article1.getAnnotationsCounter(), article2.getAnnotationsCounter());
-        Assert.assertEquals(article1.getUserGets(), article2.getUserGets());
-        Assert.assertEquals(article1.getStatus(), article2.getStatus());
+        ArticleTestHelper.assertArticlesEqual(article1, convertedArticles.get(0));
+        ArticleTestHelper.assertArticlesEqual(article2, convertedArticles.get(1));
     }
 
     @Test
     public void JSONToArticleTest(){
         Article convertedArticle = new ArticleJSONParser().parseJSONToArticle(testJSON);
-        assertArticlesEqual(article1, convertedArticle);
+        ArticleTestHelper.assertArticlesEqual(article1, convertedArticle);
     }
 
     @Test

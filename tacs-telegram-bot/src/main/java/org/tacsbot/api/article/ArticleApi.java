@@ -14,7 +14,7 @@ public interface ArticleApi {
 
     List<Article> getArticlesOf(String ownerId) throws IllegalArgumentException, HttpException;
 
-    void suscribeToArticle(Article article, String userId);
+    boolean suscribeToArticle(Article article, String userId) throws IllegalArgumentException, HttpException;
 
     void closeArticle(Article article);
 
