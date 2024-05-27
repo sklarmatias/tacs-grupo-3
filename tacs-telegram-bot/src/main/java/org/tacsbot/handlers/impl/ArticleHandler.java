@@ -90,8 +90,12 @@ public class ArticleHandler implements CommandsHandler {
     private void getSubscriptions(String articleId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
-        List<Annotation> subscriptions = articleApiConnector.viewArticleSubscriptions(article);
-        bot.sendText(chatId, createSubscriptionsText(subscriptions));
+        try{
+            List<Annotation> subscriptions = articleApiConnector.viewArticleSubscriptions(article);
+            bot.sendText(chatId, createSubscriptionsText(subscriptions));
+        } catch (IllegalArgumentException e){
+            bot.sendText(chatId, "Ha ocurrido un error. Intentalo devuelta mas tarde!");
+        }
     }
 
     @Override
@@ -146,7 +150,7 @@ public class ArticleHandler implements CommandsHandler {
                     break;
                 case "VER_SUSCRIPTOS":
                     user = bot.usersLoginMap.get(chatId);
-                    getSubscriptions(user, bot);
+                    getSubscriptions(articleId, bot);
                     break;
             }
         }
