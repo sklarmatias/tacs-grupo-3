@@ -159,7 +159,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                             null,
                             articleName,
                             image,
-                            null,
+                            link,
                             userGets,
                             null,
                             deadLine,
