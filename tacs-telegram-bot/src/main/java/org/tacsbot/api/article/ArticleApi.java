@@ -1,6 +1,7 @@
 package org.tacsbot.api.article;
 
 import org.apache.http.HttpException;
+import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 
 import java.io.IOException;
@@ -16,8 +17,8 @@ public interface ArticleApi {
 
     boolean suscribeToArticle(Article article, String userId) throws IllegalArgumentException, HttpException;
 
-    void closeArticle(Article article);
+    Article closeArticle(Article article, String userId) throws HttpException, IllegalArgumentException;
 
-    void viewArticleSubscriptions(Article article);
+    List<Annotation> viewArticleSubscriptions(Article article) throws HttpException;
 
 }

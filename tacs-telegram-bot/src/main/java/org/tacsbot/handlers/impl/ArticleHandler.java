@@ -1,173 +1,148 @@
 package org.tacsbot.handlers.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
+import org.apache.http.HttpException;
+import org.tacsbot.api.article.ArticleApi;
+import org.tacsbot.api.article.impl.ArticleApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
+import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
+@Setter
 public class ArticleHandler implements CommandsHandler {
-    private Long chatId;
+    private final Long chatId;
     private CurrentStep currentStep;
     private String articleId;
     private ArticleType articleType;
     private Integer selectedArticleIndex;
-    private List<Article> articles = new ArrayList<>();
+    private List<Article> articleList;
     private String action;
     private String user;
+
+    private ArticleApi articleApiConnector;
+
+    public ArticleHandler(Long userId) {
+        this.chatId = userId;
+        this.currentStep = CurrentStep.CHOOSE_ARTICLE_TYPE;
+        articleApiConnector = new ArticleApiConnection();
+    }
+
+    private String parseArticlesToMessage(List<Article> articles) {
+        String articleString = "";
+        int indice = 1;
+        for (Article article : articles) {
+            articleString += String.format("*INDICE:* %d\n%s", indice, article.getDetailedString());
+            indice += 1;
+        }
+        return articleString;
+    }
+
+    private void subscribe(String articleId, String userId, MyTelegramBot bot) throws HttpException {
+        Article article = new Article();
+        article.setId(articleId);
+        if (articleApiConnector.suscribeToArticle(article, userId))
+            bot.sendText(chatId, "Te subscribiste al artículo correctamente!");
+        else bot.sendText(chatId, "No pudiste subscribirte al artículo :(.");
+    }
+
+    private void closeArticle(String articleId, String userId, MyTelegramBot bot) throws HttpException {
+        Article article = new Article();
+        article.setId(articleId);
+        Article closedArticle = articleApiConnector.closeArticle(article, userId);
+        bot.sendText(chatId, "Artículo cerrado!\n");
+        bot.sendText(chatId, closedArticle.getDetailedString());
+    }
+
+    private void getArticles(List<Article> articles, MyTelegramBot bot) {
+        this.articleList = articles;
+        if (articles.isEmpty())
+            bot.sendText(chatId, "Todavia no hay articulos.");
+        else {
+            bot.sendText(chatId, "Estos son los artículos disponibles:");
+            bot.sendText(chatId, parseArticlesToMessage(articles));
+        }
+        currentStep = CurrentStep.CHOOSE_ARTICLE;
+        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+    }
+
+    private void getAllArticles(MyTelegramBot bot) throws HttpException {
+        List<Article> articles = articleApiConnector.getAllArticles();
+        getArticles(articles, bot);
+    }
+
+    private void getArticlesOf(String userId, MyTelegramBot bot) throws HttpException {
+        List<Article> articles = articleApiConnector.getArticlesOf(userId);
+        getArticles(articles, bot);
+    }
+
+    private boolean validateSelectedIndex(Integer selectedIndex) {
+        return selectedIndex >= 0 && selectedIndex < articleList.size();
+    }
+
+    private String createSubscriptionsText(List<Annotation> annotations){
+        String s = "";
+        for (Annotation annotation: annotations)
+            s += annotation.toString() + "\n";
+        return s;
+    }
+
+    private void getSubscriptions(String articleId, MyTelegramBot bot) throws HttpException {
+        Article article = new Article();
+        article.setId(articleId);
+        List<Annotation> subscriptions = articleApiConnector.viewArticleSubscriptions(article);
+        bot.sendText(chatId, createSubscriptionsText(subscriptions));
+    }
+
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request;
-        HttpResponse<String> response = null;
-        String url = System.getenv("RESOURCE_URL") + "/articles";
+    public void processResponse(Message message, MyTelegramBot bot) throws HttpException {
         user = bot.usersLoginMap.get(chatId);
         switch (currentStep) {
             case CHOOSE_ARTICLE_TYPE:
                 articleType = ArticleType.valueOf(message.getText().toUpperCase());
-                switch (articleType){
+                switch (articleType) {
                     case TODOS:
                         action = "SUSCRIBIRSE";
-                        request = HttpRequest.newBuilder()
-                                .uri(new URI(url))
-                                .GET()
-                                .build();
-                        response = client.send(request,HttpResponse.BodyHandlers.ofString());
+                        getAllArticles(bot);
                         break;
                     case PROPIOS:
                         action = "VER_SUSCRIPTOS, CERRAR";
-                        request = HttpRequest.newBuilder()
-                                .uri(new URI(url))
-                                .header("user",user)
-                                .GET()
-                                .build();
-                        response = client.send(request,HttpResponse.BodyHandlers.ofString());
+                        getArticlesOf(user, bot);
                         break;
                 }
-                System.out.println(response.statusCode());
-                String responseJson = response.body();
-                String articleList = bot.parseJson(responseJson);
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    System.out.println("Intento mapear json ListArticle");
-                    this.articles = mapper.readValue(responseJson, new TypeReference<List<Article>>(){});
-                    if (!articles.isEmpty()) {
-                        System.out.println("Id del primer articulo: " + articles.get(0).getId());
-                    } else {
-                        System.out.println("La lista de artículos está vacía.");
-                    }
-                } catch (JsonProcessingException e) {
-                    System.out.println("Error al procesar el JSON: " + e.getMessage());
-                } catch (NoSuchElementException e) {
-                    System.out.println("No se encontraron artículos en la lista: " + e.getMessage());
-                }
-
-                if (response.statusCode() == 200) {
-                    //System.out.println(articleList);
-                    if (!articleList.isEmpty()){
-                        bot.sendText(chatId, "Estos son los articulos vigentes:");
-                        bot.sendText(chatId, articleList, true);
-                        currentStep = CurrentStep.CHOOSE_ARTICLE;
-                        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
-                    }
-                    else{
-                        bot.sendText(chatId, "Todavía no existen artículos! Podés crear un artículo con el comando /crear_articulo.");
-                    }
-                }
-                else{
-                    System.out.println("articulos no obtenidos");
-                    System.out.println(response.statusCode());
-                    System.out.println(response.body());
-                    System.out.println(articleList);
-                    bot.sendText(chatId, "Error. No se pudieron obtener los articulos");
-                }
-
-                break;
             case CHOOSE_ARTICLE:
 
-                selectedArticleIndex = Integer.valueOf(message.getText());
-                articleId = articles.get(selectedArticleIndex).getId();
-
-                bot.sendText(chatId, "Elegir la accion. " + action);
+                int selectedIndex = Integer.parseInt(message.getText()) - 1;
+                if (validateSelectedIndex(selectedIndex)) {
+                    System.out.printf("[INFO] wrong article index %d <0.\n", selectedArticleIndex);
+                    bot.sendText(chatId, "Ingresaste un índice incorrecto. Por favor, volvé a intentarlo.");
+                    currentStep = CurrentStep.CHOOSE_ARTICLE;
+                    return;
+                }
+                selectedArticleIndex = selectedIndex;
+                articleId = articleList.get(selectedArticleIndex).getId();
+                bot.sendText(chatId, "Elegiste el artículo " + articleList.get(selectedArticleIndex).getName() + ".");
+                bot.sendText(chatId, "Elegir la accion: " + action);
                 currentStep = CurrentStep.CHOOSE_ACTION;
                 break;
             case CHOOSE_ACTION:
-                String action = message.getText();
-                System.out.println(action);
-                switch (action){
-                    case "SUSCRIBIRSE":
-                        url +=  "/"+ articleId + "/users/";
-                        System.out.println(url);
-
-                        request = HttpRequest.newBuilder()
-                                .uri(new URI(url))
-                                .header("user",user)
-                                .header("Content-Type","application/json")
-                                .POST(HttpRequest.BodyPublishers.ofString(""))
-                                .build();
-                        response = client.send(request,HttpResponse.BodyHandlers.ofString());
-                        System.out.println(response.statusCode());
-                        if(response.statusCode() == 200){
-                            bot.sendText(chatId, "Se ha suscripto correctamente.");
-                        }
-                        else{
-                            bot.sendText(chatId, "Ingresar un articulo valido.");
-                        }
-                        break;
-                    case "CERRAR":
-                        url +=  "/"+ articleId + "/close";
-                        request = HttpRequest.newBuilder()
-                                .uri(new URI(url))
-                                .header("user",user)
-                                .header("Content-Type","application/json")
-                                .method("PATCH",HttpRequest.BodyPublishers.ofString(""))
-                                .build();
-                        response = client.send(request,HttpResponse.BodyHandlers.ofString());
-                        if(response.statusCode() == 200){
-                            bot.sendText(chatId, "Se ha cerrado correctamente.");
-                        }
-                        else{
-                            bot.sendText(chatId, "No se pudo cerrar.");
-                        }
-                        break;
-                    case "VER_SUSCRIPTOS":
-                        url += "/"+ articleId + "/users";
-                        request = HttpRequest.newBuilder()
-                                .uri(new URI(url))
-                                .GET()
-                                .build();
-                        response = client.send(request,HttpResponse.BodyHandlers.ofString());
-                        String responseMessage = "Estos son los usuarios anotados al articulo:" + response.body();
-                        bot.sendText(chatId, responseMessage);
-                        System.out.printf("Artículos obtenidos por el usuario %d", chatId);
-                        break;
-                }
+            String action = message.getText();
+            System.out.println(action);
+            switch (action) {
+                case "SUSCRIBIRSE":
+                    subscribe(articleId, user, bot);
+                    break;
+                case "CERRAR":
+                    closeArticle(articleId, user, bot);
+                    break;
+                case "VER_SUSCRIPTOS":
+                    getSubscriptions(user, bot);
+                    break;
+            }
         }
     }
 
-    private enum CurrentStep {
-        CHOOSE_ARTICLE_TYPE,
-        CHOOSE_ARTICLE,
-        CHOOSE_ACTION
-    }
-    private enum ArticleType {
-        TODOS,
-        PROPIOS
-    }
-    public ArticleHandler(Long userId) {
-        this.chatId = userId;
-        this.currentStep = CurrentStep.CHOOSE_ARTICLE_TYPE;
-    }
 }
+

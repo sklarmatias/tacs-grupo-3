@@ -1,8 +1,12 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.Setter;
+import org.apache.http.HttpException;
+import org.tacsbot.api.article.impl.ArticleApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.ArticleValidatorHelper;
+import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
 import org.tacsbot.handlers.CommandsHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -140,36 +144,31 @@ public class ArticleCreationHandler implements CommandsHandler {
                 // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = message.getText();
                 this.userId = bot.usersLoginMap.get(chatId);
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                String jsonrequest = "{\n" +
-                        "  \"name\": \"" + articleName + "\",\n" +
-                        "  \"image\": \"" + image + "\",\n" +
-                        "  \"link\": \"" + "image" + "\",\n" +
-                        "  \"deadline\": \"" + formatter.format(deadLine) + "\",\n" +
-                        "  \"usersMax\": " + maxNumUsers.toString() + ",\n" +
-                        "  \"usersMin\": " + minNumUsers.toString() + ",\n" +
-                        "  \"cost\": " + cost.toString() + ",\n" +
-                        "  \"costType\": \"" + costType.toString() + "\",\n" +
-                        "  \"userGets\": \"" + userGets + "\"\n" +
-                        "}";
-                System.out.println(jsonrequest);
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder()
-                            .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
-                            .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
-                            .header("Content-Type","application/json")
-                            .header("user",userId)
-                            .build();
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                System.out.println(response.statusCode());
-                System.out.println(response.body());
-                if (response.statusCode() == 201) {
-                    System.out.println("articulo creado");
-                    bot.sendText(chatId, "articulo creado");
-                }
-                    else{
-                    System.out.println("articulo no creado");
-                    bot.sendText(chatId, "articulo no creado");
+                try{
+                    String articleId = new ArticleApiConnection().createArticle(new Article(
+                            null,
+                            articleName,
+                            image,
+                            null,
+                            userGets,
+                            null,
+                            deadLine,
+                            null,
+                            null,
+                            null,
+                            null,
+                            cost,
+                            costType,
+                            minNumUsers,
+                            maxNumUsers
+                    ));
+                    bot.sendText(chatId, "Articulo creado de manera exitosa!");
+                } catch (HttpException e){
+                    // couldnt create, server error
+                    bot.sendText(chatId, "No se pudo crear el articulo. Por favor, intentelo de nuevo más tarde.");
+                } catch(IllegalArgumentException e){
+                    // couldnt create, input error
+                    bot.sendText(chatId, "No se pudo crear el articulo: uno o más campos incorrectos. Por favor, intentelo nuevamente.");
                 }
                 bot.resetUserHandlers(chatId);
 

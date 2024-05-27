@@ -2,11 +2,13 @@ package org.tacsbot.handlers.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.tacsbot.api.user.impl.UserApiConnection;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.tacsbot.bot.MyTelegramBot;
 
+import javax.naming.AuthenticationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,51 +23,27 @@ public class LoginHandler implements CommandsHandler {
     private String pass;
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws IOException, InterruptedException, URISyntaxException {
+    public void processResponse(Message message, MyTelegramBot bot) throws IOException {
         switch (currentStep) {
             case REQUEST_EMAIL:
-                // Step 1: Request the article's name
                 email = message.getText();
                 currentStep = LoginStep.REQUEST_PASSWORD;
                 bot.sendText(chatId, "Por favor ingresa la clave:");
                 break;
             case REQUEST_PASSWORD:
                 pass = message.getText();
-                String jsonrequest = "{\n" +
-                        "  \"email\": \"" + email + "\",\n" +
-                        "  \"pass\": \"" + pass + "\"\n" +
-                        "}";
-                System.out.println(jsonrequest);
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder()
-                            .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
-                            .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
-                            .header("Content-Type","application/json")
-                            .build();
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                System.out.println(response.statusCode());
-                    if(response.statusCode() == 200){
-                        String userString = response.body();
-                        System.out.println(userString);
-                        ObjectMapper mapper = new ObjectMapper();
-                        User user = null;
-                        try {
-                            user = mapper.readValue(userString, User.class);
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                        bot.usersLoginMap.put(chatId,user.getId());
-                        bot.loggedUsersMap.put(chatId, user);
-                        System.out.println(user.getId());
-                        System.out.println(bot.usersLoginMap.get(chatId));
-                        bot.sendText(chatId,
-                                String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
-                                user.getName()));
-                    }
-                    else{
-                        bot.sendText(chatId,"Credenciales incorrectas. Para intentarlo devuelta, ingresá /login.");
-                    }
-
+                try{
+                    User user = new UserApiConnection().logIn(email, pass);
+                    bot.usersLoginMap.put(chatId,user.getId());
+                    bot.loggedUsersMap.put(chatId, user);
+                    System.out.println(user.getId());
+                    System.out.println(bot.usersLoginMap.get(chatId));
+                    bot.sendText(chatId,
+                            String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
+                                    user.getName()));
+                } catch (AuthenticationException e){
+                    bot.sendText(chatId,"Credenciales incorrectas. Para intentarlo devuelta, ingresá /login.");
+                }
                 break;
         }
     }

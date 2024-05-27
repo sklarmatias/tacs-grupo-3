@@ -2,12 +2,10 @@ package org.tacsbot.bot;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.tacsbot.handlers.impl.RegisterHandler;
+import org.apache.http.HttpException;
+import org.tacsbot.handlers.impl.*;
 import org.tacsbot.model.Article;
 import org.tacsbot.handlers.*;
-import org.tacsbot.handlers.impl.ArticleCreationHandler;
-import org.tacsbot.handlers.impl.ArticleHandler;
-import org.tacsbot.handlers.impl.LoginHandler;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -87,13 +85,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         var user = msg.getFrom();
         var id = user.getId();
         var txt = msg.getText();
-
         if (update.hasCallbackQuery()) {
             System.out.println("A button was pressed");
             var callbackQuery = update.getCallbackQuery();
             var queryData = callbackQuery.getData();
             var queryId = callbackQuery.getId();
             var messageId = callbackQuery.getMessage().getMessageId();
+
 
             try {
                 // Call the buttonTap function with the necessary parameters
@@ -120,10 +118,15 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                         "/logout - Cerrar sesión\n" +
                         "/registrarme - Registrarte como un usuario!");
             }else {
-                CommandAction action = commandActions.get(command);
-                if (action != null) {
-                    // Execute the action if it is defined
-                    action.execute(id, txt);
+                try{
+                    CommandAction action = commandActions.get(command);
+                    if (action != null) {
+                        // Execute the action if it is defined
+                        action.execute(id, txt);
+                    }
+                } catch (Exception e){
+                    sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
+                    System.out.printf("[Error] Uncaught error:\n%s\n", e.getMessage());
                 }
             }
 
@@ -133,7 +136,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }else if (commandsHandlerMap.containsKey(id)){
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
-            } catch (URISyntaxException e) {
+            } catch (HttpException e){
+                sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
+                System.out.println("");
+            }
+            catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -176,19 +183,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS):");
         }
         else{
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
-                        .GET()
-                        .build();
-                HttpClient client = HttpClient.newHttpClient();
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                sendText(chatId, "Estos son los artículos:");
-                sendText(chatId, parseJson(response.body()), true);
-            }
-            catch (Exception ex){
-                System.out.println(ex.getMessage());
-
+            ArticleHandler handler = new ArticleHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
+            handler.setArticleType(ArticleType.TODOS);
+            try{
+                handler.processResponse(null, this);
+            } catch(HttpException e){
+                sendText(chatId, "Ha ocurrido un error. Vuelve a intentarlo más tarde.");
             }
 
         }
@@ -230,29 +231,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendText(chatId, "No se encuentra logueado");
         }
 
-    }
-
-    public String parseJson(String json) {
-        StringBuilder result = new StringBuilder();
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            List<Article> articles = mapper.readValue(json, new TypeReference<List<Article>>(){});
-            System.out.println("Primer Id: " + articles.getFirst().getId());
-
-            for (int i = 0; i < articles.size(); i++) {
-                Article art = articles.get(i);
-                result.append("*INDICE:* ").append(i).append("\n");
-                result.append(art.getDetailedString());
-                if (i < articles.size() - 1) {
-                    result.append("\n\n").append("__________________________").append("\n\n\n");
-                }
-            }
-        } catch (JsonProcessingException e) {
-            System.out.println(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        return result.toString();
     }
 
     private void showMenu(Long id, String commandText) {

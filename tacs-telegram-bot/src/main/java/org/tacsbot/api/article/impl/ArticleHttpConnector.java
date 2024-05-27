@@ -1,6 +1,5 @@
 package org.tacsbot.api.article.impl;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,20 +10,19 @@ import java.net.http.HttpResponse;
 public class ArticleHttpConnector {
 
     public HttpResponse<String> createArticleConnector(String json, String ownerId) throws IOException, InterruptedException, URISyntaxException {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .header("Content-Type", "application/json")
                 .header("user", ownerId)
                 .build();
+        HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         client.close();
         return response;
     }
 
     public HttpResponse<String> getArticles(String ownerId) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request;
         if (ownerId == null){
             request = HttpRequest.newBuilder()
@@ -38,13 +36,13 @@ public class ArticleHttpConnector {
                     .GET()
                     .build();
         }
+        HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         client.close();
         return response;
     }
 
     public HttpResponse<String> suscribeToArticle(String articleId, String userId) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
         String url = String.format("%s/articles/%s/users/",
                 System.getenv("RESOURCE_URL"), articleId);
 
@@ -54,7 +52,36 @@ public class ArticleHttpConnector {
                 .header("Content-Type","application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(""))
                 .build();
+        HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.close();
+        return response;
+    }
+
+    public HttpResponse<String> closeArticle(String articleId, String userId) throws URISyntaxException, IOException, InterruptedException{
+        String url = String.format("%s/articles/%s/close",
+                System.getenv("RESOURCE_URL"), articleId);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .header("user",userId)
+                .header("Content-Type","application/json")
+                .method("PATCH",HttpRequest.BodyPublishers.ofString(""))
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> response = client.send(request,HttpResponse.BodyHandlers.ofString());
+        client.close();
+        return response;
+    }
+
+    public HttpResponse<String> getSubscriptions(String articleId) throws IOException, InterruptedException, URISyntaxException {
+        String url = String.format("%s/articles/%s/users",
+                System.getenv("RESOURCE_URL"), articleId);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .GET()
+                .build();
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> response = client.send(request,HttpResponse.BodyHandlers.ofString());
         client.close();
         return response;
     }
