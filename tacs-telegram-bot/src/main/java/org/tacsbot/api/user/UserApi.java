@@ -9,6 +9,6 @@ public interface UserApi {
 
     User logIn(String email, String pass) throws AuthenticationException, IOException;
 
-    User register(String name, String surname, String email, String password) throws IOException;
+    void register(String name, String surname, String email, String password) throws IOException;
 
 }

@@ -27,6 +27,7 @@ public class UserApiConnection implements UserApi {
         User logInUser = new User(null, null, null, email, password);
         try{
             String json = userParser.parseUserToJSON(logInUser);
+            System.out.println(json);
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
@@ -39,7 +40,7 @@ public class UserApiConnection implements UserApi {
             if (response.statusCode() == 200)
                 return userParser.parseJSONToUser(response.body());
             // wrong login
-            else if (response.statusCode() == 403)
+            else if (response.statusCode() == 401)
                 throw new AuthenticationException("Wrong credentials.");
             // api error
             else
@@ -47,32 +48,33 @@ public class UserApiConnection implements UserApi {
                         response.statusCode(), response.body(), response.headers()));
         } catch (URISyntaxException | InterruptedException e) {
             System.out.printf("[Error]\n%s\n", e.getMessage());
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
         }
     }
 
-        public User register(String name, String surname, String email, String password) throws IOException {
+        public void register(String name, String surname, String email, String password) throws IOException {
         User user = new User(null, name, surname, email, password);
         String json = userParser.parseUserToJSON(user);
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
+                    .uri(new URI(System.getenv("RESOURCE_URL") + "/users/register"))
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .header("Content-Type","application/json")
                     .build();
-            client.close();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            client.close();
             // all ok
-            if (response.statusCode() == 200)
-                return userParser.parseJSONToUser(response.body());
-                // error
+            if (response.statusCode() == 201){
+                return;
+            }
+            // error
             else
                 throw new IOException(String.format("[Error] Server error.\nStatus code = %d;\nBody = %s\nHeaders = %s\n",
                         response.statusCode(), response.body(), response.headers()));
         } catch (URISyntaxException | InterruptedException e) {
             System.out.printf("[Error]\n%s\n", e.getMessage());
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
         }
     }
 

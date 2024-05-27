@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -34,12 +36,12 @@ public class Article {
     private String owner;
 
     @JsonProperty("creation_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date creationDate;
 
     private List<Annotation> annotations;
 
-    @JsonProperty("annotations_counter")
+    @JsonProperty("annotation_counter")
     private Integer annotationsCounter;
 
     private Double cost;
@@ -70,9 +72,11 @@ public class Article {
         sb.append("*COSTO:* ").append(cost).append("\n");
         sb.append("*CANTIDAD MAXIMA DE SUSCRIPTOS:* ").append(usersMax).append("\n");
         sb.append("*CANTIDAD MINIMA DE SUSCRIPTOS:* ").append(usersMin).append("\n");
-        sb.append("*FECHA LIMITE:* ").append(deadline).append("\n");
-        sb.append("*FECHA DE CREACION:* ").append(creationDate).append("\n");
-        sb.append("*USUARIOS SUSCRIPTOS HASTA EL MOMENTO:* ").append(annotationsCounter.toString()).append("\n");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        sb.append("*FECHA LIMITE:* ").append(simpleDateFormat.format(deadline)).append("\n");
+        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        sb.append("*FECHA DE CREACION:* ").append(simpleDateFormat.format(creationDate)).append("\n");
+        sb.append("*SUBSCRIPCIONES:* ").append(annotationsCounter.toString()).append("\n");
         return sb.toString();
 
     }

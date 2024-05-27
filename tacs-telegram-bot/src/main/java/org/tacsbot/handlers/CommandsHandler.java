@@ -11,5 +11,5 @@ public interface CommandsHandler {
 
 
 
-    void processResponse(Message message, MyTelegramBot bot) throws URISyntaxException, IOException, InterruptedException, HttpException;
+    void processResponse(Message message, MyTelegramBot bot) throws IOException, HttpException;
 }

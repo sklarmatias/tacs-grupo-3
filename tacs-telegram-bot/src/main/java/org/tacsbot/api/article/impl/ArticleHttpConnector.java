@@ -26,12 +26,12 @@ public class ArticleHttpConnector {
         HttpRequest request;
         if (ownerId == null){
             request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("http://localhost:8080/tacsWSREST") + "/articles"))
+                    .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
                     .GET()
                     .build();
         } else{
             request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("http://localhost:8080/tacsWSREST") + "/articles"))
+                    .uri(new URI(System.getenv("RESOURCE_URL") + "/articles"))
                     .header("user",ownerId)
                     .GET()
                     .build();

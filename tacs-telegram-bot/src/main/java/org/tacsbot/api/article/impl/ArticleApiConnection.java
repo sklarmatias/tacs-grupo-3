@@ -28,10 +28,10 @@ public class ArticleApiConnection implements ArticleApi {
     }
 
     @Override
-    public String createArticle(Article article) throws IllegalArgumentException, HttpException, IOException {
-        String JSONArticle = articleJSONParser.parseArticleToJSON(article);
-        System.out.println(JSONArticle);
+    public String createArticle(Article article) throws IllegalArgumentException, HttpException {
         try {
+            String JSONArticle = articleJSONParser.parseArticleToJSON(article);
+            System.out.println(JSONArticle);
             HttpResponse<String> response = articleHttpConnector.createArticleConnector(JSONArticle, article.getOwner());
             if (response.statusCode() == 201)
                 return response.headers().firstValue("Location").get();
@@ -44,7 +44,7 @@ public class ArticleApiConnection implements ArticleApi {
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
             throw new HttpException(String.format("[Error] Sending the following article:\n%s\n%s\n",
-                    JSONArticle, e.getMessage()));
+                    article, e.getMessage()));
         }
     }
 

@@ -1,22 +1,15 @@
 package org.tacsbot.handlers.impl;
 
-import lombok.Setter;
 import org.apache.http.HttpException;
+import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.ArticleValidatorHelper;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
-import org.tacsbot.handlers.CommandsHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,8 +24,12 @@ public class ArticleCreationHandler implements CommandsHandler {
     private Integer maxNumUsers;
     private Integer minNumUsers;
     private String image;
+    private String link;
     private String userGets;
     private String userId;
+
+    private ArticleApi articleApi;
+
 
     // Enum to represent the different steps of the article creation process
     private enum ArticleCreationStep {
@@ -43,16 +40,28 @@ public class ArticleCreationHandler implements CommandsHandler {
         REQUEST_USERGETS,
         REQUEST_MIN_USERS,
         REQUEST_MAX_USERS,
-        REQUEST_IMAGE, FINALIZAR
+        REQUEST_LINK,
+        REQUEST_IMAGE
     }
 
     public ArticleCreationHandler(Long userId) {
         this.chatId = userId;
         this.currentStep = ArticleCreationStep.REQUEST_NAME;
+        this.articleApi = new ArticleApiConnection();
+    }
+
+    private void createArticle(Article article, MyTelegramBot bot) throws HttpException, IOException {
+        try{
+            articleApi.createArticle(article);
+            bot.sendText(chatId, "Artículo creado de manera exitosa!");
+        } catch(IllegalArgumentException e){
+            // couldnt create, input error
+            bot.sendText(chatId, "No se pudo crear el articulo: uno o más campos incorrectos. Por favor, intentelo nuevamente.");
+        }
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws IOException, InterruptedException, URISyntaxException {
+    public void processResponse(Message message, MyTelegramBot bot) throws HttpException, IOException{
         String errorMessage = null;
         switch (currentStep) {
             case REQUEST_NAME:
@@ -128,9 +137,9 @@ public class ArticleCreationHandler implements CommandsHandler {
                     minNumUsers = Integer.parseInt(message.getText());
                     errorMessage = ArticleValidatorHelper.validateMinNumUsers(minNumUsers, maxNumUsers);
                     if ( errorMessage == null) {
-                        currentStep = ArticleCreationStep.REQUEST_IMAGE;
+                        currentStep = ArticleCreationStep.REQUEST_LINK;
 
-                        bot.sendText(chatId, "Adjunte la imagen");
+                        bot.sendText(chatId, "Adjunte el link");
                     }else {
                         bot.sendText(chatId, errorMessage);
                     }
@@ -138,14 +147,15 @@ public class ArticleCreationHandler implements CommandsHandler {
                     bot.sendText(chatId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
                 }
                 break;
+            case REQUEST_LINK:
+                link = message.getText();
+                currentStep = ArticleCreationStep.REQUEST_IMAGE;
+                bot.sendText(chatId, "Adjunte la imagen");
+                break;
             case REQUEST_IMAGE:
-                //todo logica para guardar imagen
-                // TODO pedir lo que recibe cada usuario
-                // TODO: Asignar el propietario y la fecha de creación al artículo
                 image = message.getText();
                 this.userId = bot.usersLoginMap.get(chatId);
-                try{
-                    String articleId = new ArticleApiConnection().createArticle(new Article(
+                createArticle(new Article(
                             null,
                             articleName,
                             image,
@@ -153,7 +163,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                             userGets,
                             null,
                             deadLine,
-                            null,
+                            userId,
                             null,
                             null,
                             null,
@@ -161,15 +171,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                             costType,
                             minNumUsers,
                             maxNumUsers
-                    ));
-                    bot.sendText(chatId, "Articulo creado de manera exitosa!");
-                } catch (HttpException e){
-                    // couldnt create, server error
-                    bot.sendText(chatId, "No se pudo crear el articulo. Por favor, intentelo de nuevo más tarde.");
-                } catch(IllegalArgumentException e){
-                    // couldnt create, input error
-                    bot.sendText(chatId, "No se pudo crear el articulo: uno o más campos incorrectos. Por favor, intentelo nuevamente.");
-                }
+                    ), bot);
                 bot.resetUserHandlers(chatId);
 
         }

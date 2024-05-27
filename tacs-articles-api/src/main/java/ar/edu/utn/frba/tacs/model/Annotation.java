@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ public class Annotation {
 
     private User.UserDTO user;
 
+    @JsonProperty("created_at")
     private Date date;
 
     public Annotation(User.UserDTO user){

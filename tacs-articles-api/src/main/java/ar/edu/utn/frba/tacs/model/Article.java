@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs.model;
 
 import ar.edu.utn.frba.tacs.service.UserService;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,6 +24,7 @@ public class Article {
 
     private String link;
 
+    @JsonProperty("user_gets")
     private String userGets;
 
     private ArticleStatus status;
@@ -31,18 +33,23 @@ public class Article {
 
     private String owner;
 
+    @JsonProperty("created_at")
     private Date creationDate;
 
     private List<Annotation> annotations;
 
+    @JsonProperty("annotations_counter")
     private Integer annotationsCounter;
 
     private Double cost;
 
+    @JsonProperty("cost_type")
     private CostType costType;
 
+    @JsonProperty("users_min")
     private Integer usersMin;
 
+    @JsonProperty("users_max")
     private Integer usersMax;
 
     public Article(String name, String image, String link, String userGets, String owner,
@@ -133,26 +140,32 @@ public class Article {
 
         public String link;
 
+        @JsonProperty("user_gets")
         public String userGets;
 
         public ArticleStatus status;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         public Date deadline;
 
         public String owner;
 
+        @JsonProperty("creation_date")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         public Date creationDate;
 
+        @JsonProperty("annotation_counter")
         public Integer annotationsCounter;
 
         public Double cost;
 
+        @JsonProperty("cost_type")
         public CostType costType;
 
+        @JsonProperty("users_min")
         public Integer usersMin;
 
+        @JsonProperty("users_max")
         public Integer usersMax;
 
         public ArticleDTO(Article article){

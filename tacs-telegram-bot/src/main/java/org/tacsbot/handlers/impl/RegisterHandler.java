@@ -1,16 +1,11 @@
 package org.tacsbot.handlers.impl;
 
+import org.tacsbot.api.user.impl.UserApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.RegisterValidatorHelper;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 public class RegisterHandler implements CommandsHandler {
     private Long chatId;
@@ -21,13 +16,14 @@ public class RegisterHandler implements CommandsHandler {
 
     private String userEmail;
 
-    private String userPassword;
-
     private RegistrationStep currentStep;
+
+    private UserApiConnection userApiConnection;
 
     public RegisterHandler(Long chatId) {
         this.chatId = chatId;
         this.currentStep = RegistrationStep.REQUEST_USER_NAME;
+        userApiConnection = new UserApiConnection();
     }
 
 
@@ -38,8 +34,21 @@ public class RegisterHandler implements CommandsHandler {
         REQUEST_PASSWORD,
     }
 
+    private void register(String name, String surname, String email, String password, MyTelegramBot bot){
+        try {
+            bot.sendText(chatId, "Registrando usuario...");
+            userApiConnection.register(name, surname, email, password);
+            bot.sendText(chatId, "Usario creado correctamente");
+
+        } catch (IOException e) {
+            System.out.printf("[Error] Internal error trying to register user:\n%s, %s (%s) (%s)\nError: %s\n",
+                    surname, name, email, password, e.getMessage());
+            bot.sendText(chatId, "Error al registrar usuario, intente nuevamente mas tarde.");
+        }
+    }
+
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws URISyntaxException, IOException, InterruptedException {
+    public void processResponse(Message message, MyTelegramBot bot) throws IOException {
         String errorMessage = null;
         switch (currentStep) {
 
@@ -81,36 +90,8 @@ public class RegisterHandler implements CommandsHandler {
 
                 break;
             case REQUEST_PASSWORD:
-                errorMessage = RegisterValidatorHelper.validatePassword(message.getText());
-                if (errorMessage == null){
-                    this.userPassword = message.getText();
-                    this.currentStep = RegistrationStep.REQUEST_PASSWORD;
-                    bot.sendText(chatId, "Registrando usuario...");
-                    String jsonrequest = "{\n" +
-                            "  \"name\": \"" + this.userName + "\",\n" +
-                            "  \"surname\": \"" + this.userSurname + "\",\n" +
-                            "  \"email\": \"" + this.userEmail + "\",\n" +
-                            "  \"pass\": \"" + this.userPassword + "\"\n" +
-                            "}";
-                    System.out.println(jsonrequest);
-                        HttpClient client = HttpClient.newHttpClient();
-                    HttpRequest request = HttpRequest.newBuilder()
-                                .uri(new URI(System.getenv("RESOURCE_URL") + "/users/register"))
-                                .POST(HttpRequest.BodyPublishers.ofString(jsonrequest))
-                                .header("Content-Type","application/json")
-                                .build();
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    System.out.println(response.statusCode());
-                        System.out.println(response.body());
-                        if (response.statusCode() == 201) {
-                            bot.sendText(chatId, "Usario creado correctamente");
-                        }
-                    }
-
-                else {
-                    bot.sendText(chatId, "Error al registrar usuario, intente nuevamente mas tarde.");
-                }
-
+                String userPassword = message.getText();
+                register(userName, userSurname, userEmail, userPassword, bot);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + currentStep);

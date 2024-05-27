@@ -1,10 +1,6 @@
 package org.tacsbot.bot;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpException;
 import org.tacsbot.handlers.impl.*;
-import org.tacsbot.model.Article;
 import org.tacsbot.handlers.*;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -17,13 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +75,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         var user = msg.getFrom();
         var id = user.getId();
         var txt = msg.getText();
+        System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
         if (update.hasCallbackQuery()) {
             System.out.println("A button was pressed");
             var callbackQuery = update.getCallbackQuery();
@@ -136,21 +127,17 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }else if (commandsHandlerMap.containsKey(id)){
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
-            } catch (HttpException e){
+            } catch (HttpException | IOException e){
                 sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
-                System.out.println("");
-            }
-            catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            } catch (Exception e){
+                sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
+                System.out.printf("[Error] Uncaught error:\n%s\n", e.getMessage());
+                e.printStackTrace();
             }
 
         }else{sendText(id,"Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help");}
-
-        System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
     }
 
 
@@ -184,7 +171,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
         else{
             ArticleHandler handler = new ArticleHandler(chatId);
-            commandsHandlerMap.put(chatId, handler);
             handler.setArticleType(ArticleType.TODOS);
             try{
                 handler.processResponse(null, this);

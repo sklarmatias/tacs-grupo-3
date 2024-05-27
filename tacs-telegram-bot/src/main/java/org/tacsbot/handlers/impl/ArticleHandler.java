@@ -62,10 +62,8 @@ public class ArticleHandler implements CommandsHandler {
             bot.sendText(chatId, "Todavia no hay articulos.");
         else {
             bot.sendText(chatId, "Estos son los artículos disponibles:");
-            bot.sendText(chatId, parseArticlesToMessage(articles));
+            bot.sendText(chatId, parseArticlesToMessage(articles), true);
         }
-        currentStep = CurrentStep.CHOOSE_ARTICLE;
-        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
     }
 
     private void getAllArticles(MyTelegramBot bot) throws HttpException {
@@ -98,25 +96,32 @@ public class ArticleHandler implements CommandsHandler {
 
     @Override
     public void processResponse(Message message, MyTelegramBot bot) throws HttpException {
-        user = bot.usersLoginMap.get(chatId);
         switch (currentStep) {
             case CHOOSE_ARTICLE_TYPE:
-                articleType = ArticleType.valueOf(message.getText().toUpperCase());
+                if (articleType == null)
+                    articleType = ArticleType.valueOf(message.getText().toUpperCase());
                 switch (articleType) {
                     case TODOS:
-                        action = "SUSCRIBIRSE";
                         getAllArticles(bot);
-                        break;
+                        if (bot.usersLoginMap.containsKey(chatId)){
+                            action = "SUSCRIBIRSE";
+                            currentStep = CurrentStep.CHOOSE_ARTICLE;
+                            bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+                        }
+                        return;
                     case PROPIOS:
                         action = "VER_SUSCRIPTOS, CERRAR";
+                        user = bot.usersLoginMap.get(chatId);
                         getArticlesOf(user, bot);
-                        break;
+                        currentStep = CurrentStep.CHOOSE_ARTICLE;
+                        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+                        return;
                 }
             case CHOOSE_ARTICLE:
 
                 int selectedIndex = Integer.parseInt(message.getText()) - 1;
-                if (validateSelectedIndex(selectedIndex)) {
-                    System.out.printf("[INFO] wrong article index %d <0.\n", selectedArticleIndex);
+                if (!validateSelectedIndex(selectedIndex)) {
+                    System.out.printf("[INFO] wrong article index %d <0.\n", selectedIndex);
                     bot.sendText(chatId, "Ingresaste un índice incorrecto. Por favor, volvé a intentarlo.");
                     currentStep = CurrentStep.CHOOSE_ARTICLE;
                     return;
@@ -132,12 +137,15 @@ public class ArticleHandler implements CommandsHandler {
             System.out.println(action);
             switch (action) {
                 case "SUSCRIBIRSE":
+                    user = bot.usersLoginMap.get(chatId);
                     subscribe(articleId, user, bot);
                     break;
                 case "CERRAR":
+                    user = bot.usersLoginMap.get(chatId);
                     closeArticle(articleId, user, bot);
                     break;
                 case "VER_SUSCRIPTOS":
+                    user = bot.usersLoginMap.get(chatId);
                     getSubscriptions(user, bot);
                     break;
             }
