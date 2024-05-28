@@ -69,7 +69,7 @@ public class Article {
         sb.append("*IMAGEN:* ").append(image).append("\n");
         sb.append("*ENLACE:* ").append(link).append("\n");
         sb.append("*LO QUE EL USUARIO OBTIENE:* ").append(userGets).append("\n");
-        sb.append("*COSTO:* ").append(cost).append("\n");
+        sb.append(String.format("*COSTO:* $%,.2f\n", cost));
         sb.append("*CANTIDAD MAXIMA DE SUSCRIPTOS:* ").append(usersMax).append("\n");
         sb.append("*CANTIDAD MINIMA DE SUSCRIPTOS:* ").append(usersMin).append("\n");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
