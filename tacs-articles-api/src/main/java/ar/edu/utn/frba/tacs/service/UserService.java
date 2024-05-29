@@ -1,19 +1,12 @@
 package ar.edu.utn.frba.tacs.service;
 
-import ar.edu.utn.frba.tacs.helpers.GuavaHashingHelper;
-import ar.edu.utn.frba.tacs.helpers.HashingHelper;
+import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
+import ar.edu.utn.frba.tacs.helpers.hash.HashingHelper;
 import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
-import ar.edu.utn.frba.tacs.repository.objectMappers.MongoAnnotationMapper;
-import ar.edu.utn.frba.tacs.repository.objectMappers.MongoArticleMapper;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
-import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
 import lombok.Setter;
 
 import javax.security.auth.login.LoginException;

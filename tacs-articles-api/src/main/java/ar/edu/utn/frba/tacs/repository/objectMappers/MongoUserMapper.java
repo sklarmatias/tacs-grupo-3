@@ -48,7 +48,6 @@ public class MongoUserMapper {
     public static Document convertUserToDocument(User user) {
         Document document = new Document();
         if (user.getId() != null) {
-            System.out.println("CONVERTING USER TO DOC");
             document.append("_id", new ObjectId(String.valueOf(user.getId())));
         }
         document.append("name", user.getName())
@@ -77,7 +76,6 @@ public class MongoUserMapper {
     public static Document convertUserDTOToDocument(User.UserDTO user) {
         Document document = new Document();
         if (user.getId() != null) {
-            System.out.println("CONVERTING USER TO DOC");
             document.append("_id", new ObjectId(String.valueOf(user.getId())));
         }
         document.append("name", user.getName())

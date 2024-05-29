@@ -1,9 +1,10 @@
-package ar.edu.utn.frba.tacs.helpers;
+package ar.edu.utn.frba.tacs.helpers.hash.impl;
 
+import ar.edu.utn.frba.tacs.helpers.hash.HashingHelper;
 import com.google.common.hash.Hashing;
 import java.nio.charset.StandardCharsets;
 
-public class GuavaHashingHelper implements HashingHelper{
+public class GuavaHashingHelper implements HashingHelper {
 
 
     @Override

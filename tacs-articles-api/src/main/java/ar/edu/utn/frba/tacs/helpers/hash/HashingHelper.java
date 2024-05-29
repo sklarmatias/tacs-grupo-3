@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.helpers;
+package ar.edu.utn.frba.tacs.helpers.hash;
 
 public interface HashingHelper {
 
