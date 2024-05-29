@@ -19,6 +19,7 @@
             <bean class="ar.edu.utn.frba.tacs.mappers.IllegalArgumentExceptionMapper"/>
             <bean class="ar.edu.utn.frba.tacs.mappers.NoSuchElementExceptionMapper"/>
             <bean class="ar.edu.utn.frba.tacs.mappers.LoginExceptionMapper"/>
+            <bean class="ar.edu.utn.frba.tacs.mappers.ClientExceptionMapper"/>
         </jaxrs:providers>
     </jaxrs:server>
 </beans>

@@ -46,7 +46,7 @@ public class UserController {
     public Response saveUser(User user, @Context UriInfo uriInfo) {
         String userId = userService.saveUser(user);
         // URI
-        UriBuilder userURIBuilder = uriInfo.getAbsolutePathBuilder();
+        UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
         userURIBuilder.path(userId);
         return Response.created(userURIBuilder.build()).build();
     }

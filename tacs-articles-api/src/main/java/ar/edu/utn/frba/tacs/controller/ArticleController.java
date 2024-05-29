@@ -98,7 +98,13 @@ public class ArticleController {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		System.out.println("Se recibio una solicitud de suscripcion: IdUsuario: " + userId + "\n IdArticulo: " + articleId);
-		articleService.signUpUser(articleService.getArticle(articleId),userService.getUser(userId).convertToDTO());
+		Article article = articleService.getArticle(articleId);
+		if (article == null)
+			throw new ClientErrorException(400);
+		User user = userService.getUser(userId);
+		if (user == null)
+			throw new ClientErrorException(400);
+		articleService.signUpUser(article, user);
 		return Response.ok().build();
 	}
 
@@ -121,9 +127,11 @@ public class ArticleController {
 	@GET
 	@Path("/{id}/users")
 	@Produces("application/json")
-	public List<Annotation> getUsersSignedUp(@PathParam("id") String id) {
-
-		return articleService.getUsersSignedUp(id);
+	public List<Annotation.AnnotationDTO> getUsersSignedUp(@PathParam("id") String id) {
+		Article article = articleService.getArticle(id);
+		if (article == null)
+			throw new ClientErrorException(400);
+		return articleService.getUsersSignedUp(id).stream().map(Annotation::convertToDTO).collect(Collectors.toList());
 	}
 
 	@DELETE

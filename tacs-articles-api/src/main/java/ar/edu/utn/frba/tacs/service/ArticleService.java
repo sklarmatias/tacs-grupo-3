@@ -31,7 +31,7 @@ public class ArticleService {
         return articlesRepository.save(article);
     }
 
-    public void signUpUser(Article article, User.UserDTO user) {
+    public void signUpUser(Article article, User user) {
         Annotation annotation = article.signUpUser(user);
         articlesRepository.updateAddAnnotation(article.getId(),annotation);
         articlesRepository.update(article.getId(),article);

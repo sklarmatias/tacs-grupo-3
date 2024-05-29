@@ -5,7 +5,6 @@ import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class MongoUserMapper {
 
         List<Document> annotationDocs = (List<Document>) document.get("annotations");
         if (annotationDocs != null) {
-            user.setAnnotations(new ArrayList<Annotation>());
+            user.setAnnotations(new ArrayList<>());
             for (Document annotationDoc : annotationDocs) {
                 Annotation annotation = new Annotation();
                 MongoAnnotationMapper.convertDocumentToAnnotation(annotationDoc);
@@ -48,7 +47,7 @@ public class MongoUserMapper {
     public static Document convertUserToDocument(User user) {
         Document document = new Document();
         if (user.getId() != null) {
-            document.append("_id", new ObjectId(String.valueOf(user.getId())));
+            document.append("_id", new ObjectId(user.getId()));
         }
         document.append("name", user.getName())
                 .append("surname", user.getSurname())
@@ -73,25 +72,25 @@ public class MongoUserMapper {
 
         return document;
     }
+    @Deprecated(since = "2024/05/28", forRemoval = true)
     public static Document convertUserDTOToDocument(User.UserDTO user) {
         Document document = new Document();
         if (user.getId() != null) {
-            document.append("_id", new ObjectId(String.valueOf(user.getId())));
+            document.append("_id", new ObjectId(user.getId()));
         }
         document.append("name", user.getName())
                 .append("surname", user.getSurname())
-                .append("email", user.getEmail())
-                .append("pass", user.getPass());
+                .append("email", user.getEmail());
         return document;
     }
 
+    @Deprecated(since = "2024/05/28", forRemoval = true)
     public static User.UserDTO convertDocumentToUserDTO(Document document) {
         User.UserDTO user = new User.UserDTO();
         user.setId(document.getObjectId("_id").toString());
         user.setName(document.getString("name"));
         user.setSurname(document.getString("surname"));
         user.setEmail(document.getString("email"));
-        user.setPass(document.getString("pass"));
         return user;
     }
 }

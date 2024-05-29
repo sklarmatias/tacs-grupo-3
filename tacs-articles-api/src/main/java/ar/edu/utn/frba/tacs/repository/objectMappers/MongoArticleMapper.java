@@ -6,9 +6,7 @@ import ar.edu.utn.frba.tacs.model.ArticleStatus;
 import ar.edu.utn.frba.tacs.model.CostType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 

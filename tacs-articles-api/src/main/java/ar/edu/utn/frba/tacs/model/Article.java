@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.tacs.model;
 
-import ar.edu.utn.frba.tacs.service.UserService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -62,8 +61,7 @@ public class Article {
             throw new IllegalArgumentException("usersMin has to be <= usersMax.");
         if (deadline != null && deadline.before(new Date()))
             throw new IllegalArgumentException("Deadline has to be in the future.");
-        UserService userService = new UserService();
-        if (userService.getUser(owner) == null){
+        if (owner == null){
             throw new IllegalArgumentException("Owner doesn't exist.");
         }
         this.name = name;
@@ -82,11 +80,11 @@ public class Article {
         this.usersMax = usersMax;
     }
 
-    private boolean isSignedUp(User.UserDTO user){
+    private boolean isSignedUp(User user){
         return this.getAnnotations().stream().anyMatch(annotation -> annotation.getUser().getId().equals(user.getId()));
     }
 
-    public Annotation signUpUser(User.UserDTO user){
+    public Annotation signUpUser(User user){
         if (this.isClosed())
             throw new IllegalArgumentException("Article is closed.");
         if (this.isFull())

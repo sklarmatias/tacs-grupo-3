@@ -10,7 +10,7 @@ public class LoginExceptionMapper implements ExceptionMapper<LoginException> {
     @Override
     public Response toResponse(LoginException exception) {
         return Response.status(Response.Status.UNAUTHORIZED)
-                .type(MediaType.APPLICATION_JSON_TYPE)
+                .type(MediaType.TEXT_PLAIN)
                 .entity("Wrong username or password.")
                 .build();
     }

@@ -1,20 +1,12 @@
 package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.model.*;
-import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
-import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
-import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 public class ArticleTest {
     ArticleService articleService = new ArticleService();
@@ -41,8 +33,8 @@ public class ArticleTest {
         User user1 = createTestUser();
         User user2 = createTestUser();
         Article article = createTestArticle(owner.getId());
-        articleService.signUpUser(article,user1.convertToDTO());
-        articleService.signUpUser(article,user2.convertToDTO());
+        articleService.signUpUser(article,user1);
+        articleService.signUpUser(article,user2);
         articleService.closeArticle(article);
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_SUCCESS, article.getStatus());
@@ -57,7 +49,7 @@ public class ArticleTest {
         User owner = createTestUser();
         User user1 = createTestUser();
         Article article = createTestArticle(owner.getId());
-        articleService.signUpUser(article,user1.convertToDTO());
+        articleService.signUpUser(article,user1);
         articleService.closeArticle(article);
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_FAILED, article.getStatus());
@@ -71,7 +63,7 @@ public class ArticleTest {
         User user1 = createTestUser();
         User user2 = createTestUser();
         Article article = createTestArticle(user1.getId());
-        articleService.signUpUser(article,user2.convertToDTO());
+        articleService.signUpUser(article,user2);
         article = articleService.getArticle(article.getId());
         Integer expected = 1;
         Assert.assertEquals(expected, article.getAnnotationsCounter());
@@ -89,10 +81,10 @@ public class ArticleTest {
         User user4 = createTestUser();
         User owner = createTestUser();
         Article article = createTestArticle(owner.getId());
-        articleService.signUpUser(article,user1.convertToDTO());
-        articleService.signUpUser(article,user2.convertToDTO());
-        articleService.signUpUser(article,user3.convertToDTO());
-        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user4.convertToDTO()));
+        articleService.signUpUser(article,user1);
+        articleService.signUpUser(article,user2);
+        articleService.signUpUser(article,user3);
+        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user4));
 
         articleService.clearArticle(article.getId());
         userService.cleanUser(user1.getId());
@@ -107,7 +99,7 @@ public class ArticleTest {
     public void testSignUpUserFailOwnerSignUp(){
         User owner = createTestUser();
         Article article = createTestArticle(owner.getId());
-        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,owner.convertToDTO()));
+        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,owner));
         articleService.clearArticle(article.getId());
         userService.cleanUser(owner.getId());
     }
@@ -117,8 +109,8 @@ public class ArticleTest {
         User user1 = createTestUser();
         User user2 = createTestUser();
         Article article = createTestArticle(user1.getId());
-        articleService.signUpUser(article,user2.convertToDTO());
-        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2.convertToDTO()));
+        articleService.signUpUser(article,user2);
+        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2));
         articleService.clearArticle(article.getId());
         userService.cleanUser(user1.getId());
         userService.cleanUser(user2.getId());
@@ -131,9 +123,9 @@ public class ArticleTest {
         User user1 = createTestUser();
         User user2 = createTestUser();
         Article article = createTestArticle(owner.getId());
-        articleService.signUpUser(article,user1.convertToDTO());
+        articleService.signUpUser(article,user1);
         articleService.closeArticle(article);
-        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2.convertToDTO()));
+        Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2));
         articleService.clearArticle(article.getId());
         userService.cleanUser(owner.getId());
         userService.cleanUser(user1.getId());

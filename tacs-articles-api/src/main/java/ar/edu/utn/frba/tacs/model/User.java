@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tacs.model;
 
-import ar.edu.utn.frba.tacs.service.UserService;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,8 +22,10 @@ public class User {
 
     private String pass;
 
+    @JsonIgnore
     private List<Article> postedArticles;
 
+    @JsonIgnore
     private List<Annotation> annotations;
 
     public boolean hasInteracted(){
@@ -59,14 +61,11 @@ public class User {
 
         public String email;
 
-        public String pass;
-
         public UserDTO(User user){
             this.id = user.getId();
             this.name = user.getName();
             this.surname = user.getSurname();
             this.email = user.getEmail();
-            this.pass = user.getPass();
         }
     }
 
