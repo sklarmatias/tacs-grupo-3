@@ -13,6 +13,7 @@
             <bean class="ar.edu.utn.frba.tacs.controller.UserController"/>
 	    <bean class="ar.edu.utn.frba.tacs.controller.ArticleController"/>
 	    <bean class="ar.edu.utn.frba.tacs.controller.ReportsController"/>
+            <bean class="ar.edu.utn.frba.tacs.controller.NotificationController"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>

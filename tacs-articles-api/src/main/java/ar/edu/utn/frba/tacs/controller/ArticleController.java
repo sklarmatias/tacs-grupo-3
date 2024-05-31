@@ -99,11 +99,18 @@ public class ArticleController {
 		}
 		System.out.println("Se recibio una solicitud de suscripcion: IdUsuario: " + userId + "\n IdArticulo: " + articleId);
 		Article article = articleService.getArticle(articleId);
-		if (article == null)
+		if (article == null){
+			System.out.println("Articulo no encontrado.");
 			throw new ClientErrorException(400);
+		}
+
 		User user = userService.getUser(userId);
-		if (user == null)
+		if (user == null){
+			System.out.println("Usuario no encontrado.");
 			throw new ClientErrorException(400);
+		}
+
+		System.out.println("Se intenta suscribir al usuario...");
 		articleService.signUpUser(article, user);
 		return Response.ok().build();
 	}

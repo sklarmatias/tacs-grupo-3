@@ -85,18 +85,24 @@ public class Article {
     }
 
     public Annotation signUpUser(User user){
-        if (this.isClosed())
-            throw new IllegalArgumentException("Article is closed.");
-        if (this.isFull())
-            throw new IllegalArgumentException("Article is full.");
-        if (Objects.equals(this.getOwner(), user.getId()))
-            throw new IllegalArgumentException("Article owner can't sign up to his own article.");
-       if (isSignedUp(user))
-            throw new IllegalArgumentException("User already signed up.");
-        Annotation annotation = new Annotation(user);
-        this.annotations.add(annotation);
-        this.annotationsCounter ++;
-        return annotation;
+        try {
+            if (this.isClosed())
+                throw new IllegalArgumentException("Article is closed.");
+            if (this.isFull())
+                throw new IllegalArgumentException("Article is full.");
+            if (Objects.equals(this.getOwner(), user.getId()))
+                throw new IllegalArgumentException("Article owner can't sign up to his own article.");
+            if (isSignedUp(user))
+                throw new IllegalArgumentException("User already signed up.");
+
+            Annotation annotation = new Annotation(user);
+            this.annotations.add(annotation);
+            this.annotationsCounter++;
+            return annotation;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+            return null;
+        }
     }
 
     public boolean isFull(){
