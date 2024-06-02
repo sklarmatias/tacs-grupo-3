@@ -154,7 +154,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                 break;
             case REQUEST_IMAGE:
                 image = message.getText();
-                this.userId = bot.usersLoginMap.get(chatId);
+                this.userId = bot.usersLoginMap.getUserId(chatId);
                 createArticle(new Article(
                             null,
                             articleName,

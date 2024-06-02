@@ -107,7 +107,7 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(bot);
-                        if (bot.usersLoginMap.containsKey(chatId)){
+                        if (bot.usersLoginMap.containsChatIdKey(chatId)){
                             action = "SUSCRIBIRSE";
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
@@ -115,7 +115,7 @@ public class ArticleHandler implements CommandsHandler {
                         return;
                     case PROPIOS:
                         action = "VER_SUSCRIPTOS, CERRAR";
-                        user = bot.usersLoginMap.get(chatId);
+                        user = bot.usersLoginMap.getUserId(chatId);
                         getArticlesOf(user, bot);
                         currentStep = CurrentStep.CHOOSE_ARTICLE;
                         bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
@@ -141,15 +141,15 @@ public class ArticleHandler implements CommandsHandler {
             System.out.println(action);
             switch (action) {
                 case "SUSCRIBIRSE":
-                    user = bot.usersLoginMap.get(chatId);
+                    user = bot.usersLoginMap.getUserId(chatId);
                     subscribe(articleId, user, bot);
                     break;
                 case "CERRAR":
-                    user = bot.usersLoginMap.get(chatId);
+                    user = bot.usersLoginMap.getUserId(chatId);
                     closeArticle(articleId, user, bot);
                     break;
                 case "VER_SUSCRIPTOS":
-                    user = bot.usersLoginMap.get(chatId);
+                    user = bot.usersLoginMap.getUserId(chatId);
                     getSubscriptions(articleId, bot);
                     break;
             }

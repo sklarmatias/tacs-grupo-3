@@ -26,10 +26,9 @@ public class LoginHandler implements CommandsHandler {
                 pass = message.getText();
                 try{
                     User user = new UserApiConnection().logIn(email, pass);
-                    bot.usersLoginMap.put(chatId,user.getId());
-                    bot.loggedUsersMap.put(chatId, user);
+                    bot.usersLoginMap.addMapping(chatId,user.getId());
                     System.out.println(user.getId());
-                    System.out.println(bot.usersLoginMap.get(chatId));
+                    System.out.println(bot.usersLoginMap.getUserId(chatId));
                     bot.sendText(chatId,
                             String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
                                     user.getName()));

@@ -2,7 +2,7 @@ package org.tacsbot.bot;
 import org.apache.http.HttpException;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
-import org.tacsbot.model.User;
+import org.tacsbot.model.UserChatMapping;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -47,9 +47,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final Map<Long, String> usersLoginMap = new HashMap<>();
+    public final UserChatMapping usersLoginMap = new UserChatMapping();
 
-    public final Map<Long, User> loggedUsersMap = new HashMap<>();
 
     public MyTelegramBot() {
         super(System.getenv("BOT_TOKEN"));
@@ -143,7 +142,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void createArticle(Long chatId, String commandText) {
 
-        if(usersLoginMap.containsKey(chatId)) {
+        if(usersLoginMap.containsChatIdKey(chatId)) {
             System.out.println("User is logged in");
             commandsHandlerMap.remove(chatId);
             ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
@@ -163,7 +162,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void searchArticles(Long chatId, String commandText) {
 
-        if(usersLoginMap.containsKey(chatId)) {
+        if(usersLoginMap.containsChatIdKey(chatId)) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -182,10 +181,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private void register(Long chatId, String commandText) {
-        if(usersLoginMap.containsKey(chatId)){
-            User u = loggedUsersMap.get(chatId);
-            sendText(chatId, String.format("Hola %s! Ya iniciaste sesión, ingresá /logout para cerrar sesión y poder crear un nuevo usuario.",
-                    u.getName()));
+        if(usersLoginMap.containsChatIdKey(chatId)){
+            sendText(chatId, "Hola! Ya iniciaste sesión, ingresá /logout para cerrar sesión y poder crear un nuevo usuario.");
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -197,7 +194,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
     private void login(Long chatId, String commandText){
-        if(usersLoginMap.containsKey(chatId)){
+        if(usersLoginMap.containsChatIdKey(chatId)){
             sendText(chatId, "Ya se encuentra logueado");
         }
         else{
@@ -208,9 +205,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
     }
     private void logout(Long chatId, String commandText){
-        if(usersLoginMap.containsKey(chatId)){
-            usersLoginMap.remove(chatId);
-            loggedUsersMap.remove(chatId);
+        if(usersLoginMap.containsChatIdKey(chatId)){
+            usersLoginMap.removeByChatId(chatId);
             sendText(chatId, "Se ha deslogueado");
         }
         else{
