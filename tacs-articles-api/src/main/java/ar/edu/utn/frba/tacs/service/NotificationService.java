@@ -1,20 +1,24 @@
 package ar.edu.utn.frba.tacs.service;
 
 import ar.edu.utn.frba.tacs.model.Notification;
-import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
+import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
 
 public class NotificationService {
 
     private final MongoDBConnector mongoDBConnector = new MongoDBConnector();
     private final String collectionName = "notifications";;
+    private final MongoCollection<Document> collection = null;
 
     public NotificationService() {
 
@@ -91,6 +95,14 @@ public class NotificationService {
         String userId = doc.getString("user_id");
 
         return new Notification(id, message, notified, userId);
+    }
+
+    public boolean markAsNotified(String id) {
+        Document updatedDocument = collection.findOneAndUpdate(
+                eq("_id", new ObjectId(id)),
+                set("notified", true)
+        );
+        return updatedDocument != null;
     }
 }
 

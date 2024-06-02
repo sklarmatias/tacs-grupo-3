@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.service.NotificationService;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Response;
 
 
 @Path("/pendingNotifications")
@@ -20,5 +21,19 @@ public class NotificationController {
         return pendingNotifications.stream()
                 .map(Notification::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+
+    @POST
+    @Path("/markAsNotified/{id}")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response markAsNotified(@PathParam("id") String id) {
+        boolean updated = notificationService.markAsNotified(id);
+        if (updated) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 }
