@@ -1,0 +1,19 @@
+{
+  "HELP": "/crear_articulo - Crear un articulo\n/obtener_articulos - Ver artículos\n/login - Iniciar sesión\n/logout - Cerrar sesión\n/registrarme - Registrarte como un usuario!",
+  "INTERNAL_ERROR": "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!",
+  "WELCOME": "Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help",
+  "LOGIN_REQUIRED": "Para realizar esta acción, tenes que iniciar sesión. Podes iniciar sesión con el comando /login! \uD83E\uDD13",
+  "ALREADY_LOGGED_IN": "Hola %s! Ya iniciaste sesión, ingresá /logout para cerrar sesión y poder iniciarla con otra cuenta.",
+  "WRONG_CREDENTIALS": "Credenciales incorrectas. Por favor, intentelo denuevo: ",
+  "WELCOME_LOGGED_IN": "",
+  "LOG_OUT": "Sesión cerrada! Para volver a iniciar sesión, ingresá /login",
+  "LOGIN_EMAIL": "Ingrese su mail: ",
+  "LOGIN_PASS": "Ingrese su contraseña: ",
+  "REGISTER_NAME": "Ingrese su nombre: ",
+  "REGISTER_SURNAME": "Ingrese su apellido: ",
+  "REGISTER_EMAIL": "Ingrese su mail: ",
+  "REGISTER_PASSWORD": "Ingrese la contraseña que utilizará: ",
+  "ARTICLE_NAME": "Nombre del artículo",
+  "CHOOSE_ARTICLE_SEARCH": "Elige el método de búsqueda del artículo"
+
+}

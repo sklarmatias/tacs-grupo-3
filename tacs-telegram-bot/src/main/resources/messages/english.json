@@ -1,0 +1,18 @@
+{
+  "HELP": "/create_article - Create an article\n/get_articles - View articles\n/login - Log in\n/logout - Log out\n/register - Register as a user!",
+  "INTERNAL_ERROR": "We had an internal error. Please try again later!",
+  "WELCOME": "Hello, welcome! To view the available commands, enter /help",
+  "LOGIN_REQUIRED": "To perform this action, you need to log in. You can log in with the /login command! \uD83E\uDD13",
+  "ALREADY_LOGGED_IN": "Hello %s! You are already logged in, enter /logout to log out and be able to log in with another account.",
+  "WRONG_CREDENTIALS": "Incorrect credentials. Please try again: ",
+  "WELCOME_LOGGED_IN": "",
+  "LOG_OUT": "Logged out! To log in again, enter /login",
+  "LOGIN_EMAIL": "Enter your email: ",
+  "LOGIN_PASS": "Enter your password: ",
+  "REGISTER_NAME": "Enter your first name: ",
+  "REGISTER_SURNAME": "Enter your last name: ",
+  "REGISTER_EMAIL": "Enter your email: ",
+  "REGISTER_PASSWORD": "Enter the password you will use: ",
+  "ARTICLE_NAME": "Article name",
+  "CHOOSE_ARTICLE_SEARCH": "Choose the article search method"
+}
