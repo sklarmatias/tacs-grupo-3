@@ -9,6 +9,7 @@ import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
+import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 
 import javax.security.auth.login.LoginException;
@@ -30,6 +31,9 @@ public class UserService {
     public User getUser(String id) {
         return usersRepository.find(id);
     }
+    public boolean userExists(String email){
+        return usersRepository.userExists(email);
+    }
 
     public User loginUser(String email, String pass) throws LoginException {
         try{
@@ -49,6 +53,9 @@ public class UserService {
     }
 
     public String saveUser(User user) {
+        if(userExists(user.getEmail())){
+            throw new IllegalArgumentException();
+        }
         user.setPass(hashingHelper.hash(user.getPass()));
         return usersRepository.save(user);
     }

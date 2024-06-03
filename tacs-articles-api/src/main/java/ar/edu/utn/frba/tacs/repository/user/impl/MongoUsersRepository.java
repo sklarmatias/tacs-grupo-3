@@ -59,6 +59,14 @@ public class MongoUsersRepository implements UsersRepository {
     public void updateAddAnnotation(String id, Annotation annotation){
         dbConnector.updateInsertInArray("users",id,"annotations", MongoAnnotationMapper.convertAnnotationToDocument(annotation));
     }
+
+    @Override
+    public boolean userExists(String email) {
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("email", email);
+        return !dbConnector.selectByCondition("users", conditions).isEmpty();
+    }
+
     @Override
     public String save(User user) {
         Document document = MongoUserMapper.convertUserToDocument(user);
