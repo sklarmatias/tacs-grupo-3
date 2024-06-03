@@ -10,8 +10,18 @@ import java.util.stream.Collectors;
 
 public class ArticleService {
 
-    private final ArticlesRepository articlesRepository = new MongoArticlesRepository();
-    private final NotificationService notificationService = new NotificationService();
+    private final ArticlesRepository articlesRepository;
+    private final NotificationService notificationService;
+    public ArticleService(){
+        notificationService = new NotificationService();
+        articlesRepository = new MongoArticlesRepository();
+    }
+    public ArticleService(String url){
+        articlesRepository = new MongoArticlesRepository(url);
+        notificationService = new NotificationService(url);
+    }
+
+
     public List<Article> listArticles() {
         return articlesRepository.findAll();
     }
@@ -72,3 +82,4 @@ public class ArticleService {
     }
 
 }
+

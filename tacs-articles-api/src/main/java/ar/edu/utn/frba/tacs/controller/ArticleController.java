@@ -94,6 +94,7 @@ public class ArticleController {
 	@Consumes("application/json")
 	public Response signUpUser(@PathParam("articleId") String articleId,
 						   @HeaderParam("user") String userId) {
+
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -111,7 +112,13 @@ public class ArticleController {
 		}
 
 		System.out.println("Se intenta suscribir al usuario...");
-		articleService.signUpUser(article, user);
+		try {
+			articleService.signUpUser(article, user);
+		}
+		catch (Exception ex){
+			System.out.println(ex.getMessage());
+			throw new ClientErrorException(400);
+		}
 		return Response.ok().build();
 	}
 

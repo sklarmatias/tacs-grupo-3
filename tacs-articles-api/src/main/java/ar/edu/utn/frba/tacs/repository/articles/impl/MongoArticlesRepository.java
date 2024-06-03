@@ -15,12 +15,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MongoArticlesRepository implements ArticlesRepository {
-
-    private final MongoDBConnector dbConnector = new MongoDBConnector();
+    private final MongoDBConnector dbConnector;
+    public MongoArticlesRepository(String url){
+        dbConnector = new MongoDBConnector(url);
+    }
+    public MongoArticlesRepository(){
+        dbConnector = new MongoDBConnector();
+    }
 
     @Override
     public List<Article> findAll() {
-        List<Document> documents = dbConnector.selectAll("articles");
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("status", "OPEN");
+        List<Document> documents = dbConnector.selectByCondition("articles",conditions);
         return documents.stream()
                 .map(MongoArticleMapper::convertDocumentToArticle)
                 .collect(Collectors.toList());
