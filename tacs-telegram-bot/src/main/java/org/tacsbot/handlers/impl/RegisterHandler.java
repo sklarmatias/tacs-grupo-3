@@ -34,22 +34,20 @@ public class RegisterHandler implements CommandsHandler {
         REQUEST_PASSWORD,
     }
 
-    private void register(String name, String surname, String email, String password, MyTelegramBot bot){
+    private void register(String name, String surname, String email, String password, Message message, MyTelegramBot bot){
         try {
-            bot.sendText(chatId, "Registrando usuario...");
+            bot.sendInteraction(message.getFrom(), "LOADING");
             userApiConnection.register(name, surname, email, password);
-            bot.sendText(chatId, "Usario creado correctamente");
+            bot.sendInteraction(message.getFrom(), "REGISTER_COMPLETED");
 
         } catch (IOException e) {
-            System.out.printf("[Error] Internal error trying to register user:\n%s, %s (%s) (%s)\nError: %s\n",
-                    surname, name, email, password, e.getMessage());
-            bot.sendText(chatId, "Error al registrar usuario, intente nuevamente mas tarde.");
+            bot.sendInternalErrorMsg(message.getChatId(), e);
         }
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws IOException {
-        String errorMessage = null;
+    public void processResponse(Message message, MyTelegramBot bot) {
+        String errorMessage;
         switch (currentStep) {
 
             case REQUEST_USER_NAME:
@@ -58,7 +56,7 @@ public class RegisterHandler implements CommandsHandler {
                     this.userName = message.getText();
 
                     this.currentStep = RegistrationStep.REQUEST_USER_SURNAME;
-                    bot.sendText(chatId, "Por favor ingrese su apellido");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_SURNAME");
                 }else {
                     bot.sendText(chatId, errorMessage + "Ingrese un nombre nuevamente...");
                 }
@@ -68,7 +66,7 @@ public class RegisterHandler implements CommandsHandler {
                 if (errorMessage == null){
                     this.userSurname = message.getText();
                     this.currentStep = RegistrationStep.REQUEST_EMAIL;
-                    bot.sendText(chatId, "Por favor ingrese su mail");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_EMAIL");
                 }else {
                     bot.sendText(chatId, errorMessage + "Ingrese un apellido nuevamente...");
                 }
@@ -82,7 +80,7 @@ public class RegisterHandler implements CommandsHandler {
                 if (errorMessage == null){
                     this.userEmail = message.getText().toLowerCase();
                     this.currentStep = RegistrationStep.REQUEST_PASSWORD;
-                    bot.sendText(chatId, "Por favor ingrese su contraseña:");
+                    bot.sendInteraction(message.getFrom(),"REGISTER_PASS");
                 }else {
                     bot.sendText(chatId, errorMessage + "Ingrese un mail nuevamente...");
                 }
@@ -91,7 +89,7 @@ public class RegisterHandler implements CommandsHandler {
                 break;
             case REQUEST_PASSWORD:
                 String userPassword = message.getText();
-                register(userName, userSurname, userEmail, userPassword, bot);
+                register(userName, userSurname, userEmail, userPassword,message, bot);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + currentStep);

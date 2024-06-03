@@ -24,7 +24,10 @@ public class JSONMessageDictionary implements MessageDictionary{
 
     @Override
     public String getMessage(String message, String language) {
-        return getJSONNode(parseLangCode(language)).path(message).asText();
+        String msg = getJSONNode(parseLangCode(language)).path(message).asText();
+        if (Objects.equals(msg, "") || msg == null)
+            return getJSONNode(parseLangCode("spanish")).path(message).asText();
+        return msg;
     }
 
     @Override

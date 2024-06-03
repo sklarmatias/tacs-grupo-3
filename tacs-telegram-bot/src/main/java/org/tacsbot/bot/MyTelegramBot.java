@@ -1,50 +1,25 @@
 package org.tacsbot.bot;
+import lombok.Setter;
 import org.apache.http.HttpException;
+import org.tacsbot.dictionary.JSONMessageDictionary;
+import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MyTelegramBot extends TelegramLongPollingBot {
 
+    @Setter
+    private MessageDictionary messageDictionary;
+
     private final Map<String, CommandAction> commandActions = new HashMap<>();
-    InlineKeyboardButton next = InlineKeyboardButton.builder()
-            .text("Next").callbackData("next")
-            .build();
-
-    InlineKeyboardButton back = InlineKeyboardButton.builder()
-            .text("Back").callbackData("back")
-            .build();
-
-    InlineKeyboardButton url = InlineKeyboardButton.builder()
-            .text("Tutorial")
-            .url("https://core.telegram.org/bots/api")
-            .build();
-
-    private InlineKeyboardMarkup keyboardM1 = InlineKeyboardMarkup.builder()
-            .keyboardRow(List.of(next)).build();
-
-    //Buttons are wrapped in lists since each keyboard is a set of button rows
-
-    private InlineKeyboardMarkup keyboardM2 = InlineKeyboardMarkup.builder()
-            .keyboardRow(List.of(back))
-            .keyboardRow(List.of(url))
-            .build();;
-
-
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
     public final Map<Long, String> usersLoginMap = new HashMap<>();
@@ -54,120 +29,91 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public MyTelegramBot() {
         super(System.getenv("BOT_TOKEN"));
         // Initialization of the commandActions map with the actions associated with the commands
+        commandActions.put("/help", this::helpCommand);
         commandActions.put("/crear_articulo", this::createArticle);
         commandActions.put("/obtener_articulos", this::searchArticles);
-//        commandActions.put("/ver_anotados", this::seeSignUpsInArticle);
-        commandActions.put("/menu", this::showMenu);
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
         commandActions.put("/registrarme", this::register);
-    }
 
+        messageDictionary = new JSONMessageDictionary();
+
+    }
 
     @Override
     public String getBotUsername() {
         return System.getenv("BOT_USERNAME");
     }
 
+    public void sendInternalErrorMsg(Long chatId, Exception exception){
+        sendText(chatId, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
+        System.out.printf("[Error] Error:\n%s\n", exception.getMessage());
+    }
+
     @Override
     public void onUpdateReceived(Update update) {
-        var msg = update.getMessage();
-        var user = msg.getFrom();
-        var id = user.getId();
-        var txt = msg.getText();
+        Message msg = update.getMessage();
+        org.telegram.telegrambots.meta.api.objects.User user = msg.getFrom();
+        Long id = user.getId();
+        String txt = msg.getText();
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
-        if (update.hasCallbackQuery()) {
-            System.out.println("A button was pressed");
-            var callbackQuery = update.getCallbackQuery();
-            var queryData = callbackQuery.getData();
-            var queryId = callbackQuery.getId();
-            var messageId = callbackQuery.getMessage().getMessageId();
-
-
-            try {
-                // Call the buttonTap function with the necessary parameters
-                System.out.println("Se oprimio un boton");
-                buttonTap(id, queryId, queryData, messageId);
-            } catch (TelegramApiException e) {
-                // Handle any exceptions that may occur when executing the function.
-                e.printStackTrace();
-            }
-        }
-
-
 
         if(msg.isCommand()){
+            System.out.println("IS COMMAND!");
             resetUserHandlers(id);
             String command = msg.getText();
 
-            // Obtain the action associated with the command
-            if (command.equals("/help")){
-                sendText(id,
-                        "/crear_articulo - Crear un articulo\n" +
-                        "/obtener_articulos - Ver artículos\n" +
-                        "/login - Iniciar sesión\n" +
-                        "/logout - Cerrar sesión\n" +
-                        "/registrarme - Registrarte como un usuario!");
-            }else {
+            if (commandActions.containsKey(command)){
                 try{
-                    CommandAction action = commandActions.get(command);
-                    if (action != null) {
-                        // Execute the action if it is defined
-                        action.execute(id, txt);
-                    }
+                    commandActions.get(command).execute(msg, txt);
                 } catch (Exception e){
-                    sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
-                    System.out.printf("[Error] Uncaught error:\n%s\n", e.getMessage());
+                    sendInternalErrorMsg(id, e);
                 }
+            } else{
+                sendText(id, "Uy, no te entendí. Probá ingresando los comandos existentes con /help!");
             }
-
-
-
 
         }else if (commandsHandlerMap.containsKey(id)){
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
-            } catch (HttpException | IOException e){
-                sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
-                System.out.println(e.getMessage());
-                e.printStackTrace();
             } catch (Exception e){
-                sendText(id, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
-                System.out.printf("[Error] Uncaught error:\n%s\n", e.getMessage());
-                e.printStackTrace();
+                sendInternalErrorMsg(id, e);
             }
 
         }else{sendText(id,"Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help");}
     }
 
+    // commands
 
-    private void createArticle(Long chatId, String commandText) {
+    private void helpCommand(Message message, String commandText) {
 
-        if(usersLoginMap.containsKey(chatId)) {
+        sendInteraction(message.getFrom(), "HELP");
+
+    }
+
+    private void createArticle(Message message, String commandText) {
+
+        if(usersLoginMap.containsKey(message.getFrom().getId())) {
             System.out.println("User is logged in");
-            commandsHandlerMap.remove(chatId);
-            ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
-            commandsHandlerMap.put(chatId, handler);
-            sendText(chatId, "Ingrese el nombre del articulo: ");
+            commandsHandlerMap.remove(message.getFrom().getId());
+            ArticleCreationHandler handler = new ArticleCreationHandler(message.getFrom().getId());
+            commandsHandlerMap.put(message.getFrom().getId(), handler);
+            sendInteraction(message.getFrom(), "ARTICLE_NAME");
         }
         else{
-
-            System.out.println();
-            sendText(chatId, "Para crear artículos, tenés que iniciar sesión \uD83E\uDD13.");
-            sendText(chatId, "Para iniciar sesión, escribí /login y seguí los pasos!.");
-            sendText(chatId, "Para registrarte, podes hacerlo con /registrarme.");
+            sendInteraction(message.getFrom(), "LOGIN_REQUIRED");
         }
 
     }
 
 
-    private void searchArticles(Long chatId, String commandText) {
-
+    private void searchArticles(Message message, String commandText) {
+        Long chatId = message.getChatId();
         if(usersLoginMap.containsKey(chatId)) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
-            sendText(chatId, "Desea ver sus articulos (PROPIOS) o todos (TODOS):");
+            sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_SEARCH");
         }
         else{
             ArticleHandler handler = new ArticleHandler(chatId);
@@ -175,55 +121,62 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try{
                 handler.processResponse(null, this);
             } catch(HttpException e){
-                sendText(chatId, "Ha ocurrido un error. Vuelve a intentarlo más tarde.");
+                sendInternalErrorMsg(message.getChatId(), e);
             }
 
         }
     }
 
-    private void register(Long chatId, String commandText) {
+    private void register(Message message, String commandText) {
+        Long chatId = message.getChatId();
         if(usersLoginMap.containsKey(chatId)){
             User u = loggedUsersMap.get(chatId);
-            sendText(chatId, String.format("Hola %s! Ya iniciaste sesión, ingresá /logout para cerrar sesión y poder crear un nuevo usuario.",
-                    u.getName()));
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
             RegisterHandler handler = new RegisterHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
-            sendText(chatId, "Ingrese su nombre: ");
+            sendInteraction(message.getFrom(), "REGISTER_NAME");
         }
 
 
     }
-    private void login(Long chatId, String commandText){
+    private void login(Message message, String commandText){
+        Long chatId = message.getChatId();
         if(usersLoginMap.containsKey(chatId)){
-            sendText(chatId, "Ya se encuentra logueado");
+            User u = loggedUsersMap.get(chatId);
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
             LoginHandler handler = new LoginHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
-            sendText(chatId, "Ingrese su mail: ");
+            sendInteraction(message.getFrom(), "LOGIN_EMAIL");
         }
     }
-    private void logout(Long chatId, String commandText){
+    private void logout(Message message, String commandText){
+        Long chatId = message.getChatId();
         if(usersLoginMap.containsKey(chatId)){
             usersLoginMap.remove(chatId);
             loggedUsersMap.remove(chatId);
-            sendText(chatId, "Se ha deslogueado");
+            sendInteraction(message.getFrom(), "LOG_OUT");
         }
         else{
-            sendText(chatId, "No se encuentra logueado");
+            sendInteraction(message.getFrom(), "LOGIN_REQUIRED");
         }
 
     }
 
-    private void showMenu(Long id, String commandText) {
-        // Aca iría la lógica para mostrar el menú al usuario
-        //TODO
-        sendText(id, "Este es el menu");
-        System.out.println("Menú mostrado al usuario " + id);
+    // commons
+
+    private String getTranslatedMessage(org.telegram.telegrambots.meta.api.objects.User telegramUser, String interaction){
+        return messageDictionary.getMessage(interaction, telegramUser.getLanguageCode());
+    }
+
+    public void sendInteraction(org.telegram.telegrambots.meta.api.objects.User telegramUser, String interaction, Object... objects){
+        sendText(telegramUser.getId(),
+                String.format(getTranslatedMessage(telegramUser, interaction), objects));
     }
 
     public void sendText(Long who, String what, boolean enableMarkup){
@@ -240,65 +193,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void sendText(Long who, String what){
         sendText(who, what, false);
-    }
-    public void sendTextHtml(Long who, String what){
-        SendMessage sm = SendMessage.builder()
-                .chatId(who.toString()) //Who are we sending a message to
-                .parseMode("HTML")
-                .text(what).build();    //Message content
-        try {
-            this.execute(sm);                        //Actually sending the message
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);      //Any error will be printed here
-        }
-    }
-
-    public void copyMessage(Long who, Integer msgId){
-        CopyMessage cm = CopyMessage.builder()
-                .fromChatId(who.toString())  //We copy from the user
-                .chatId(who.toString())      //And send it back to him
-                .messageId(msgId)            //Specifying what message
-                .build();
-        try {
-            this.execute(cm);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public void sendMenu(Long who, String txt, InlineKeyboardMarkup kb){
-        SendMessage sm = SendMessage.builder().chatId(who.toString())
-                .parseMode("HTML").text(txt).build();
-
-        try {
-            execute(sm);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void buttonTap(Long id, String queryId, String data, int msgId) throws TelegramApiException {
-
-        EditMessageText newTxt = EditMessageText.builder()
-                .chatId(id.toString())
-                .messageId(msgId).text("").build();
-
-        EditMessageReplyMarkup newKb = EditMessageReplyMarkup.builder()
-                .chatId(id.toString()).messageId(msgId).build();
-
-        if(data.equals("next")) {
-            newTxt.setText("MENU 2");
-            newKb.setReplyMarkup(keyboardM2);
-        } else if(data.equals("back")) {
-            newTxt.setText("MENU 1");
-            newKb.setReplyMarkup(keyboardM1);
-        }
-
-        AnswerCallbackQuery close = AnswerCallbackQuery.builder()
-                .callbackQueryId(queryId).build();
-
-        execute(close);
-        execute(newTxt);
-        execute(newKb);
     }
 
     public void resetUserHandlers(Long userId){

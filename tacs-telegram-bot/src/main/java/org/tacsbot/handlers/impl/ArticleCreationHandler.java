@@ -9,6 +9,8 @@ import org.tacsbot.helper.ArticleValidatorHelper;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

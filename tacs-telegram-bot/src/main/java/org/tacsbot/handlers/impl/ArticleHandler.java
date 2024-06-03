@@ -21,7 +21,6 @@ public class ArticleHandler implements CommandsHandler {
     private List<Article> articleList;
     private String action;
     private String user;
-
     private ArticleApi articleApiConnector;
 
     public ArticleHandler(Long userId) {
@@ -40,19 +39,19 @@ public class ArticleHandler implements CommandsHandler {
         return articleString;
     }
 
-    private void subscribe(String articleId, String userId, MyTelegramBot bot) throws HttpException {
+    private void subscribe(Message message, String userId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
         if (articleApiConnector.suscribeToArticle(article, userId))
-            bot.sendText(chatId, "Te subscribiste al artículo correctamente!");
-        else bot.sendText(chatId, "No pudiste subscribirte al artículo :(.");
+            bot.sendInteraction(message.getFrom(), "SUBSCRIBE_SUCCESS");
+        else bot.sendInteraction(message.getFrom(), "SUBSCRIBE_FAIL");
     }
 
-    private void closeArticle(String articleId, String userId, MyTelegramBot bot) throws HttpException {
+    private void closeArticle(Message message, String userId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
         Article closedArticle = articleApiConnector.closeArticle(article, userId);
-        bot.sendText(chatId, "Artículo cerrado!\n");
+        bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
         bot.sendText(chatId, closedArticle.getDetailedString());
     }
 
@@ -94,7 +93,7 @@ public class ArticleHandler implements CommandsHandler {
             List<Annotation> subscriptions = articleApiConnector.viewArticleSubscriptions(article);
             bot.sendText(chatId, createSubscriptionsText(subscriptions));
         } catch (IllegalArgumentException e){
-            bot.sendText(chatId, "Ha ocurrido un error. Intentalo devuelta mas tarde!");
+            bot.sendInternalErrorMsg(chatId, e);
         }
     }
 
@@ -142,11 +141,11 @@ public class ArticleHandler implements CommandsHandler {
             switch (action) {
                 case "SUSCRIBIRSE":
                     user = bot.usersLoginMap.get(chatId);
-                    subscribe(articleId, user, bot);
+                    subscribe(message, user, bot);
                     break;
                 case "CERRAR":
                     user = bot.usersLoginMap.get(chatId);
-                    closeArticle(articleId, user, bot);
+                    closeArticle(message, user, bot);
                     break;
                 case "VER_SUSCRIPTOS":
                     user = bot.usersLoginMap.get(chatId);

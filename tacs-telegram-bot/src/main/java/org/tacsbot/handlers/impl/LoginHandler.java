@@ -20,7 +20,7 @@ public class LoginHandler implements CommandsHandler {
             case REQUEST_EMAIL:
                 email = message.getText().toLowerCase();
                 currentStep = LoginStep.REQUEST_PASSWORD;
-                bot.sendText(chatId, "Por favor ingresa la clave:");
+                bot.sendInteraction(message.getFrom(), "LOGIN_PASS");
                 break;
             case REQUEST_PASSWORD:
                 pass = message.getText();
@@ -30,11 +30,9 @@ public class LoginHandler implements CommandsHandler {
                     bot.loggedUsersMap.put(chatId, user);
                     System.out.println(user.getId());
                     System.out.println(bot.usersLoginMap.get(chatId));
-                    bot.sendText(chatId,
-                            String.format("Hola %s! Un gusto verte por acá. Recordá que podes consultar los comandos disponibles ingresando /help.",
-                                    user.getName()));
+                    bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", user.getName());
                 } catch (AuthenticationException e){
-                    bot.sendText(chatId,"Credenciales incorrectas. Para intentarlo devuelta, ingresá /login.");
+                    bot.sendInteraction(message.getFrom(), "WRONG_CREDENTIALS");
                 }
                 break;
         }
