@@ -5,6 +5,8 @@ import ar.edu.utn.frba.tacs.helpers.hash.HashingHelper;
 import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
+import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
+import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
 import lombok.Setter;
@@ -15,13 +17,14 @@ import java.util.List;
 @Setter
 public class UserService {
 
-    private UsersRepository usersRepository;
-
-    private HashingHelper hashingHelper;
+    private final UsersRepository usersRepository;
+    private HashingHelper hashingHelper = new GuavaHashingHelper();
 
     public UserService(){
-        hashingHelper = new GuavaHashingHelper();
         usersRepository = new MongoUsersRepository();
+    }
+    public UserService(String url){
+        usersRepository = new MongoUsersRepository(url);
     }
 
     public User getUser(String id) {

@@ -3,14 +3,26 @@ package ar.edu.utn.frba.tacs;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
-import org.junit.Assert;
-import org.junit.Test;
+import com.mongodb.ServerAddress;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.reverse.TransitionWalker;
+import org.junit.*;
+
 import java.util.Calendar;
 import java.util.Date;
 
 public class ArticleTest {
-    ArticleService articleService = new ArticleService();
-    UserService userService = new UserService();
+    static ArticleService articleService;
+    static UserService userService;
+    @BeforeClass
+    public static void setUp(){
+        TransitionWalker.ReachedState<RunningMongodProcess> running = Mongod.instance().start(Version.Main.V7_0);
+        ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
+        articleService = new ArticleService("mongodb://" + serverAddress);
+        userService = new UserService("mongodb://" + serverAddress);
+    }
     @Test
     public void testCreateArticleSuccess(){
         String userId = createTestUser().getId();

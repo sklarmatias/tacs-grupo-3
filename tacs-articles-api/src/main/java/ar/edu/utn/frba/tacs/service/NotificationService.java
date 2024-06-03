@@ -13,11 +13,14 @@ import java.util.Map;
 
 public class NotificationService {
 
-    private final MongoDBConnector mongoDBConnector = new MongoDBConnector();
-    private final String collectionName = "notifications";;
+    private final MongoDBConnector mongoDBConnector;
+    private final String collectionName = "notifications";
 
     public NotificationService() {
-
+        mongoDBConnector = new MongoDBConnector();
+    }
+    public NotificationService(String url) {
+        mongoDBConnector = new MongoDBConnector(url);
     }
 
     public void generateClosedArticleNotification(String articleName, String articleOwner, List<String> currentSubscribers) {

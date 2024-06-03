@@ -15,8 +15,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MongoArticlesRepository implements ArticlesRepository {
-
-    private final MongoDBConnector dbConnector = new MongoDBConnector();
+    private final MongoDBConnector dbConnector;
+    public MongoArticlesRepository(String url){
+        dbConnector = new MongoDBConnector(url);
+    }
+    public MongoArticlesRepository(){
+        dbConnector = new MongoDBConnector();
+    }
 
     @Override
     public List<Article> findAll() {

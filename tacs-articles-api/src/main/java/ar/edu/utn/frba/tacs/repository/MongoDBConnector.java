@@ -16,8 +16,17 @@ import static com.mongodb.client.model.Aggregates.set;
 
 public class MongoDBConnector {
 
-    private MongoClient mongoClient = MongoClients.create(System.getenv("CON_STRING"));
-    private MongoDatabase database = mongoClient.getDatabase(System.getenv("MONGO_DB"));
+    private final MongoClient mongoClient;
+    private final MongoDatabase database;
+    public MongoDBConnector(String url){
+        mongoClient = MongoClients.create(url);
+        database = mongoClient.getDatabase("admin");
+    }
+    public MongoDBConnector(){
+        mongoClient= MongoClients.create(System.getenv("CON_STRING"));
+        database = mongoClient.getDatabase(System.getenv("MONGO_DB"));
+    }
+
     public String insert(String collectionName,Document doc){
         MongoCollection<Document> collection = database.getCollection(collectionName);
         ObjectId objectId = new ObjectId();

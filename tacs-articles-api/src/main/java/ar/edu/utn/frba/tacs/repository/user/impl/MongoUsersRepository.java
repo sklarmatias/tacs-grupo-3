@@ -18,11 +18,19 @@ import java.util.Map;
 
 public class MongoUsersRepository implements UsersRepository {
 
-    private final MongoDBConnector dbConnector = new MongoDBConnector();
+    private final MongoDBConnector dbConnector;
+    public MongoUsersRepository(String url){
+        dbConnector = new MongoDBConnector(url);
+    }
+    public MongoUsersRepository(){
+        dbConnector = new MongoDBConnector();
+    }
 
     @Override
     public List<User> findAll() {
-        List<Document> documents = dbConnector.selectAll("users");
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("status", "OPEN");
+        List<Document> documents = dbConnector.selectByCondition("users",conditions);
         return documents.stream().map(MongoUserMapper::convertDocumentToUser).toList();
     }
 
