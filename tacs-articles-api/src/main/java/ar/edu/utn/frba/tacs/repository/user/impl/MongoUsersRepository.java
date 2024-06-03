@@ -28,9 +28,7 @@ public class MongoUsersRepository implements UsersRepository {
 
     @Override
     public List<User> findAll() {
-        Map<String, Object> conditions = new HashMap<>();
-        conditions.put("status", "OPEN");
-        List<Document> documents = dbConnector.selectByCondition("users",conditions);
+        List<Document> documents = dbConnector.selectAll("users");
         return documents.stream().map(MongoUserMapper::convertDocumentToUser).toList();
     }
 

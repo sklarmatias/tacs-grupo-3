@@ -65,6 +65,7 @@ public class ArticleTest {
         articleService.closeArticle(article);
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_FAILED, article.getStatus());
+        Assert.assertEquals(0,articleService.listArticles().size());
         articleService.clearArticle(article.getId());
         userService.cleanUser(owner.getId());
         userService.cleanUser(user1.getId());
