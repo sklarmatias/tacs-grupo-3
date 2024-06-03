@@ -3,14 +3,29 @@ package ar.edu.utn.frba.tacs;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
-import org.junit.Assert;
-import org.junit.Test;
+import com.mongodb.ServerAddress;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.reverse.TransitionWalker;
+import org.junit.*;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 public class ArticleTest {
-    ArticleService articleService = new ArticleService();
-    UserService userService = new UserService();
+    static ArticleService articleService;
+    static UserService userService;
+    @Before
+    public void setUp(){
+        TransitionWalker.ReachedState<RunningMongodProcess> running = Mongod.instance().start(Version.Main.V7_0);
+        ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
+        articleService = new ArticleService("mongodb://" + serverAddress);
+        userService = new UserService("mongodb://" + serverAddress);
+    }
     @Test
     public void testCreateArticleSuccess(){
         String userId = createTestUser().getId();
@@ -18,8 +33,7 @@ public class ArticleTest {
         Assert.assertNotNull(articleId);
         Article articleFromDB = articleService.getArticle(articleId);
         Assert.assertEquals(articleId, articleFromDB.getId());
-        articleService.clearArticle(articleId);
-        userService.cleanUser(userId);
+        Assert.assertEquals(1,articleService.listArticles().size());
     }
     @Test
     public void testCreateArticleFailNoOwner(){
@@ -38,10 +52,6 @@ public class ArticleTest {
         articleService.closeArticle(article);
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_SUCCESS, article.getStatus());
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(owner.getId());
-        userService.cleanUser(user1.getId());
-        userService.cleanUser(user2.getId());
     }
 
     @Test
@@ -53,9 +63,7 @@ public class ArticleTest {
         articleService.closeArticle(article);
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_FAILED, article.getStatus());
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(owner.getId());
-        userService.cleanUser(user1.getId());
+        Assert.assertEquals(0,articleService.listArticles().size());
     }
 
     @Test
@@ -68,9 +76,6 @@ public class ArticleTest {
         Integer expected = 1;
         Assert.assertEquals(expected, article.getAnnotationsCounter());
         Assert.assertEquals(user2.getId(), article.getAnnotations().get(0).getUser().getId());
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(user1.getId());
-        userService.cleanUser(user2.getId());
     }
 
     @Test
@@ -86,13 +91,6 @@ public class ArticleTest {
         articleService.signUpUser(article,user3);
         Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user4));
 
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(user1.getId());
-        userService.cleanUser(user2.getId());
-        userService.cleanUser(user3.getId());
-        userService.cleanUser(user4.getId());
-        userService.cleanUser(owner.getId());
-
     }
 
     @Test
@@ -100,8 +98,6 @@ public class ArticleTest {
         User owner = createTestUser();
         Article article = createTestArticle(owner.getId());
         Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,owner));
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(owner.getId());
     }
 
     @Test
@@ -111,9 +107,6 @@ public class ArticleTest {
         Article article = createTestArticle(user1.getId());
         articleService.signUpUser(article,user2);
         Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2));
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(user1.getId());
-        userService.cleanUser(user2.getId());
 
     }
 
@@ -126,18 +119,21 @@ public class ArticleTest {
         articleService.signUpUser(article,user1);
         articleService.closeArticle(article);
         Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user2));
-        articleService.clearArticle(article.getId());
-        userService.cleanUser(owner.getId());
-        userService.cleanUser(user1.getId());
-        userService.cleanUser(user2.getId());
     }
 
 
     private User createTestUser(){
-        User user = new User("juan","perez","jp@gmail.com","123456");
+        User user = new User("juan","perez",random() + "@gmail.com","123456");
         user.setId(userService.saveUser(user));
         return user;
     }
+    private String random() {
+        byte[] array = new byte[4];
+        new Random().nextBytes(array);
+        return new String(array, StandardCharsets.UTF_8);
+
+    }
+
     private Article createTestArticle(String userId) throws IllegalArgumentException{
         Date dt = new Date();
         Calendar c = Calendar.getInstance();

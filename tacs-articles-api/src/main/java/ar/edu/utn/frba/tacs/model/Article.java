@@ -85,7 +85,6 @@ public class Article {
     }
 
     public Annotation signUpUser(User user){
-        try {
             if (this.isClosed())
                 throw new IllegalArgumentException("Article is closed.");
             if (this.isFull())
@@ -99,10 +98,6 @@ public class Article {
             this.annotations.add(annotation);
             this.annotationsCounter++;
             return annotation;
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error: " + e.getMessage());
-            return null;
-        }
     }
 
     public boolean isFull(){

@@ -67,4 +67,9 @@ public class InMemoryUsersRepository implements UsersRepository {
     public void updateAddAnnotation(String id, Annotation annotation) {
 
     }
+
+    @Override
+    public boolean userExists(String email) {
+        return false;
+    }
 }

@@ -19,4 +19,5 @@ public interface UsersRepository {
     void delete(String id);
     void updateAddArticle(String id, Article article);
     void updateAddAnnotation(String id, Annotation annotation);
+    boolean userExists(String email);
 }
