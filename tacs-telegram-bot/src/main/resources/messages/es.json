@@ -1,4 +1,9 @@
 {
+  "ARTICLE_STATUS": {
+    "OPEN": "Abierto",
+    "CLOSED_FAILED": "Cerrado",
+    "CLOSED_SUCCESS": "Cerrado"
+  },
   "HELP": "/crear_articulo - Crear un articulo\n/obtener_articulos - Ver artículos\n/login - Iniciar sesión\n/logout - Cerrar sesión\n/registrarme - Registrarte como un usuario!",
   "INTERNAL_ERROR": "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!",
   "WELCOME": "Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help",
@@ -29,6 +34,6 @@
   "CHOSEN_ARTICLE": "Elegiste el artículo %s",
   "SUBSCRIBE_CONFIRMATION": "Queres suscribirte a al artículo?\nA) Si\n B) No",
   "CHOOSE_OWN_ARTICLES_ACTION": "A) Quiero ver los usuarios subscriptos.\nB) Quiero cerrar el artículo.",
-  "CANCELATION": "No hay problema %s! Podes ingresar /help para ver todos los comandos.",
-  "ARTICLE_STRING": "ESTADO: %s\nNOMBRE: %s\nIMAGEN: %s\nENLACE: %s\nLO QUE EL USUARIO OBTIENE: %s\nCOSTO: %s\nCANTIDAD MAXIMA DE SUSCRIPTOS: %d\nCANTIDAD MINIMA DE SUSCRIPTOS: %d\nFECHA LIMITE: %s\nFECHA DE CREACION: %s\nSUBSCRIPCIONES: %d"
+  "CANCELLATION": "No hay problema %s! Podes ingresar /help para ver todos los comandos.",
+  "ARTICLE_STRING": "ESTADO: %s\nNOMBRE: %s\nIMAGEN: %s\nENLACE: %s\nLO QUE EL USUARIO OBTIENE: %s\nCOSTO: %s (%s)\nCANTIDAD MAXIMA DE SUSCRIPTOS: %d\nCANTIDAD MINIMA DE SUSCRIPTOS: %d\nFECHA LIMITE: %s\nFECHA DE CREACION: %s\nSUBSCRIPCIONES: %d"
 }

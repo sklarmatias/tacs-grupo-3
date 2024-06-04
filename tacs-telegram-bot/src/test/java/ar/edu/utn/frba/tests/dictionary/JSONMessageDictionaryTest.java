@@ -26,26 +26,26 @@ public class JSONMessageDictionaryTest {
 
     @Before
     public void loadJSON() throws URISyntaxException, IOException {
-        File file = new File(Objects.requireNonNull(getClass().getResource("/messages/spanish.json")).toURI());
+        File file = new File(Objects.requireNonNull(getClass().getResource("/messages/es.json")).toURI());
         spanishTranslations = new ObjectMapper().readTree(file);
         jsonMessageDictionary = new JSONMessageDictionary();
     }
 
     @Test
     public void getHelpTranslation(){
-        Assert.assertEquals(spanishTranslations.path("HELP").asText(), jsonMessageDictionary.getMessage("HELP", "spanish.json"));
+        Assert.assertEquals(spanishTranslations.path("HELP").asText(), jsonMessageDictionary.getMessage("HELP", "es"));
     }
 
     @Test
     public void parseDateWithLocale(){
 
         String spanishExpected = """
-                ESTADO: OPEN
+                ESTADO: Abierto
                 NOMBRE: name
                 IMAGEN: image.jpg
                 ENLACE: link.com
                 LO QUE EL USUARIO OBTIENE: user gets!
-                COSTO: $200.000,75
+                COSTO: $200.000,75 (Cada uno)
                 CANTIDAD MAXIMA DE SUSCRIPTOS: 4
                 CANTIDAD MINIMA DE SUSCRIPTOS: 2
                 FECHA LIMITE: 18/5/24
@@ -53,12 +53,12 @@ public class JSONMessageDictionaryTest {
                 SUBSCRIPCIONES: 0""";
 
         String englishExpected = """
-                Status: OPEN
+                Status: Open
                 Name: name
                 Image: image.jpg
                 Link: link.com
                 What user gets: user gets!
-                Cost: $200,000.75
+                Cost: $200,000.75 (Each)
                 Max subscriptions: 4
                 Min subscriptions: 2
                 Deadline: 5/18/24
@@ -78,7 +78,7 @@ public class JSONMessageDictionaryTest {
                 null,
                 0,
                 200000.75,
-                CostType.TOTAL,
+                CostType.PER_USER,
                 2,
                 4
         );
@@ -92,12 +92,12 @@ public class JSONMessageDictionaryTest {
     public void parseDateWithLocaleRounding(){
 
         String spanishExpected = """
-                ESTADO: OPEN
+                ESTADO: Cerrado
                 NOMBRE: name
                 IMAGEN: image.jpg
                 ENLACE: link.com
                 LO QUE EL USUARIO OBTIENE: user gets!
-                COSTO: $200.000,50
+                COSTO: $200.000,50 (Total)
                 CANTIDAD MAXIMA DE SUSCRIPTOS: 4
                 CANTIDAD MINIMA DE SUSCRIPTOS: 2
                 FECHA LIMITE: 18/5/24
@@ -105,12 +105,12 @@ public class JSONMessageDictionaryTest {
                 SUBSCRIPCIONES: 0""";
 
         String englishExpected = """
-                Status: OPEN
+                Status: Closed
                 Name: name
                 Image: image.jpg
                 Link: link.com
                 What user gets: user gets!
-                Cost: $200,000.50
+                Cost: $200,000.50 (Total)
                 Max subscriptions: 4
                 Min subscriptions: 2
                 Deadline: 5/18/24
@@ -123,7 +123,7 @@ public class JSONMessageDictionaryTest {
                 "image.jpg",
                 "link.com",
                 "user gets!",
-                ArticleStatus.OPEN,
+                ArticleStatus.CLOSED_FAILED,
                 new Date(1716058008501L), //2024-05-30 00:00:00
                 "qwerty",
                 new Date(1717032000000L),
@@ -145,24 +145,24 @@ public class JSONMessageDictionaryTest {
 
         String expected = """
                 1:
-                ESTADO: OPEN
+                ESTADO: Abierto
                 NOMBRE: name
                 IMAGEN: image.jpg
                 ENLACE: link.com
                 LO QUE EL USUARIO OBTIENE: user gets!
-                COSTO: $200.000,50
+                COSTO: $200.000,50 (Total)
                 CANTIDAD MAXIMA DE SUSCRIPTOS: 4
                 CANTIDAD MINIMA DE SUSCRIPTOS: 2
                 FECHA LIMITE: 18/5/24
                 FECHA DE CREACION: 29/5/24 22:20:00
                 SUBSCRIPCIONES: 0
                 2:
-                ESTADO: OPEN
+                ESTADO: Abierto
                 NOMBRE: name2
                 IMAGEN: image2.jpg
                 ENLACE: link2.com
                 LO QUE EL USUARIO OBTIENE: user gets 2!
-                COSTO: $200.000,50
+                COSTO: $200.000,50 (Total)
                 CANTIDAD MAXIMA DE SUSCRIPTOS: 4
                 CANTIDAD MINIMA DE SUSCRIPTOS: 2
                 FECHA LIMITE: 18/5/24

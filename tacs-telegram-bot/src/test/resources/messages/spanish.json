@@ -1,4 +1,0 @@
-{
-  "HELP": "/crear_articulo - Crear un articulo\n/obtener_articulos - Ver artículos\n/login - Iniciar sesión\n/logout - Cerrar sesión\n/registrarme - Registrarte como un usuario!",
-  "ARTICLE_STRING": "ESTADO: %s\nNOMBRE: %s\nIMAGEN: %s\nENLACE: %s\nLO QUE EL USUARIO OBTIENE: %s\nCOSTO: %s\nCANTIDAD MAXIMA DE SUSCRIPTOS: %d\nCANTIDAD MINIMA DE SUSCRIPTOS: %d\nFECHA LIMITE: %s\nFECHA DE CREACION: %s\nSUBSCRIPCIONES: %d"
-}

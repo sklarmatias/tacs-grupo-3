@@ -1,4 +1,9 @@
 {
+  "ARTICLE_STATUS": {
+    "OPEN": "Open",
+    "CLOSED_FAILED": "Closed",
+    "CLOSED_SUCCESS": "Closed"
+  },
   "HELP": "/crear_articulo - Create an article\n/obtener_articulos - View articles\n/login - Log in\n/logout - Log out\n/registrarme - Register as a user!",
   "INTERNAL_ERROR": "We had an internal error. Please try again later!",
   "WELCOME": "Hello, welcome! To view the available commands, enter /help",
@@ -30,5 +35,5 @@
   "SUBSCRIBE_CONFIRMATION": "Do you want to subscribe to the article?\nA) YES\nB) NO",
   "CHOOSE_OWN_ARTICLES_ACTION": "A) I want to see the subscribed users.\nB) I want to close the article.",
   "CANCELATION": "No problem %s! You can enter /help to see all the commands.",
-  "ARTICLE_STRING": "Status: %s\nName: %s\nImage: %s\nLink: %s\nWhat user gets: %s\nCost: %s\nMax subscriptions: %d\nMin subscriptions: %d\nDeadline: %s\nCreated at: %s\nSubscriptions: %d"
+  "ARTICLE_STRING": "Status: %s\nName: %s\nImage: %s\nLink: %s\nWhat user gets: %s\nCost: %s (%s)\nMax subscriptions: %d\nMin subscriptions: %d\nDeadline: %s\nCreated at: %s\nSubscriptions: %d"
 }

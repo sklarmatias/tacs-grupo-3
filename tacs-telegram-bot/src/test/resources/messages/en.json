@@ -1,0 +1,15 @@
+{
+  "ARTICLES": {
+    "ARTICLE_STATUS": {
+      "OPEN": "Open",
+      "CLOSED_FAILED": "Closed",
+      "CLOSED_SUCCESS": "Closed"
+    },
+    "COST_TYPE": {
+      "TOTAL": "Total",
+      "PER_USER": "Each"
+    }
+  },
+  "HELP": "/crear_articulo - Create an article\n/obtener_articulos - View articles\n/login - Log in\n/logout - Log out\n/registrarme - Register as a user!",
+  "ARTICLE_STRING": "Status: %s\nName: %s\nImage: %s\nLink: %s\nWhat user gets: %s\nCost: %s (%s)\nMax subscriptions: %d\nMin subscriptions: %d\nDeadline: %s\nCreated at: %s\nSubscriptions: %d"
+}
