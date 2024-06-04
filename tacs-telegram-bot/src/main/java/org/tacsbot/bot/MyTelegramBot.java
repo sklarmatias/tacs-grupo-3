@@ -1,7 +1,10 @@
 package org.tacsbot.bot;
 import org.apache.http.HttpException;
+import org.tacsbot.api.notification.NotificationApi;
+import org.tacsbot.api.notification.impl.NotificationApiConnection;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
+import org.tacsbot.model.NotificationDTO;
 import org.tacsbot.model.UserChatMapping;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -17,6 +20,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MyTelegramBot extends TelegramLongPollingBot {
 
@@ -48,6 +54,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
     public final UserChatMapping usersLoginMap = new UserChatMapping();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final NotificationApi notificationApi = new NotificationApiConnection();
 
 
     public MyTelegramBot() {
@@ -296,6 +304,53 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         execute(newTxt);
         execute(newKb);
     }
+
+    public void scheduleNotificationChecks() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(this::checkPendingNotifications, 0, Long.parseLong(System.getenv("NOTIFICATION_REFRESHING_TIME")), TimeUnit.SECONDS);
+    }
+
+    public void checkPendingNotifications() {
+        try {
+            System.out.println("Intentando enviar notificaciones...");
+            List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
+            for (NotificationDTO notification : notifications) {
+                Long chatId = usersLoginMap.getChatId(notification.getSubscriber());
+                if (chatId == null) {
+                    System.out.println("Chat ID is null for user: " + notification.getSubscriber());
+                    continue;  // Skip this notification
+                }
+                try {
+                    String message = generateMessage(notification);
+                    sendText(chatId, message);
+                    boolean marked = notificationApi.markAsNotified(notification.getId());
+                    if (!marked) {
+                        System.err.println("Failed to mark notification as notified: " + notification.getId());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error sending notification: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching pending notifications: " + e.getMessage());
+        }
+    }
+
+    private String generateMessage(NotificationDTO notification) {
+        switch (notification.getType()) {
+            case "ClosedArticleNotification":
+                return "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "OwnerClosedArticleNotification":
+                return "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "SubscriptionNotification":
+                return "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
+            case "OwnerSubscriptionNotification":
+                return "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
+            default:
+                return "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
+        }
+    }
+
 
     public void resetUserHandlers(Long userId){
         commandsHandlerMap.remove(userId);
