@@ -33,6 +33,8 @@ To run this proyect, you'll have to configure your .env file with the following 
 
 `BOT_USERNAME`
 
+`NOTIFICATION_REFRESHING_TIME` time in seconds
+
 `RESOURCE_URL` this one should be the API root URL, without any final "/"
 
 ## Deployment
