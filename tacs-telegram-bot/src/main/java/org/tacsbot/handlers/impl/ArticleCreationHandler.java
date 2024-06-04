@@ -9,8 +9,6 @@ import org.tacsbot.helper.ArticleValidatorHelper;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.User;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,7 +62,7 @@ public class ArticleCreationHandler implements CommandsHandler {
 
     @Override
     public void processResponse(Message message, MyTelegramBot bot) throws HttpException, IOException{
-        String errorMessage = null;
+        String errorMessage;
         switch (currentStep) {
             case REQUEST_NAME:
                 // Step 1: Request article's name
@@ -82,9 +80,14 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_DEADLINE:
                 // Step 2: Request the article's deadline
                 try {
-                    deadLine = new SimpleDateFormat("yyyy-MM-dd").parse(message.getText());
+                    Date enteredDeadline = new SimpleDateFormat("yyyy-MM-dd").parse(message.getText());
+                    if (enteredDeadline.before(new Date())){
+                        bot.sendText(chatId, "La deadline debe estar en el futuro. Por favor, ingrese la fecha nuevamente:");
+                        return;
+                    }
+                    deadLine = enteredDeadline;
                     currentStep = ArticleCreationStep.REQUEST_COST_TYPE;
-                    bot.sendText(chatId, "Por favor ingresa el tipo de costo (Total o Per_user):");
+                    bot.sendText(chatId, "Por favor ingresa el tipo de costo:\nA) TOTAL\nB) POR USUARIO");
                 } catch (ParseException e) {
                     bot.sendText(chatId, "Formato de fecha incorrecto. Por favor, ingrese la fecha nuevamente usando el formato YYYY-MM-DD");
                 }
@@ -92,14 +95,16 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_COST_TYPE:
                 // Step 3: Request the article's cost type
                 String tipoCostoString = message.getText().toUpperCase();
-                errorMessage = ArticleValidatorHelper.validateCostType(tipoCostoString);
-                if (errorMessage == null) {
-                    costType = CostType.valueOf(tipoCostoString);
-                    currentStep = ArticleCreationStep.REQUEST_COST;
-                    bot.sendText(chatId, "Por favor ingresa el costo:");
-                }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese el tipo de costo nuevamente...");
+                if (tipoCostoString.equals("A"))
+                    costType = CostType.TOTAL;
+                else if (tipoCostoString.equals("B"))
+                    costType = CostType.PER_USER;
+                else{
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    return;
                 }
+                bot.sendText(chatId, "Por favor ingresa el costo:");
+                currentStep = ArticleCreationStep.REQUEST_COST;
                 break;
             case REQUEST_COST:
                 // Step 4: Request the article's cost

@@ -19,7 +19,6 @@ public class ArticleHandler implements CommandsHandler {
     private ArticleType articleType;
     private Integer selectedArticleIndex;
     private List<Article> articleList;
-    private String action;
     private String user;
     private ArticleApi articleApiConnector;
 
@@ -27,16 +26,6 @@ public class ArticleHandler implements CommandsHandler {
         this.chatId = userId;
         this.currentStep = CurrentStep.CHOOSE_ARTICLE_TYPE;
         articleApiConnector = new ArticleApiConnection();
-    }
-
-    private String parseArticlesToMessage(List<Article> articles) {
-        String articleString = "";
-        int indice = 1;
-        for (Article article : articles) {
-            articleString += String.format("*INDICE:* %d\n%s", indice, article.getDetailedString());
-            indice += 1;
-        }
-        return articleString;
     }
 
     private void subscribe(Message message, String userId, MyTelegramBot bot) throws HttpException {
@@ -52,27 +41,27 @@ public class ArticleHandler implements CommandsHandler {
         article.setId(articleId);
         Article closedArticle = articleApiConnector.closeArticle(article, userId);
         bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
-        bot.sendText(chatId, closedArticle.getDetailedString());
+        bot.sendArticle(message.getFrom(), closedArticle);
     }
 
-    private void getArticles(List<Article> articles, MyTelegramBot bot) {
+    private void getArticles(Message message, List<Article> articles, MyTelegramBot bot) {
         this.articleList = articles;
         if (articles.isEmpty())
-            bot.sendText(chatId, "Todavia no hay articulos.");
+            bot.sendInteraction(message.getFrom(), "NO_ARTICLES");
         else {
-            bot.sendText(chatId, "Estos son los artículos disponibles:");
-            bot.sendText(chatId, parseArticlesToMessage(articles), true);
+            bot.sendInteraction(message.getFrom(), "AVAILABLE_ARTICLES");
+            bot.sendArticleList(message.getFrom(),articles);
         }
     }
 
-    private void getAllArticles(MyTelegramBot bot) throws HttpException {
+    private void getAllArticles(Message message, MyTelegramBot bot) throws HttpException {
         List<Article> articles = articleApiConnector.getAllArticles();
-        getArticles(articles, bot);
+        getArticles(message, articles, bot);
     }
 
-    private void getArticlesOf(String userId, MyTelegramBot bot) throws HttpException {
+    private void getArticlesOf(Message message, String userId, MyTelegramBot bot) throws HttpException {
         List<Article> articles = articleApiConnector.getArticlesOf(userId);
-        getArticles(articles, bot);
+        getArticles(message, articles, bot);
     }
 
     private boolean validateSelectedIndex(Integer selectedIndex) {
@@ -86,7 +75,7 @@ public class ArticleHandler implements CommandsHandler {
         return s;
     }
 
-    private void getSubscriptions(String articleId, MyTelegramBot bot) throws HttpException {
+    private void getSubscriptions(Message message, String articleId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
         try{
@@ -105,53 +94,62 @@ public class ArticleHandler implements CommandsHandler {
                     articleType = ArticleType.valueOf(message.getText().toUpperCase());
                 switch (articleType) {
                     case TODOS:
-                        getAllArticles(bot);
+                        getAllArticles(message, bot);
                         if (bot.usersLoginMap.containsKey(chatId)){
-                            action = "SUSCRIBIRSE";
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
-                            bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
+                            bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
                         return;
                     case PROPIOS:
-                        action = "VER_SUSCRIPTOS, CERRAR";
                         user = bot.usersLoginMap.get(chatId);
-                        getArticlesOf(user, bot);
+                        getArticlesOf(message, user, bot);
                         currentStep = CurrentStep.CHOOSE_ARTICLE;
-                        bot.sendText(chatId, "Elegir el articulo indicando su numero de indice");
                         return;
                 }
             case CHOOSE_ARTICLE:
 
                 int selectedIndex = Integer.parseInt(message.getText()) - 1;
                 if (!validateSelectedIndex(selectedIndex)) {
-                    System.out.printf("[INFO] wrong article index %d <0.\n", selectedIndex);
-                    bot.sendText(chatId, "Ingresaste un índice incorrecto. Por favor, volvé a intentarlo.");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_INDEX");
                     currentStep = CurrentStep.CHOOSE_ARTICLE;
                     return;
                 }
                 selectedArticleIndex = selectedIndex;
                 articleId = articleList.get(selectedArticleIndex).getId();
-                bot.sendText(chatId, "Elegiste el artículo " + articleList.get(selectedArticleIndex).getName() + ".");
-                bot.sendText(chatId, "Elegir la accion: " + action);
+                bot.sendInteraction(message.getFrom(), "CHOSEN_ARTICLE", selectedIndex);
+                if (articleType == ArticleType.TODOS)
+                    bot.sendInteraction(message.getFrom(), "SUBSCRIBE_CONFIRMATION");
+                else bot.sendInteraction(message.getFrom(), "CHOOSE_OWN_ARTICLES_ACTION");
                 currentStep = CurrentStep.CHOOSE_ACTION;
                 break;
             case CHOOSE_ACTION:
-            String action = message.getText();
-            System.out.println(action);
-            switch (action) {
-                case "SUSCRIBIRSE":
-                    user = bot.usersLoginMap.get(chatId);
-                    subscribe(message, user, bot);
-                    break;
-                case "CERRAR":
-                    user = bot.usersLoginMap.get(chatId);
-                    closeArticle(message, user, bot);
-                    break;
-                case "VER_SUSCRIPTOS":
-                    user = bot.usersLoginMap.get(chatId);
-                    getSubscriptions(articleId, bot);
-                    break;
-            }
+                String action = message.getText().toUpperCase();
+                System.out.println(action);
+                if (articleType == ArticleType.TODOS){
+                    if (action.equals("A")){
+                        user = bot.usersLoginMap.get(chatId);
+                        subscribe(message, user, bot);
+                    } else if (action.equals("B")) {
+                        bot.sendInteraction(message.getFrom(), "CANCELATION");
+                    } else{
+                        bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    }
+                } else if (articleType == ArticleType.PROPIOS) {
+                    switch (action) {
+                        case "A":
+                            user = bot.usersLoginMap.get(chatId);
+                            getSubscriptions(message, user, bot);
+                            break;
+                        case "B":
+                            user = bot.usersLoginMap.get(chatId);
+                            closeArticle(message, user, bot);
+                            break;
+                    }
+                }
+                else {
+                    throw new IllegalStateException("Wrong articleType!");
+                }
+                break;
         }
     }
 

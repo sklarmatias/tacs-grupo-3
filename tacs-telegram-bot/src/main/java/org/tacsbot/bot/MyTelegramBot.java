@@ -5,6 +5,7 @@ import org.tacsbot.dictionary.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
+import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyTelegramBot extends TelegramLongPollingBot {
@@ -48,6 +50,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public void sendInternalErrorMsg(Long chatId, Exception exception){
         sendText(chatId, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
         System.out.printf("[Error] Error:\n%s\n", exception.getMessage());
+        exception.printStackTrace();
     }
 
     @Override
@@ -59,7 +62,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
 
         if(msg.isCommand()){
-            System.out.println("IS COMMAND!");
             resetUserHandlers(id);
             String command = msg.getText();
 
@@ -70,7 +72,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                     sendInternalErrorMsg(id, e);
                 }
             } else{
-                sendText(id, "Uy, no te entendí. Probá ingresando los comandos existentes con /help!");
+                sendInteraction(user, "UNKNOWN_COMMAND");
             }
 
         }else if (commandsHandlerMap.containsKey(id)){
@@ -80,7 +82,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 sendInternalErrorMsg(id, e);
             }
 
-        }else{sendText(id,"Hola, bienvenido! Para visualizar los comandos disponibles ingrese /help");}
+        }else sendInteraction(user, "WELCOME");
     }
 
     // commands
@@ -119,7 +121,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             ArticleHandler handler = new ArticleHandler(chatId);
             handler.setArticleType(ArticleType.TODOS);
             try{
-                handler.processResponse(null, this);
+                handler.processResponse(message, this);
             } catch(HttpException e){
                 sendInternalErrorMsg(message.getChatId(), e);
             }
@@ -169,6 +171,15 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     // commons
+
+    public void sendArticle(org.telegram.telegrambots.meta.api.objects.User telegramUser, Article article){
+        sendText(telegramUser.getId(), messageDictionary.articleToString(article, telegramUser.getLanguageCode()));
+    }
+
+    public void sendArticleList(org.telegram.telegrambots.meta.api.objects.User telegramUser, List<Article> articleList){
+        sendText(telegramUser.getId(),
+                messageDictionary.articleListToString(articleList, telegramUser.getLanguageCode()));
+    }
 
     private String getTranslatedMessage(org.telegram.telegrambots.meta.api.objects.User telegramUser, String interaction){
         return messageDictionary.getMessage(interaction, telegramUser.getLanguageCode());
