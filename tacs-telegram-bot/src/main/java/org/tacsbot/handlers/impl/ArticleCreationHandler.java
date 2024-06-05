@@ -136,7 +136,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                 try {
                     int minNumUsers = Integer.parseInt(message.getText());
                     if (minNumUsers > article.getUsersMax()) {
-                        bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_USERS_MIN");
+                        bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_USERS_MIN", article.getUsersMax());
                         bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                     } else if (minNumUsers < 0) {
                         throw new NumberFormatException();
