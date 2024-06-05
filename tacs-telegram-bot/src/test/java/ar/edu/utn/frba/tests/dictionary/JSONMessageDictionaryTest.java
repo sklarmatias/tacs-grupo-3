@@ -6,9 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.tacsbot.dictionary.JSONMessageDictionary;
-import org.tacsbot.model.Article;
-import org.tacsbot.model.ArticleStatus;
-import org.tacsbot.model.CostType;
+import org.tacsbot.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -206,6 +204,47 @@ public class JSONMessageDictionaryTest {
         );
 
         Assert.assertEquals(expected, jsonMessageDictionary.articleListToString(new ArrayList<>(List.of(article1,article2)), "es"));
+
+    }
+
+    @Test
+    public void parseAnnotationLocally(){
+
+        String expectedSpanish = """
+                (18/5/24 15:46:48)
+                Cabrera, Thiago (thiago@tacs.com)""";
+
+        String expectedEnglish = """
+                (5/18/24 3:46:48 PM)
+                Cabrera, Thiago (thiago@tacs.com)""";
+
+        Annotation annotation = new Annotation(
+                new User(null, "Thiago", "Cabrera", "thiago@tacs.com", null),
+                new Date(1716058008501L)
+        );
+
+        Assert.assertEquals(expectedSpanish, jsonMessageDictionary.annotationToString(annotation, "es"));
+
+        Assert.assertEquals(expectedEnglish, jsonMessageDictionary.annotationToString(annotation, "en"));
+
+    }
+
+    @Test
+    public void parseAnnotationListLocally(){
+
+        String expectedSpanish = """
+                (18/5/24 15:46:48)
+                Cabrera, Thiago (thiago@tacs.com)
+                (18/5/24 15:46:48)
+                Cabrera, Thiago (thiago@tacs.com)
+                """;
+
+        Annotation annotation = new Annotation(
+                new User(null, "Thiago", "Cabrera", "thiago@tacs.com", null),
+                new Date(1716058008501L)
+        );
+
+        Assert.assertEquals(expectedSpanish, jsonMessageDictionary.annotationListToString(new ArrayList<>(List.of(annotation, annotation)), "es"));
 
     }
 

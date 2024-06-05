@@ -1,5 +1,6 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.NonNull;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
@@ -68,19 +69,15 @@ public class ArticleHandler implements CommandsHandler {
         return selectedIndex >= 0 && selectedIndex < articleList.size();
     }
 
-    private String createSubscriptionsText(List<Annotation> annotations){
-        String s = "";
-        for (Annotation annotation: annotations)
-            s += annotation.toString() + "\n";
-        return s;
-    }
-
-    private void getSubscriptions(Message message, String articleId, MyTelegramBot bot) throws HttpException {
+    private void getSubscriptions(Message message, @NonNull String articleId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
         try{
             List<Annotation> subscriptions = articleApiConnector.viewArticleSubscriptions(article);
-            bot.sendText(chatId, createSubscriptionsText(subscriptions));
+            if (subscriptions.isEmpty())
+                bot.sendInteraction(message.getFrom(), "NO_SUBSCRIPTIONS");
+            else
+                bot.sendAnnotationList(message.getFrom(), subscriptions);
         } catch (IllegalArgumentException e){
             bot.sendInternalErrorMsg(chatId, e);
         }
@@ -90,8 +87,16 @@ public class ArticleHandler implements CommandsHandler {
     public void processResponse(Message message, MyTelegramBot bot) throws HttpException {
         switch (currentStep) {
             case CHOOSE_ARTICLE_TYPE:
-                if (articleType == null)
-                    articleType = ArticleType.valueOf(message.getText().toUpperCase());
+                if (articleType == null){
+                    if (message.getText().equalsIgnoreCase("A")){
+                        articleType = ArticleType.TODOS;
+                    } else if (message.getText().equalsIgnoreCase("B"))
+                        articleType = ArticleType.PROPIOS;
+                    else{
+                        bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                        break;
+                    }
+                }
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
@@ -104,6 +109,7 @@ public class ArticleHandler implements CommandsHandler {
                         user = bot.usersLoginMap.get(chatId);
                         getArticlesOf(message, user, bot);
                         currentStep = CurrentStep.CHOOSE_ARTICLE;
+                        bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         return;
                 }
             case CHOOSE_ARTICLE:
@@ -130,7 +136,7 @@ public class ArticleHandler implements CommandsHandler {
                         user = bot.usersLoginMap.get(chatId);
                         subscribe(message, user, bot);
                     } else if (action.equals("B")) {
-                        bot.sendInteraction(message.getFrom(), "CANCELATION");
+                        bot.sendInteraction(message.getFrom(), "CANCELLATION");
                     } else{
                         bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     }
@@ -138,7 +144,7 @@ public class ArticleHandler implements CommandsHandler {
                     switch (action) {
                         case "A":
                             user = bot.usersLoginMap.get(chatId);
-                            getSubscriptions(message, user, bot);
+                            getSubscriptions(message, articleId, bot);
                             break;
                         case "B":
                             user = bot.usersLoginMap.get(chatId);

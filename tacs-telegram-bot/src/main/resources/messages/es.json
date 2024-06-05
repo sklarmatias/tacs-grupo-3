@@ -1,8 +1,14 @@
 {
-  "ARTICLE_STATUS": {
-    "OPEN": "Abierto",
-    "CLOSED_FAILED": "Cerrado",
-    "CLOSED_SUCCESS": "Cerrado"
+  "ARTICLES": {
+    "ARTICLE_STATUS": {
+      "OPEN": "Abierto",
+      "CLOSED_FAILED": "Cerrado",
+      "CLOSED_SUCCESS": "Cerrado"
+    },
+    "COST_TYPE": {
+      "TOTAL": "Total",
+      "PER_USER": "Cada uno"
+    }
   },
   "HELP": "/crear_articulo - Crear un articulo\n/obtener_articulos - Ver artículos\n/login - Iniciar sesión\n/logout - Cerrar sesión\n/registrarme - Registrarte como un usuario!",
   "INTERNAL_ERROR": "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!",
@@ -35,5 +41,18 @@
   "SUBSCRIBE_CONFIRMATION": "Queres suscribirte a al artículo?\nA) Si\n B) No",
   "CHOOSE_OWN_ARTICLES_ACTION": "A) Quiero ver los usuarios subscriptos.\nB) Quiero cerrar el artículo.",
   "CANCELLATION": "No hay problema %s! Podes ingresar /help para ver todos los comandos.",
-  "ARTICLE_STRING": "ESTADO: %s\nNOMBRE: %s\nIMAGEN: %s\nENLACE: %s\nLO QUE EL USUARIO OBTIENE: %s\nCOSTO: %s (%s)\nCANTIDAD MAXIMA DE SUSCRIPTOS: %d\nCANTIDAD MINIMA DE SUSCRIPTOS: %d\nFECHA LIMITE: %s\nFECHA DE CREACION: %s\nSUBSCRIPCIONES: %d"
+  "NO_SUBSCRIPTIONS": "Todavía no hay subscripciones al artículo.",
+  "ARTICLE_STRING": "ESTADO: %s\nNOMBRE: %s\nIMAGEN: %s\nENLACE: %s\nLO QUE EL USUARIO OBTIENE: %s\nCOSTO: %s (%s)\nCANTIDAD MAXIMA DE SUSCRIPTOS: %d\nCANTIDAD MINIMA DE SUSCRIPTOS: %d\nFECHA LIMITE: %s\nFECHA DE CREACION: %s\nSUBSCRIPCIONES: %d",
+  "ARTICLE_CREATED": "Artículo creado de manera exitosa!",
+  "ARTICLE_NOT_CREATED": "No se pudo crear el articulo: uno o más campos incorrectos. Por favor, intentelo nuevamente.",
+  "ARTICLE_DEADLINE": "Ingrese la fecha limite (YYYY-MM-DD):",
+  "ARTICLE_INVALID_DEADLINE": "La fecha limite debe ser futura. Por favor, ingrese la fecha nuevamente:",
+  "ARTICLE_COST_TYPE": "Ingrese la opción correcta:\nA) Costo total\nB) Costo por usuario",
+  "ARTICLE_COST": "Por favor ingresa el costo:",
+  "ARTICLE_USER_GETS": "Por favor ingresa lo que obtiene cada usuario:",
+  "ARTICLE_USERS_MAX": "Por favor ingresa la cantidad máxima de usuarios:",
+  "ARTICLE_USERS_MIN": "Por favor ingresa la cantidad mínima de usuarios:",
+  "ARTICLE_INVALID_USERS_MIN": "Debes ingresar una cantidad mínima menor o igual a la máxima (%d) y mayor a 0.",
+  "ARTICLE_IMAGE": "Adjunte la imagen: ",
+  "ARTICLE_LINK": "Adjunte el link: "
 }

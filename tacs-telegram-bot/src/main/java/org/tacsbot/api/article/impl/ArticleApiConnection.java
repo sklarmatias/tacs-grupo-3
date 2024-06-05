@@ -106,7 +106,8 @@ public class ArticleApiConnection implements ArticleApi {
             if (response.statusCode() == 200){
                 return annotationParser.parseJSONToAnnotation(response.body());
             } else{
-                throw new IllegalArgumentException("Couldn't get subscriptions of article of id " + article.getId());
+                throw new IllegalArgumentException(
+                        String.format("Couldn't get subscriptions of article of id %s\n%d: %s",article.getId(), response.statusCode(), response.body()));
             }
         } catch (URISyntaxException | InterruptedException | IOException e) {
             throw new HttpException(String.format("[Error] Exception getting subscriptions of articleId %s.\n%s\n",

@@ -1,8 +1,14 @@
 {
-  "ARTICLE_STATUS": {
-    "OPEN": "Open",
-    "CLOSED_FAILED": "Closed",
-    "CLOSED_SUCCESS": "Closed"
+  "ARTICLES": {
+    "ARTICLE_STATUS": {
+      "OPEN": "Open",
+      "CLOSED_FAILED": "Closed",
+      "CLOSED_SUCCESS": "Closed"
+    },
+    "COST_TYPE": {
+      "TOTAL": "Total",
+      "PER_USER": "Each"
+    }
   },
   "HELP": "/crear_articulo - Create an article\n/obtener_articulos - View articles\n/login - Log in\n/logout - Log out\n/registrarme - Register as a user!",
   "INTERNAL_ERROR": "We had an internal error. Please try again later!",
@@ -34,6 +40,19 @@
   "CHOSEN_ARTICLE": "You chose the article %s",
   "SUBSCRIBE_CONFIRMATION": "Do you want to subscribe to the article?\nA) YES\nB) NO",
   "CHOOSE_OWN_ARTICLES_ACTION": "A) I want to see the subscribed users.\nB) I want to close the article.",
-  "CANCELATION": "No problem %s! You can enter /help to see all the commands.",
-  "ARTICLE_STRING": "Status: %s\nName: %s\nImage: %s\nLink: %s\nWhat user gets: %s\nCost: %s (%s)\nMax subscriptions: %d\nMin subscriptions: %d\nDeadline: %s\nCreated at: %s\nSubscriptions: %d"
+  "CANCELLATION": "No problem %s! You can enter /help to see all the commands.",
+  "ARTICLE_STRING": "Status: %s\nName: %s\nImage: %s\nLink: %s\nWhat user gets: %s\nCost: %s (%s)\nMax subscriptions: %d\nMin subscriptions: %d\nDeadline: %s\nCreated at: %s\nSubscriptions: %d",
+  "NO_SUBSCRIPTIONS": "There are no subscriptions to the article yet.",
+  "ARTICLE_CREATED": "Article created successfully!",
+  "ARTICLE_NOT_CREATED": "The article could not be created: one or more fields are incorrect. Please try again.",
+  "ARTICLE_DEADLINE": "Enter the deadline (YYYY-MM-DD):",
+  "ARTICLE_INVALID_DEADLINE": "The deadline must be in the future. Please enter the date again:",
+  "ARTICLE_COST_TYPE": "Enter the correct option:\nA) Total cost\nB) Cost per user",
+  "ARTICLE_COST": "Please enter the cost:",
+  "ARTICLE_USER_GETS": "Please enter what each user gets:",
+  "ARTICLE_USERS_MAX": "Please enter the maximum number of users:",
+  "ARTICLE_USERS_MIN": "Please enter the minimum number of users:",
+  "ARTICLE_INVALID_USERS_MIN": "You must enter a minimum number less than or equal to the maximum (%d) and greater than 0.",
+  "ARTICLE_IMAGE": "Attach the image: ",
+  "ARTICLE_LINK": "Attach the link: "
 }

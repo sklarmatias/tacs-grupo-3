@@ -50,13 +50,12 @@ public class ArticleCreationHandler implements CommandsHandler {
         this.articleApi = new ArticleApiConnection();
     }
 
-    private void createArticle(Article article, MyTelegramBot bot) throws HttpException, IOException {
+    private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {
         try{
             articleApi.createArticle(article);
-            bot.sendText(chatId, "Artículo creado de manera exitosa!");
+            bot.sendInteraction(message.getFrom(), "ARTICLE_CREATED");
         } catch(IllegalArgumentException e){
-            // couldnt create, input error
-            bot.sendText(chatId, "No se pudo crear el articulo: uno o más campos incorrectos. Por favor, intentelo nuevamente.");
+            bot.sendInteraction(message.getFrom(), "ARTICLE_NOT_CREATED");
         }
     }
 
@@ -72,7 +71,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                     articleName = message.getText();
 
                 currentStep = ArticleCreationStep.REQUEST_DEADLINE;
-                bot.sendText(chatId, "Por favor ingresa la fecha límite (YYYY-MM-DD):");
+                bot.sendInteraction(message.getFrom(), "ARTICLE_DEADLINE");
                 }else {
                     bot.sendText(chatId, errorMessage + "Ingrese un nombre nuevamente...");
                 }
@@ -82,14 +81,15 @@ public class ArticleCreationHandler implements CommandsHandler {
                 try {
                     Date enteredDeadline = new SimpleDateFormat("yyyy-MM-dd").parse(message.getText());
                     if (enteredDeadline.before(new Date())){
-                        bot.sendText(chatId, "La deadline debe estar en el futuro. Por favor, ingrese la fecha nuevamente:");
+                        bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_DEADLINE");
                         return;
                     }
                     deadLine = enteredDeadline;
                     currentStep = ArticleCreationStep.REQUEST_COST_TYPE;
-                    bot.sendText(chatId, "Por favor ingresa el tipo de costo:\nA) TOTAL\nB) POR USUARIO");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_COST_TYPE");
                 } catch (ParseException e) {
-                    bot.sendText(chatId, "Formato de fecha incorrecto. Por favor, ingrese la fecha nuevamente usando el formato YYYY-MM-DD");
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_DEADLINE");
                 }
                 break;
             case REQUEST_COST_TYPE:
@@ -101,9 +101,10 @@ public class ArticleCreationHandler implements CommandsHandler {
                     costType = CostType.PER_USER;
                 else{
                     bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_COST_TYPE");
                     return;
                 }
-                bot.sendText(chatId, "Por favor ingresa el costo:");
+                bot.sendInteraction(message.getFrom(), "ARTICLE_COST");
                 currentStep = ArticleCreationStep.REQUEST_COST;
                 break;
             case REQUEST_COST:
@@ -111,9 +112,10 @@ public class ArticleCreationHandler implements CommandsHandler {
                 try {
                     cost = Double.parseDouble(message.getText());
                     currentStep = ArticleCreationStep.REQUEST_USERGETS;
-                    bot.sendText(chatId, "Por favor ingresa lo que obtiene cada usuario:");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USER_GETS");
                 } catch (NumberFormatException e) {
-                    bot.sendText(chatId, "Formato de costo incorrecto. Por favor, ingresa un número válido (xxxx.xx)");
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_COST");
                 }
                 break;
             case REQUEST_USERGETS:
@@ -122,7 +124,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                     userGets = message.getText();
 
                     currentStep = ArticleCreationStep.REQUEST_MAX_USERS;
-                    bot.sendText(chatId, "Por favor ingresa la cantidad máxima de usuarios:");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MAX");
                 }else {
                     bot.sendText(chatId, errorMessage + "Ingrese un texto nuevamente...");
                 }
@@ -133,9 +135,10 @@ public class ArticleCreationHandler implements CommandsHandler {
                 try {
                     maxNumUsers = Integer.parseInt(message.getText());
                     currentStep = ArticleCreationStep.REQUEST_MIN_USERS;
-                    bot.sendText(chatId, "Por favor ingresa la cantidad mínima de usuarios:");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                 } catch (NumberFormatException e) {
-                    bot.sendText(chatId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MAX");
                 }
                 break;
             case REQUEST_MIN_USERS:
@@ -145,24 +148,25 @@ public class ArticleCreationHandler implements CommandsHandler {
                     errorMessage = ArticleValidatorHelper.validateMinNumUsers(minNumUsers, maxNumUsers);
                     if ( errorMessage == null) {
                         currentStep = ArticleCreationStep.REQUEST_LINK;
-
-                        bot.sendText(chatId, "Adjunte el link");
+                        bot.sendInteraction(message.getFrom(), "ARTICLE_LINK");
                     }else {
                         bot.sendText(chatId, errorMessage);
                     }
                 } catch (NumberFormatException e) {
-                    bot.sendText(chatId, "Formato de cantidad incorrecto. Por favor, ingresa un número válido.");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_USERS_MIN");
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                 }
                 break;
             case REQUEST_LINK:
                 link = message.getText();
                 currentStep = ArticleCreationStep.REQUEST_IMAGE;
-                bot.sendText(chatId, "Adjunte la imagen");
+                bot.sendInteraction(message.getFrom(), "ARTICLE_IMAGE");
                 break;
             case REQUEST_IMAGE:
                 image = message.getText();
                 this.userId = bot.usersLoginMap.get(chatId);
-                createArticle(new Article(
+                createArticle(message,
+                        new Article(
                             null,
                             articleName,
                             image,

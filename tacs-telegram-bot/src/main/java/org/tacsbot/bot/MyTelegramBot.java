@@ -5,6 +5,7 @@ import org.tacsbot.dictionary.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
+import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -174,6 +175,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void sendArticle(org.telegram.telegrambots.meta.api.objects.User telegramUser, Article article){
         sendText(telegramUser.getId(), messageDictionary.articleToString(article, telegramUser.getLanguageCode()));
+    }
+
+    public void sendAnnotationList(org.telegram.telegrambots.meta.api.objects.User telegramUser, List<Annotation> annotationList){
+        sendText(telegramUser.getId(),
+                messageDictionary.annotationListToString(annotationList, telegramUser.getLanguageCode()));
     }
 
     public void sendArticleList(org.telegram.telegrambots.meta.api.objects.User telegramUser, List<Article> articleList){

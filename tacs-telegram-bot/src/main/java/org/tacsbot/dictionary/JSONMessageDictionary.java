@@ -2,19 +2,17 @@ package org.tacsbot.dictionary;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.ArticleStatus;
 import org.tacsbot.model.CostType;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 public class JSONMessageDictionary implements MessageDictionary{
 
@@ -24,6 +22,24 @@ public class JSONMessageDictionary implements MessageDictionary{
         if (Objects.equals(msg, "") || msg == null)
             return getJSONNode(languageCode).path(message).asText();
         return msg;
+    }
+
+    @Override
+    public String annotationToString(Annotation annotation, String languageCode) {
+        return String.format("(%s)\n%s, %s (%s)",
+                parseDateTimeLocally(annotation.getDate(), languageCode),
+                annotation.getUser().getSurname(),
+                annotation.getUser().getName(),
+                annotation.getUser().getEmail());
+    }
+
+    @Override
+    public String annotationListToString(List<Annotation> annotationList, String languageCode) {
+        StringBuilder s = new StringBuilder();
+        for (Annotation annotation: annotationList){
+            s.append(annotationToString(annotation, languageCode)).append("\n");
+        }
+        return s.toString();
     }
 
     @Override
@@ -57,7 +73,6 @@ public class JSONMessageDictionary implements MessageDictionary{
 
     private String parseArticleToStringWithGivenTemplate(Article article, String languageCode, String template){
         SimpleDateFormat dateFormat = getDateFormat(languageCode);
-        SimpleDateFormat timeFormat = getTimeFormat(languageCode);
         return String.format(template,
                 parseLocally(article.getStatus(), languageCode),
                 article.getName(),
@@ -69,7 +84,7 @@ public class JSONMessageDictionary implements MessageDictionary{
                 article.getUsersMax(),
                 article.getUsersMin(),
                 dateFormat.format(article.getDeadline()),
-                String.format("%s %s", dateFormat.format(article.getCreationDate()), timeFormat.format(article.getCreationDate())),
+                parseDateTimeLocally(article.getCreationDate(), languageCode),
                 article.getAnnotationsCounter());
     }
 
@@ -88,11 +103,17 @@ public class JSONMessageDictionary implements MessageDictionary{
         return getJSONNode(languageCode).path("ARTICLES").path("COST_TYPE").path(status.toString()).asText();
     }
 
-    public SimpleDateFormat getDateFormat(String languageCode){
+    private String parseDateTimeLocally(Date date, String languageCode){
+        return String.format("%s %s",
+                getDateFormat(languageCode).format(date),
+                getTimeFormat(languageCode).format(date));
+    }
+
+    private SimpleDateFormat getDateFormat(String languageCode){
         return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.DATE_FIELD, Locale.forLanguageTag(languageCode));
     }
 
-    public SimpleDateFormat getTimeFormat(String languageCode){
+    private SimpleDateFormat getTimeFormat(String languageCode){
         return (SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.DEFAULT, Locale.forLanguageTag(languageCode));
     }
 
