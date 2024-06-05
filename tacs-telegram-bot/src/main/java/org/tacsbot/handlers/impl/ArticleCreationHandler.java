@@ -15,18 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ArticleCreationHandler implements CommandsHandler {
-    private Long chatId;
     private ArticleCreationStep currentStep;
-    private String articleName;
-    private Date deadLine;
-    private CostType costType;
-    private Double cost;
-    private Integer maxNumUsers;
-    private Integer minNumUsers;
-    private String image;
-    private String link;
-    private String userGets;
-    private String userId;
+
+    private final Article article;
 
     private ArticleApi articleApi;
 
@@ -45,9 +36,9 @@ public class ArticleCreationHandler implements CommandsHandler {
     }
 
     public ArticleCreationHandler(Long userId) {
-        this.chatId = userId;
         this.currentStep = ArticleCreationStep.REQUEST_NAME;
         this.articleApi = new ArticleApiConnection();
+        this.article = new Article();
     }
 
     private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {
@@ -61,6 +52,7 @@ public class ArticleCreationHandler implements CommandsHandler {
 
     @Override
     public void processResponse(Message message, MyTelegramBot bot) throws HttpException, IOException{
+        Long chatId = message.getChatId();
         String errorMessage;
         switch (currentStep) {
             case REQUEST_NAME:
@@ -68,8 +60,7 @@ public class ArticleCreationHandler implements CommandsHandler {
 
                 errorMessage = ArticleValidatorHelper.validateArticleName(message.getText());
                 if (errorMessage == null){
-                    articleName = message.getText();
-
+                    article.setName(message.getText());
                 currentStep = ArticleCreationStep.REQUEST_DEADLINE;
                 bot.sendInteraction(message.getFrom(), "ARTICLE_DEADLINE");
                 }else {
@@ -84,7 +75,7 @@ public class ArticleCreationHandler implements CommandsHandler {
                         bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_DEADLINE");
                         return;
                     }
-                    deadLine = enteredDeadline;
+                    article.setDeadline(enteredDeadline);
                     currentStep = ArticleCreationStep.REQUEST_COST_TYPE;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_COST_TYPE");
                 } catch (ParseException e) {
@@ -96,9 +87,9 @@ public class ArticleCreationHandler implements CommandsHandler {
                 // Step 3: Request the article's cost type
                 String tipoCostoString = message.getText().toUpperCase();
                 if (tipoCostoString.equals("A"))
-                    costType = CostType.TOTAL;
+                    article.setCostType(CostType.TOTAL);
                 else if (tipoCostoString.equals("B"))
-                    costType = CostType.PER_USER;
+                    article.setCostType(CostType.PER_USER);
                 else{
                     bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     bot.sendInteraction(message.getFrom(), "ARTICLE_COST_TYPE");
@@ -110,7 +101,7 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_COST:
                 // Step 4: Request the article's cost
                 try {
-                    cost = Double.parseDouble(message.getText());
+                    article.setCost(Double.parseDouble(message.getText()));
                     currentStep = ArticleCreationStep.REQUEST_USERGETS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USER_GETS");
                 } catch (NumberFormatException e) {
@@ -121,8 +112,7 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_USERGETS:
                 errorMessage = ArticleValidatorHelper.validateUserGets(message.getText());
                 if (errorMessage == null){
-                    userGets = message.getText();
-
+                    article.setUserGets(message.getText());
                     currentStep = ArticleCreationStep.REQUEST_MAX_USERS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MAX");
                 }else {
@@ -133,7 +123,7 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_MAX_USERS:
                 // Paso 5: Solicitar la cantidad máxima de usuarios del artículo
                 try {
-                    maxNumUsers = Integer.parseInt(message.getText());
+                    article.setUsersMax(Integer.parseInt(message.getText()));
                     currentStep = ArticleCreationStep.REQUEST_MIN_USERS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                 } catch (NumberFormatException e) {
@@ -144,45 +134,31 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_MIN_USERS:
                 // Step 6: Request the article's minimum number of users
                 try {
-                    minNumUsers = Integer.parseInt(message.getText());
-                    errorMessage = ArticleValidatorHelper.validateMinNumUsers(minNumUsers, maxNumUsers);
-                    if ( errorMessage == null) {
+                    int minNumUsers = Integer.parseInt(message.getText());
+                    if (minNumUsers > article.getUsersMax()) {
+                        bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_USERS_MIN");
+                        bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
+                    } else if (minNumUsers < 0) {
+                        throw new NumberFormatException();
+                    } else{
+                    article.setUsersMin(minNumUsers);
                         currentStep = ArticleCreationStep.REQUEST_LINK;
                         bot.sendInteraction(message.getFrom(), "ARTICLE_LINK");
-                    }else {
-                        bot.sendText(chatId, errorMessage);
                     }
                 } catch (NumberFormatException e) {
-                    bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_USERS_MIN");
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                 }
                 break;
             case REQUEST_LINK:
-                link = message.getText();
+                article.setLink(message.getText());
                 currentStep = ArticleCreationStep.REQUEST_IMAGE;
                 bot.sendInteraction(message.getFrom(), "ARTICLE_IMAGE");
                 break;
             case REQUEST_IMAGE:
-                image = message.getText();
-                this.userId = bot.usersLoginMap.get(chatId);
-                createArticle(message,
-                        new Article(
-                            null,
-                            articleName,
-                            image,
-                            link,
-                            userGets,
-                            null,
-                            deadLine,
-                            userId,
-                            null,
-                            null,
-                            null,
-                            cost,
-                            costType,
-                            minNumUsers,
-                            maxNumUsers
-                    ), bot);
+                article.setImage(message.getText());
+                article.setOwner(bot.usersLoginMap.get(chatId));
+                createArticle(message, article, bot);
                 bot.resetUserHandlers(chatId);
 
         }
