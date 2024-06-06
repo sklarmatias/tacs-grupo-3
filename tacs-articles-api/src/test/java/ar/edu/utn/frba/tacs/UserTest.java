@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs;
 
+import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
@@ -32,7 +33,7 @@ public class UserTest {
         userService = new UserService("mongodb://" + serverAddress);
     }
     @Test
-    public void signUpUserRepeatedEmail(){
+    public void signUpUserRepeatedEmail() throws DuplicatedEmailException {
         User user = new User("juan","perez","abcd@gmail.com","123456");
         user.setId(userService.saveUser(user));
         User secondUser = new User("jose","perez","abcd@gmail.com","12345678");
@@ -65,7 +66,7 @@ public class UserTest {
         Assert.assertFalse(user.hasInteracted());
 
     }
-    private User createTestUser(){
+    private User createTestUser() throws DuplicatedEmailException {
         User user = new User("juan","perez","a@gmail.com","123456");
         user.setId(userService.saveUser(user));
         return user;

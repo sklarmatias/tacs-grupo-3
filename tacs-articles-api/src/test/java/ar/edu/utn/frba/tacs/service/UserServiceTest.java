@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.service;
 
+import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
@@ -12,6 +13,7 @@ import org.junit.*;
 
 import javax.security.auth.login.LoginException;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class UserServiceTest {
 
@@ -24,7 +26,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void saveHashedPassword(){
+    public void saveHashedPassword() throws DuplicatedEmailException {
 
         String email = "thiago@tacs.com";
         String nonHashedPassword = "tacs2024";
@@ -37,7 +39,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void loginWithHashedPassword() throws LoginException {
+    public void loginWithHashedPassword() throws LoginException, DuplicatedEmailException {
 
         String email = "thiago2@tacs.com";
         String nonHashedPassword = "tacs2024";
@@ -51,11 +53,30 @@ public class UserServiceTest {
     }
 
     @Test
-    public void saveUser() {
+    public void saveUser() throws DuplicatedEmailException {
         User user = new User("juan","perez","jp@gmail.com","123456");
         user.setId(userService.saveUser(user));
         User userFromDB = userService.getUser(user.getId());
         assertEquals(user.getId(),userFromDB.getId());
+    }
+
+    private String getDuplicatedEmailExceptionMessage(User user2){
+        try{
+            userService.saveUser(user2);
+            return "";
+        } catch (DuplicatedEmailException e){
+            return e.getMessage();
+        }
+    }
+
+    @Test
+    public void saveDuplicatedUserThrowsException() throws DuplicatedEmailException {
+        User user = new User("juan","perez","mailunico@gmail.com","123456");
+        user.setId(userService.saveUser(user));
+        User user2 = new User("juancito","pereza","mailunico@gmail.com","123456");
+        assertThrows(DuplicatedEmailException.class, () -> userService.saveUser(user2));
+        
+        assertEquals("Error! Email mailunico@gmail.com already in use", getDuplicatedEmailExceptionMessage(user2));
     }
 
 }

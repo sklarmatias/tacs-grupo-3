@@ -100,13 +100,13 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
-                        if (bot.usersLoginMap.containsKey(chatId)){
+                        if (bot.usersLoginMap.containsChatIdKey(chatId)){
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
                         return;
                     case PROPIOS:
-                        user = bot.usersLoginMap.get(chatId);
+                        user = bot.usersLoginMap.getUserId(chatId);
                         getArticlesOf(message, user, bot);
                         currentStep = CurrentStep.CHOOSE_ARTICLE;
                         bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
@@ -133,7 +133,7 @@ public class ArticleHandler implements CommandsHandler {
                 System.out.println(action);
                 if (articleType == ArticleType.TODOS){
                     if (action.equals("A")){
-                        user = bot.usersLoginMap.get(chatId);
+                        user = bot.usersLoginMap.getUserId(chatId);
                         subscribe(message, user, bot);
                     } else if (action.equals("B")) {
                         bot.sendInteraction(message.getFrom(), "CANCELLATION");
@@ -143,11 +143,11 @@ public class ArticleHandler implements CommandsHandler {
                 } else if (articleType == ArticleType.PROPIOS) {
                     switch (action) {
                         case "A":
-                            user = bot.usersLoginMap.get(chatId);
+                            user = bot.usersLoginMap.getUserId(chatId);
                             getSubscriptions(message, articleId, bot);
                             break;
                         case "B":
-                            user = bot.usersLoginMap.get(chatId);
+                            user = bot.usersLoginMap.getUserId(chatId);
                             closeArticle(message, user, bot);
                             break;
                     }

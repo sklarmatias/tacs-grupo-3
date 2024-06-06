@@ -1,10 +1,14 @@
 package org.tacsbot.bot;
 import lombok.Setter;
 import org.apache.http.HttpException;
+import org.tacsbot.api.notification.NotificationApi;
+import org.tacsbot.api.notification.impl.NotificationApiConnection;
 import org.tacsbot.dictionary.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
+import org.tacsbot.model.NotificationDTO;
+import org.tacsbot.model.UserChatMapping;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
@@ -16,6 +20,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MyTelegramBot extends TelegramLongPollingBot {
 
@@ -25,7 +32,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private final Map<String, CommandAction> commandActions = new HashMap<>();
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final Map<Long, String> usersLoginMap = new HashMap<>();
+    public final UserChatMapping usersLoginMap = new UserChatMapping();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final NotificationApi notificationApi = new NotificationApiConnection();
 
     public final Map<Long, User> loggedUsersMap = new HashMap<>();
 
@@ -96,7 +105,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void createArticle(Message message, String commandText) {
 
-        if(usersLoginMap.containsKey(message.getFrom().getId())) {
+        if(usersLoginMap.containsChatIdKey(message.getChatId())) {
             System.out.println("User is logged in");
             commandsHandlerMap.remove(message.getFrom().getId());
             ArticleCreationHandler handler = new ArticleCreationHandler(message.getFrom().getId());
@@ -112,7 +121,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void searchArticles(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsKey(chatId)) {
+        if(usersLoginMap.containsChatIdKey(chatId)) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -132,7 +141,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void register(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsKey(chatId)){
+        if(usersLoginMap.containsChatIdKey(message.getChatId())){
             User u = loggedUsersMap.get(chatId);
             sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
         }
@@ -147,7 +156,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void login(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsKey(chatId)){
+        if(usersLoginMap.containsChatIdKey(chatId)){
             User u = loggedUsersMap.get(chatId);
             sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
         }
@@ -160,10 +169,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void logout(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsKey(chatId)){
-            usersLoginMap.remove(chatId);
-            loggedUsersMap.remove(chatId);
+        if(usersLoginMap.containsChatIdKey(chatId)){
+            usersLoginMap.removeByChatId(chatId);
             sendInteraction(message.getFrom(), "LOG_OUT");
+
         }
         else{
             sendInteraction(message.getFrom(), "LOGIN_REQUIRED");
@@ -211,6 +220,53 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public void sendText(Long who, String what){
         sendText(who, what, false);
     }
+
+    public void scheduleNotificationChecks() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(this::checkPendingNotifications, 0, Long.parseLong(System.getenv("NOTIFICATION_REFRESHING_TIME")), TimeUnit.SECONDS);
+    }
+
+    public void checkPendingNotifications() {
+        try {
+            System.out.println("Intentando enviar notificaciones...");
+            List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
+            for (NotificationDTO notification : notifications) {
+                Long chatId = usersLoginMap.getChatId(notification.getSubscriber());
+                if (chatId == null) {
+                    System.out.println("Chat ID is null for user: " + notification.getSubscriber());
+                    continue;  // Skip this notification
+                }
+                try {
+                    String message = generateMessage(notification);
+                    sendText(chatId, message);
+                    boolean marked = notificationApi.markAsNotified(notification.getId());
+                    if (!marked) {
+                        System.err.println("Failed to mark notification as notified: " + notification.getId());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error sending notification: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching pending notifications: " + e.getMessage());
+        }
+    }
+
+    private String generateMessage(NotificationDTO notification) {
+        switch (notification.getType()) {
+            case "ClosedArticleNotification":
+                return "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "OwnerClosedArticleNotification":
+                return "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "SubscriptionNotification":
+                return "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
+            case "OwnerSubscriptionNotification":
+                return "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
+            default:
+                return "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
+        }
+    }
+
 
     public void resetUserHandlers(Long userId){
         commandsHandlerMap.remove(userId);

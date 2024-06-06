@@ -26,10 +26,10 @@ public class LoginHandler implements CommandsHandler {
                 pass = message.getText();
                 try{
                     User user = new UserApiConnection().logIn(email, pass);
-                    bot.usersLoginMap.put(chatId,user.getId());
+                    bot.usersLoginMap.addMapping(chatId,user.getId());
                     bot.loggedUsersMap.put(chatId, user);
                     System.out.println(user.getId());
-                    System.out.println(bot.usersLoginMap.get(chatId));
+                    System.out.println(bot.usersLoginMap.getUserId(chatId));
                     bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", user.getName());
                 } catch (AuthenticationException e){
                     bot.sendInteraction(message.getFrom(), "WRONG_CREDENTIALS");

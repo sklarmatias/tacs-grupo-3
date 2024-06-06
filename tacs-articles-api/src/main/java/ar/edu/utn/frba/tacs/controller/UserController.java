@@ -2,6 +2,8 @@ package ar.edu.utn.frba.tacs.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.UserService;
 import jakarta.ws.rs.*;
@@ -44,11 +46,15 @@ public class UserController {
     @Path("/register")
     @Consumes("application/json")
     public Response saveUser(User user, @Context UriInfo uriInfo) {
-        String userId = userService.saveUser(user);
-        // URI
-        UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
-        userURIBuilder.path(userId);
-        return Response.created(userURIBuilder.build()).build();
+        try{
+            String userId = userService.saveUser(user);
+            // URI
+            UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
+            userURIBuilder.path(userId);
+            return Response.created(userURIBuilder.build()).build();
+        } catch (DuplicatedEmailException e){
+            return Response.status(400).entity(e.getMessage()).build();
+        }
     }
     @POST
     @Path("/login")

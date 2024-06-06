@@ -54,5 +54,10 @@
   "ARTICLE_USERS_MIN": "Please enter the minimum number of users:",
   "ARTICLE_INVALID_USERS_MIN": "You must enter a minimum number less than or equal to the maximum (%d) and greater than 0.",
   "ARTICLE_IMAGE": "Attach the image: ",
-  "ARTICLE_LINK": "Attach the link: "
+  "ARTICLE_LINK": "Attach the link: ",
+  "NOTIFICATION_SUBSCRIBED_ARTICLE_CLOSED": "The article \"%s\" has been closed.",
+  "NOTIFICATION_OWN_ARTICLE_CLOSED": "Your article \"%s\" has been closed.",
+  "NOTIFICATION_SUBSCRIPTION_TO_YOUR_ARTICLE": "You have subscribed to the article \"%s\".",
+  "NOTIFICATION_YOU_SUBSCRIBED": "Someone has subscribed to your article \"%s\".",
+  "NOTIFICATION_GENERIC": "You have a new notification about the article \"%s\"."
 }

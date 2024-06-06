@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.service;
 
+import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
 import ar.edu.utn.frba.tacs.helpers.hash.HashingHelper;
 import ar.edu.utn.frba.tacs.model.Annotation;
@@ -52,9 +53,9 @@ public class UserService {
         usersRepository.update(id, user);
     }
 
-    public String saveUser(User user) {
+    public String saveUser(User user) throws DuplicatedEmailException {
         if(userExists(user.getEmail())){
-            throw new IllegalArgumentException();
+            throw new DuplicatedEmailException(user.getEmail());
         }
         user.setPass(hashingHelper.hash(user.getPass()));
         return usersRepository.save(user);

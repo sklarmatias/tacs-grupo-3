@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs;
 
+import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -122,7 +123,7 @@ public class ArticleTest {
     }
 
 
-    private User createTestUser(){
+    private User createTestUser() throws DuplicatedEmailException {
         User user = new User("juan","perez",random() + "@gmail.com","123456");
         user.setId(userService.saveUser(user));
         return user;

@@ -1,5 +1,11 @@
 URLS REST
 
+/pendingNotifications
+
+@GET /pendingNotifications //Obtener notificaciones pendientes de envio.
+
+@POST /markAsNotified/{idNotificacion} //Indique en la base que la notificacion fue enviada (notified = true)
+
 /articles
 
 POST /articles // crear un nuevo articulo
