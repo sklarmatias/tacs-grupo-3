@@ -27,6 +27,7 @@
   "REGISTER_EMAIL": "Enter your email: ",
   "REGISTER_PASS": "Enter the password you will use: ",
   "REGISTER_COMPLETED": "User successfully created! To log in, use the command /login!",
+  "REGISTER_INVALID": "Email already in use. Log in with it using /login!",
   "ARTICLE_NAME": "Enter article title:",
   "CHOOSE_ARTICLE_SEARCH": "Choose the article search method:\nA) View all open articles\nB) View all your articles.",
   "LOADING": "Loading...",

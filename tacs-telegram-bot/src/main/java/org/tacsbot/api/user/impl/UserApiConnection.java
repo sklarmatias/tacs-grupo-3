@@ -52,7 +52,7 @@ public class UserApiConnection implements UserApi {
         }
     }
 
-        public void register(String name, String surname, String email, String password) throws IOException {
+        public void register(String name, String surname, String email, String password) throws IOException, IllegalArgumentException {
         User user = new User(null, name, surname, email, password);
         String json = userParser.parseUserToJSON(user);
         try {
@@ -67,7 +67,8 @@ public class UserApiConnection implements UserApi {
             // all ok
             if (response.statusCode() == 201){
                 return;
-            }
+            } else if(response.statusCode() == 400 && response.body().equals(String.format("Error! Email %s already in use", email)))
+                throw new IllegalArgumentException("Email unavailable");
             // error
             else
                 throw new IOException(String.format("[Error] Server error.\nStatus code = %d;\nBody = %s\nHeaders = %s\n",

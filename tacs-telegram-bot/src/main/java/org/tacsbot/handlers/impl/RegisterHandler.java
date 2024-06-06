@@ -36,8 +36,12 @@ public class RegisterHandler implements CommandsHandler {
     private void register(Message message, MyTelegramBot bot){
         try {
             bot.sendInteraction(message.getFrom(), "LOADING");
-            userApiConnection.register(user.getName(), user.getSurname(), user.getPass(), user.getPass());
-            bot.sendInteraction(message.getFrom(), "REGISTER_COMPLETED");
+            try{
+                userApiConnection.register(user.getName(), user.getSurname(), user.getEmail(), user.getPass());
+                bot.sendInteraction(message.getFrom(), "REGISTER_COMPLETED");
+            } catch (IllegalArgumentException e){
+                bot.sendInteraction(message.getFrom(), "REGISTER_INVALID");
+            }
 
         } catch (IOException e) {
             bot.sendInternalErrorMsg(message.getChatId(), e);
