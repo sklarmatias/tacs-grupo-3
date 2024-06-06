@@ -9,28 +9,27 @@ import javax.naming.AuthenticationException;
 import java.io.IOException;
 
 public class LoginHandler implements CommandsHandler {
-    private Long chatId;
+    private final Long chatId;
     private LoginStep currentStep;
-    private String email;
-    private String pass;
+    private final User user;
 
     @Override
     public void processResponse(Message message, MyTelegramBot bot) throws IOException {
         switch (currentStep) {
             case REQUEST_EMAIL:
-                email = message.getText().toLowerCase();
+                user.setEmail(message.getText().toLowerCase());
                 currentStep = LoginStep.REQUEST_PASSWORD;
                 bot.sendInteraction(message.getFrom(), "LOGIN_PASS");
                 break;
             case REQUEST_PASSWORD:
-                pass = message.getText();
+                user.setPass(message.getText().toLowerCase());
                 try{
-                    User user = new UserApiConnection().logIn(email, pass);
-                    bot.usersLoginMap.addMapping(chatId,user.getId());
-                    bot.loggedUsersMap.put(chatId, user);
-                    System.out.println(user.getId());
+                    User savedUser = new UserApiConnection().logIn(user.getEmail(), user.getPass());
+                    bot.usersLoginMap.addMapping(chatId,savedUser.getId());
+                    bot.loggedUsersMap.put(chatId, savedUser);
+                    System.out.println(savedUser.getId());
                     System.out.println(bot.usersLoginMap.getUserId(chatId));
-                    bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", user.getName());
+                    bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", savedUser.getName());
                 } catch (AuthenticationException e){
                     bot.sendInteraction(message.getFrom(), "WRONG_CREDENTIALS");
                 }
@@ -44,6 +43,7 @@ public class LoginHandler implements CommandsHandler {
     }
 
     public LoginHandler(Long userId) {
+        this.user = new User();
         this.chatId = userId;
         this.currentStep = LoginStep.REQUEST_EMAIL;
     }
