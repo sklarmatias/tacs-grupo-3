@@ -71,6 +71,12 @@
             <artifactId>guava</artifactId>
             <version>32.1.3-jre</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version> <!-- Use the appropriate version for your project -->
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <pluginManagement>

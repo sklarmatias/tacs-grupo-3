@@ -1,102 +1,71 @@
 import React, { useState } from 'react';
-import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-const LoginForm = () => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+const LoginForm = ({ onLogin }) => {
+    const [email, setEmail] = useState('');
+    const [pass, setPass] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        login(formData);
-    };
+        setError('');
 
-    const login = (formData) => {
-        const jsonRequest = JSON.stringify({
-            email: formData.email,
-            pass: formData.password
-        });
-
-        fetch('/tacsWSREST_war/users/login', {  // Usa la ruta relativa aquí
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: jsonRequest
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('Login successful:', data);
-                setSuccess('Login successful!');
-                setError(null);
-
-                // Guardar el token de autenticación en el almacenamiento local
-                localStorage.setItem('authToken', data.token);
-
-                // Redirigir al usuario a la página principal
-                navigate('/');
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                setError('Failed to login. Please check your credentials and try again.');
-                setSuccess(null);
+        try {
+            const response = await fetch('http://localhost:8080/restapp/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, pass }),
             });
+
+            if (!response.ok) {
+                throw new Error('Login failed');
+            }
+
+            const data = await response.json();
+            const { id } = data;
+
+            localStorage.setItem('authToken', id);
+            localStorage.setItem('emailUser', email);
+            onLogin(email);
+            navigate('/'); // Redirect to home after login
+        } catch (error) {
+            setError('Invalid email or password');
+        }
     };
 
     return (
         <Container>
-            <Row className="justify-content-md-center">
-                <Col md={6}>
-                    <h2>Login</h2>
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">{success}</Alert>}
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group controlId="email">
-                            <Form.Label>Email</Form.Label>
-                            <Form.Control
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="Enter your email"
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="password">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                required
-                            />
-                        </Form.Group>
-                        <Button variant="primary" type="submit">
-                            Login
-                        </Button>
-                        <Button variant="link" href="/register">
-                            Register
-                        </Button>
-                    </Form>
-                </Col>
-            </Row>
+            <h2>Login</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="formEmail">
+                    <Form.Label>Email address</Form.Label>
+                    <Form.Control
+                        type="email"
+                        placeholder="Enter email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                </Form.Group>
+
+                <Form.Group controlId="formPassword">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control
+                        type="password"
+                        placeholder="Password"
+                        value={pass}
+                        onChange={(e) => setPass(e.target.value)}
+                    />
+                </Form.Group>
+
+                <Button variant="primary" type="submit">
+                    Login
+                </Button>
+            </Form>
         </Container>
     );
 };

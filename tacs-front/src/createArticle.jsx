@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const ArticleForm = () => {
     const [formData, setFormData] = useState({
         name: '',
         image: '',
         deadline: '',
-        usersMax: '',
-        usersMin: '',
+        users_max: '',
+        users_min: '',
         cost: '',
-        costType: '',
-        userGets: '',
-        owner: ''
+        cost_type: 'TOTAL',
+        user_gets: ''
     });
+    const navigate = useNavigate();
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,6 +24,30 @@ const ArticleForm = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         postFormData(formData);
+
+    };
+
+    const postFormData = (formData) => {
+        fetch('http://localhost:8080/restapp/articles', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'user': `${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(formData)
+        })
+            .then((response) => {
+                if (response.status === 201) {
+                    alert('Article created successfully');
+                    navigate('/myarticles');
+                } else {
+                    alert('Error creating article');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error creating article');
+            });
     };
 
     return (
@@ -55,21 +81,21 @@ const ArticleForm = () => {
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Form.Group controlId="usersMax">
+            <Form.Group controlId="users_max">
                 <Form.Label>Maximum Users</Form.Label>
                 <Form.Control
                     type="number"
-                    name="usersMax"
-                    value={formData.usersMax}
+                    name="users_max"
+                    value={formData.users_max}
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Form.Group controlId="usersMin">
+            <Form.Group controlId="users_min">
                 <Form.Label>Minimum Users</Form.Label>
                 <Form.Control
                     type="number"
-                    name="usersMin"
-                    value={formData.usersMin}
+                    name="users_min"
+                    value={formData.users_min}
                     onChange={handleChange}
                 />
             </Form.Group>
@@ -82,33 +108,25 @@ const ArticleForm = () => {
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Form.Group controlId="costType">
+            <Form.Group controlId="cost_type">
                 <Form.Label>Cost Type</Form.Label>
                 <Form.Control
                     as="select"
-                    name="costType"
-                    value={formData.costType}
+                    name="cost_type"
+                    value={formData.cost_type}
                     onChange={handleChange}
+                    
                 >
-                    <option value="1">Fixed</option>
-                    <option value="2">Variable</option>
+                    <option value="TOTAL">TOTAL</option>
+                    <option value="PER_USER">PER_USER</option>
                 </Form.Control>
             </Form.Group>
-            <Form.Group controlId="userGets">
+            <Form.Group controlId="user_gets">
                 <Form.Label>User Gets</Form.Label>
                 <Form.Control
                     type="text"
-                    name="userGets"
-                    value={formData.userGets}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-            <Form.Group controlId="owner">
-                <Form.Label>Owner</Form.Label>
-                <Form.Control
-                    type="number"
-                    name="owner"
-                    value={formData.owner}
+                    name="user_gets"
+                    value={formData.user_gets}
                     onChange={handleChange}
                 />
             </Form.Group>
@@ -119,17 +137,5 @@ const ArticleForm = () => {
     );
 };
 
-const postFormData = (formData) => {
-    fetch('http://localhost:5283/articles', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-        .then((response) => response.json())
-        .then((data) => console.log(data))
-        .catch((error) => console.error('Error:', error));
-};
 
 export default ArticleForm;
