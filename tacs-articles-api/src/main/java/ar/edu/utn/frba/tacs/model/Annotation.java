@@ -11,35 +11,15 @@ import java.util.Date;
 @NoArgsConstructor
 public class Annotation {
 
-    private User user;
+    private User.UserDTO user;
 
     @JsonProperty("created_at")
     private Date date;
 
-    public Annotation(User user){
+    public Annotation(User.UserDTO user){
         this.user = user;
         this.date = new Date();
     }
 
-    public AnnotationDTO convertToDTO(){
-        return new AnnotationDTO(this);
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class AnnotationDTO{
-
-        private User.UserDTO user;
-
-        @JsonProperty("created_at")
-        private Date date;
-
-        public AnnotationDTO(Annotation annotation){
-            user = annotation.getUser().convertToDTO();
-            date = annotation.getDate();
-        }
-
-    }
 
 }

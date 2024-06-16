@@ -72,7 +72,6 @@ public class MongoUserMapper {
 
         return document;
     }
-    @Deprecated(since = "2024/05/28", forRemoval = true)
     public static Document convertUserDTOToDocument(User.UserDTO user) {
         Document document = new Document();
         if (user.getId() != null) {
@@ -84,7 +83,6 @@ public class MongoUserMapper {
         return document;
     }
 
-    @Deprecated(since = "2024/05/28", forRemoval = true)
     public static User.UserDTO convertDocumentToUserDTO(Document document) {
         User.UserDTO user = new User.UserDTO();
         user.setId(document.getObjectId("_id").toString());

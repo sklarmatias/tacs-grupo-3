@@ -7,14 +7,14 @@ public class MongoAnnotationMapper {
 
     public static Annotation convertDocumentToAnnotation(Document document) {
         Annotation annotation = new Annotation();
-        annotation.setUser(MongoUserMapper.convertDocumentToUser((Document) document.get("user")));
+        annotation.setUser(MongoUserMapper.convertDocumentToUserDTO((Document) document.get("user")));
         annotation.setDate(document.getDate("date"));
         return annotation;
     }
 
     public static Document convertAnnotationToDocument(Annotation annotation) {
         Document document = new Document();
-        document.append("user", MongoUserMapper.convertUserToDocument(annotation.getUser()))  // Asumiendo que User tiene un método getId()
+        document.append("user", MongoUserMapper.convertUserDTOToDocument(annotation.getUser()))  // Asumiendo que User tiene un método getId()
                 .append("date", annotation.getDate());
         return document;
     }

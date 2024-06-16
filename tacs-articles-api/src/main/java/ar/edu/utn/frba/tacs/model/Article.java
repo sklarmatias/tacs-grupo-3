@@ -94,7 +94,7 @@ public class Article {
             if (isSignedUp(user))
                 throw new IllegalArgumentException("User already signed up.");
 
-            Annotation annotation = new Annotation(user);
+            Annotation annotation = new Annotation(user.convertToDTO());
             this.annotations.add(annotation);
             this.annotationsCounter++;
             return annotation;

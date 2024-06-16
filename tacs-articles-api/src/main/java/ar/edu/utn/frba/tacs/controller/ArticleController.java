@@ -141,11 +141,11 @@ public class ArticleController {
 	@GET
 	@Path("/{id}/users")
 	@Produces("application/json")
-	public List<Annotation.AnnotationDTO> getUsersSignedUp(@PathParam("id") String id) {
+	public List<Annotation> getUsersSignedUp(@PathParam("id") String id) {
 		Article article = articleService.getArticle(id);
 		if (article == null)
 			throw new ClientErrorException(400);
-		return articleService.getUsersSignedUp(id).stream().map(Annotation::convertToDTO).collect(Collectors.toList());
+		return articleService.getUsersSignedUp(id);
 	}
 
 	@DELETE
