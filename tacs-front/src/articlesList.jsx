@@ -139,7 +139,7 @@ function ArticleList({ userFocus }) {
                             {isUserFocus && (
                                 <>
                                     <td>
-                                        <Link to={`/subscriptors?id=${article.id}`}>Ver</Link>
+                                        <Button onClick={() => navigate(`/subscribers/${article.id}`)}>Ver</Button>
                                     </td>
                                 </>
                             )}

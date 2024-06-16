@@ -9,6 +9,7 @@ import ArticleList from './articlesList.jsx';
 import ArticleForm from './createArticle.jsx';
 import LoginForm from './login.jsx';
 import Header from './header.jsx';
+import SubscribersList from './subscribersList.jsx';
 
 
 function App() {
@@ -64,6 +65,10 @@ function App() {
                 {
                     path: 'myarticles',
                     element: <ArticleList userFocus="true" />,
+                },
+                {
+                    path: 'subscribers/:articleId',
+                    element: <SubscribersList />,
                 },
             ],
         },
