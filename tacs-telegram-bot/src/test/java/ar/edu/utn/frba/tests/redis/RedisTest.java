@@ -15,7 +15,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -64,7 +63,7 @@ public class RedisTest {
             4
     );
 
-    private String chatId = "testingChatId";
+    private Long chatId = 123456789L;
 
     @BeforeClass
     public static void instanciateAll(){
@@ -82,11 +81,12 @@ public class RedisTest {
     @AfterClass
     public static void closeDatabase(){
         jedisPool.close();
+        redisService.closeConnection();
     }
 
     private void assertSaving() throws IOException {
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> savedArticles = jedis.zrange(chatId, 0 , -1);
+            List<String> savedArticles = jedis.zrange(String.valueOf(chatId), 0 , -1);
             Assert.assertEquals(2, savedArticles.size());
             Assert.assertEquals(articleJSONParser.parseArticleToJSON(article1), savedArticles.get(0));
             Assert.assertEquals(articleJSONParser.parseArticleToJSON(article2), savedArticles.get(1));
@@ -105,7 +105,7 @@ public class RedisTest {
         assertSaving();
         redisService.deleteChatId(chatId);
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> savedArticles = jedis.zrange(chatId, 0, -1);
+            List<String> savedArticles = jedis.zrange(String.valueOf(chatId), 0, -1);
             Assert.assertEquals(0, savedArticles.size());
         }
     }
@@ -127,7 +127,7 @@ public class RedisTest {
         assertSaving();
         Thread.sleep(expirationSeconds*1000);
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> strings = jedis.zrange(chatId, 0, -1);
+            List<String> strings = jedis.zrange(String.valueOf(chatId), 0, -1);
             Assert.assertEquals(0, strings.size());
         }
     }
@@ -137,7 +137,7 @@ public class RedisTest {
         ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(chatId, article1, ArticleCreationStep.REQUEST_DEADLINE);
         redisService.saveArticleCreationHandler(chatId, articleCreationHandler);
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> strings = jedis.zrange(chatId, 0, -1);
+            List<String> strings = jedis.zrange(String.valueOf(chatId), 0, -1);
             Assert.assertEquals(articleCreationHandler.getCurrentStep(), ArticleCreationStep.valueOf(strings.get(0)));
             ModelEqualsHelper.assertEquals(articleCreationHandler.getArticle(), articleJSONParser.parseJSONToArticle(strings.get(1)));
         }
@@ -162,7 +162,7 @@ public class RedisTest {
 
     @Test
     public void getUnknownUser() {
-        Assert.assertNull(redisService.getUser("12345678"));
+        Assert.assertNull(redisService.getUser(12345678L));
     }
 
     @Test
@@ -170,6 +170,13 @@ public class RedisTest {
         String userId = "userId123456789";
         redisService.saveChatIdOfUser(userId, chatId);
         Assert.assertEquals(chatId, redisService.getChatIdOfUser(userId));
+    }
+
+    @Test
+    public void saveAndDeleteUser() throws IOException {
+        User user = new User("abcdefg", "Thiago", "Cabrera", "thiago@tacs.com", null);
+        redisService.saveUser(chatId, user);
+        Assert.assertEquals(1, redisService.deleteUser(chatId));
     }
 
 

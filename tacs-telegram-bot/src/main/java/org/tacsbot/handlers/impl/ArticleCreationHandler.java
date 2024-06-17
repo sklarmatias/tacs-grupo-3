@@ -25,15 +25,15 @@ public class ArticleCreationHandler implements CommandsHandler {
     private ArticleApi articleApi;
 
     public ArticleCreationHandler(Long userId) {
-        this(String.valueOf(userId), new Article(), ArticleCreationStep.REQUEST_NAME);
+        this(userId, new Article(), ArticleCreationStep.REQUEST_NAME);
     }
 
-    public ArticleCreationHandler(String chatId, Article article, ArticleCreationStep articleCreationStep) {
+    public ArticleCreationHandler(Long userId, Article article, ArticleCreationStep articleCreationStep) {
 
         this.currentStep = articleCreationStep;
         this.articleApi = new ArticleApiConnection();
         this.article = article;
-
+        this.article.setOwner(String.valueOf(userId));
     }
 
     private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {
@@ -152,7 +152,6 @@ public class ArticleCreationHandler implements CommandsHandler {
                 break;
             case REQUEST_IMAGE:
                 article.setImage(message.getText());
-                article.setOwner(bot.usersLoginMap.getUserId(chatId));
                 createArticle(message, article, bot);
                 bot.resetUserHandlers(chatId);
 

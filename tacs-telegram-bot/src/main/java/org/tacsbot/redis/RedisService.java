@@ -55,61 +55,61 @@ public class RedisService {
         }
     }
 
-    public void saveArticles(String chatId, List<Article> articles){
+    public void saveArticles(Long chatId, List<Article> articles){
         // Get the pool and use the database
         try (Jedis jedis = jedisPool.getResource()) {
             Pipeline pipeline = jedis.pipelined();
             for (Article article: articles){
-                pipeline.zadd(chatId, 0, articleParser.parseArticleToJSON(article));
+                pipeline.zadd(String.valueOf(chatId), 0, articleParser.parseArticleToJSON(article));
             }
-            pipeline.expire(chatId, expirationSeconds);
+            pipeline.expire(String.valueOf(chatId), expirationSeconds);
             pipeline.sync();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<Article> getArticles(String chatId){
+    public List<Article> getArticles(Long chatId){
         // Get the pool and use the database
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> savedArticles = jedis.zrange(chatId, 0, -1);
-            jedis.expire(chatId, expirationSeconds);
+            List<String> savedArticles = jedis.zrange(String.valueOf(chatId), 0, -1);
+            jedis.expire(String.valueOf(chatId), expirationSeconds);
             return savedArticles.stream().map((s) -> articleParser.parseJSONToArticle(s)).collect(Collectors.toList());
         }catch (IllegalArgumentException e){
             return new ArrayList<>();
         }
     }
 
-    public void deleteChatId(String chatId){
+    public void deleteChatId(Long chatId){
         // Get the pool and use the database
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.del(chatId);
+            jedis.del(String.valueOf(chatId));
         }
     }
 
-    public void saveArticleCreationHandler(String chatId, ArticleCreationHandler articleCreationHandler){
+    public void saveArticleCreationHandler(Long chatId, ArticleCreationHandler articleCreationHandler){
         deleteChatId(chatId);
         try (Jedis jedis = jedisPool.getResource()) {
             Pipeline pipeline = jedis.pipelined();
-            pipeline.zadd(chatId, 0, String.valueOf(articleCreationHandler.getCurrentStep()));
-            pipeline.zadd(chatId, 1, articleParser.parseArticleToJSON(articleCreationHandler.getArticle()));
-            pipeline.expire(chatId, expirationSeconds);
+            pipeline.zadd(String.valueOf(chatId), 0, String.valueOf(articleCreationHandler.getCurrentStep()));
+            pipeline.zadd(String.valueOf(chatId), 1, articleParser.parseArticleToJSON(articleCreationHandler.getArticle()));
+            pipeline.expire(String.valueOf(chatId), expirationSeconds);
             pipeline.sync();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ArticleCreationHandler getArticleCreationHandler(String chatId){
+    public ArticleCreationHandler getArticleCreationHandler(Long chatId){
         try (Jedis jedis = jedisPool.getResource()) {
-            List<String> response = jedis.zrange(chatId, 0, 1);
+            List<String> response = jedis.zrange(String.valueOf(chatId), 0, 1);
             return new ArticleCreationHandler(chatId, articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
         }catch (IllegalArgumentException e){
             return null;
         }
     }
 
-    public User getUser(String chatId) {
+    public User getUser(Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
             return userParser.parseJSONToUser(jedis.get("u:" + chatId));
         } catch (IllegalArgumentException e){
@@ -117,23 +117,29 @@ public class RedisService {
         }
     }
 
-    public void saveUser(String chatId, User user) throws IOException {
+    public void saveUser(Long chatId, User user) throws IOException {
         String jsonUser = userParser.parseUserToJSON(user);
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.set("u:" + chatId, jsonUser);
         }
     }
 
-    public String getChatIdOfUser(String userId) {
+    public int deleteUser(Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.get("ch:" + userId);
+            return (int) jedis.del("u:" + chatId);
+        }
+    }
+
+    public Long getChatIdOfUser(String userId) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return Long.parseLong(jedis.get("ch:" + userId));
         }
     }
 
     // key: "ch:{userId}" value: "{chatId}"
-    public void saveChatIdOfUser(String userId, String chatId) {
+    public void saveChatIdOfUser(String userId, Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.set("ch:" + userId, chatId);
+            jedis.set("ch:" + userId, String.valueOf(chatId));
         }
     }
 

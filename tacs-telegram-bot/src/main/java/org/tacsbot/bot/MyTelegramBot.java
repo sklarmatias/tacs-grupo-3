@@ -1,4 +1,5 @@
 package org.tacsbot.bot;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
@@ -8,7 +9,6 @@ import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
 import org.tacsbot.model.NotificationDTO;
-import org.tacsbot.model.UserChatMapping;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
@@ -18,7 +18,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -35,12 +34,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private final Map<String, CommandAction> commandActions = new HashMap<>();
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final UserChatMapping usersLoginMap = new UserChatMapping();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final NotificationApi notificationApi = new NotificationApiConnection();
 
-    public final Map<Long, User> loggedUsersMap = new HashMap<>();
-
+    @Getter
     private RedisService redisService;
 
     public MyTelegramBot() {
@@ -111,7 +108,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void createArticle(Message message, String commandText) {
         Long chatId = message.getChatId();
-        User user = redisService.getUser(String.valueOf(chatId));
+        User user = redisService.getUser(chatId);
         if(user != null) {
             System.out.println("User is logged in");
             commandsHandlerMap.remove(chatId);
@@ -127,7 +124,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void searchArticles(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)) {
+        User user = redisService.getUser(chatId);
+        if(user != null) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -147,9 +145,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void register(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(message.getChatId())){
-            User u = loggedUsersMap.get(chatId);
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
+        User user = redisService.getUser(chatId);
+        if(user != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -162,9 +160,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void login(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)){
-            User u = loggedUsersMap.get(chatId);
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
+        User user = redisService.getUser(chatId);
+        if(user != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -175,9 +173,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void logout(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)){
-            usersLoginMap.removeByChatId(chatId);
-            redisService.deleteChatIdOfUser(String.valueOf(chatId));
+        User user = redisService.getUser(chatId);
+        if(user != null) {
+            redisService.deleteChatIdOfUser(user.getId());
+            redisService.deleteUser(chatId);
             sendInteraction(message.getFrom(), "LOG_OUT");
 
         }
@@ -238,7 +237,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             System.out.println("Intentando enviar notificaciones...");
             List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
             for (NotificationDTO notification : notifications) {
-                Long chatId = usersLoginMap.getChatId(notification.getSubscriber());
+                Long chatId = redisService.getChatIdOfUser(notification.getSubscriber());
                 if (chatId == null) {
                     System.out.println("Chat ID is null for user: " + notification.getSubscriber());
                     continue;  // Skip this notification
@@ -280,7 +279,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void loginUser(Long chatId, User savedUser) throws IOException {
 
-        redisService.saveUser(chatId.toString(), savedUser);
+        redisService.saveUser(chatId, savedUser);
+        redisService.saveChatIdOfUser(savedUser.getId(), chatId);
 
     }
 }
