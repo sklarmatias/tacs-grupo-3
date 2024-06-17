@@ -12,11 +12,14 @@ import org.tacsbot.model.UserChatMapping;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
+import org.tacsbot.redis.RedisService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +41,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public final Map<Long, User> loggedUsersMap = new HashMap<>();
 
+    private RedisService redisService;
+
     public MyTelegramBot() {
         super(System.getenv("BOT_TOKEN"));
         // Initialization of the commandActions map with the actions associated with the commands
@@ -50,6 +55,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
         messageDictionary = new JSONMessageDictionary();
 
+        redisService = new RedisService();
+
     }
 
     @Override
@@ -57,10 +64,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_USERNAME");
     }
 
-    public void sendInternalErrorMsg(Long chatId, Exception exception){
-        sendText(chatId, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
+    public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception){
+        sendInteraction(user, "INTERNAL_ERROR");
         System.out.printf("[Error] Error:\n%s\n", exception.getMessage());
-        exception.printStackTrace();
     }
 
     @Override
@@ -79,7 +85,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 try{
                     commandActions.get(command).execute(msg, txt);
                 } catch (Exception e){
-                    sendInternalErrorMsg(id, e);
+                    sendInternalErrorMsg(user, e);
                 }
             } else{
                 sendInteraction(user, "UNKNOWN_COMMAND");
@@ -89,7 +95,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
             } catch (Exception e){
-                sendInternalErrorMsg(id, e);
+                sendInternalErrorMsg(user, e);
             }
 
         }else sendInteraction(user, "WELCOME");
@@ -133,7 +139,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try{
                 handler.processResponse(message, this);
             } catch(HttpException e){
-                sendInternalErrorMsg(message.getChatId(), e);
+                sendInternalErrorMsg(message.getFrom(), e);
             }
 
         }
@@ -253,18 +259,16 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private String generateMessage(NotificationDTO notification) {
-        switch (notification.getType()) {
-            case "ClosedArticleNotification":
-                return "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "OwnerClosedArticleNotification":
-                return "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "SubscriptionNotification":
-                return "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
-            case "OwnerSubscriptionNotification":
-                return "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
-            default:
-                return "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
-        }
+        return switch (notification.getType()) {
+            case "ClosedArticleNotification" ->
+                    "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "OwnerClosedArticleNotification" ->
+                    "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "SubscriptionNotification" -> "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
+            case "OwnerSubscriptionNotification" ->
+                    "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
+            default -> "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
+        };
     }
 
 
@@ -273,6 +277,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
 
+    public void loginUser(Long chatId, User savedUser) throws IOException {
 
+        redisService.saveUser(chatId.toString(), savedUser);
 
+    }
 }

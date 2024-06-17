@@ -79,7 +79,7 @@ public class ArticleHandler implements CommandsHandler {
             else
                 bot.sendAnnotationList(message.getFrom(), subscriptions);
         } catch (IllegalArgumentException e){
-            bot.sendInternalErrorMsg(chatId, e);
+            bot.sendInternalErrorMsg(message.getFrom(), e);
         }
     }
 
