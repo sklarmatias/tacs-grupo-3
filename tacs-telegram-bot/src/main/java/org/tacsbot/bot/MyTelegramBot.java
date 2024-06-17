@@ -175,8 +175,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         Long chatId = message.getChatId();
         User user = redisService.getUser(chatId);
         if(user != null) {
-            redisService.deleteChatIdOfUser(user.getId());
-            redisService.deleteUser(chatId);
+            logOutUser(chatId, user);
             sendInteraction(message.getFrom(), "LOG_OUT");
 
         }
@@ -277,10 +276,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
 
-    public void loginUser(Long chatId, User savedUser) throws IOException {
+    public void logOutUser(Long chatId, User user){
+        redisService.deleteUserMapping(chatId, user);
+    }
 
-        redisService.saveUser(chatId, savedUser);
-        redisService.saveChatIdOfUser(savedUser.getId(), chatId);
-
+    public void logInUser(Long chatId, User user) throws IOException {
+        redisService.addUserMapping(chatId, user);
     }
 }

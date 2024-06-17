@@ -21,11 +21,17 @@ public class MyTelegramBotTest {
 
     private Long chatId = 1234546789L;
 
+    private void assertLogIn(Long chatId, User user){
+        Assert.assertEquals(chatId, myTelegramBot.getRedisService().getChatIdOfUser(user.getId()));
+
+        ModelEqualsHelper.assertEquals(user,myTelegramBot.getRedisService().getUser(chatId));
+    }
+
     @Test
     public void loginSavesDoubleMapping() throws IOException {
         myTelegramBot = new MyTelegramBot();
 
-        myTelegramBot.loginUser(chatId, user);
+        myTelegramBot.logInUser(chatId, user);
 
         Assert.assertEquals(chatId, myTelegramBot.getRedisService().getChatIdOfUser(user.getId()));
 
@@ -37,12 +43,15 @@ public class MyTelegramBotTest {
     public void logoutDeletesDoubleMapping() throws IOException {
         myTelegramBot = new MyTelegramBot();
 
-        myTelegramBot.loginUser(chatId, user);
+        myTelegramBot.logInUser(chatId, user);
 
-        Assert.assertEquals(chatId, myTelegramBot.getRedisService().getChatIdOfUser(user.getId()));
+        assertLogIn(chatId, user);
 
-        ModelEqualsHelper.assertEquals(user,myTelegramBot.getRedisService().getUser(chatId));
+        myTelegramBot.logOutUser(chatId, user);
 
+        Assert.assertNull(myTelegramBot.getRedisService().getChatIdOfUser(user.getId()));
+
+        Assert.assertNull(myTelegramBot.getRedisService().getUser(chatId));
 
     }
 

@@ -25,7 +25,7 @@ public class LoginHandler implements CommandsHandler {
                 user.setPass(message.getText().toLowerCase());
                 try{
                     User savedUser = new UserApiConnection().logIn(user.getEmail(), user.getPass());
-                    bot.loginUser(chatId, savedUser);
+                    bot.logInUser(chatId, savedUser);
                     bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", savedUser.getName());
                 } catch (AuthenticationException e){
                     bot.sendInteraction(message.getFrom(), "WRONG_CREDENTIALS");

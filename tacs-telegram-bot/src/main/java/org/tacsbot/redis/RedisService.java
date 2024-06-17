@@ -132,7 +132,8 @@ public class RedisService {
 
     public Long getChatIdOfUser(String userId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            return Long.parseLong(jedis.get("ch:" + userId));
+            String sChatId = jedis.get("ch:" + userId);
+            return sChatId == null? null : Long.parseLong(sChatId);
         }
     }
 
@@ -148,6 +149,16 @@ public class RedisService {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.del("ch:" + userId);
         }
+    }
+
+    public void addUserMapping(Long chatId, User user) throws IOException {
+        saveUser(chatId, user);
+        saveChatIdOfUser(user.getId(), chatId);
+    }
+
+    public void deleteUserMapping(Long chatId, User user){
+        deleteUser(chatId);
+        deleteChatIdOfUser(user.getId());
     }
 
     public void closeConnection(){
