@@ -2,8 +2,8 @@
   "ARTICLES": {
     "ARTICLE_STATUS": {
       "OPEN": "Abierto",
-      "CLOSED_FAILED": "Cerrado",
-      "CLOSED_SUCCESS": "Cerrado"
+      "CLOSED_FAILED": "Cerrado | Incompleto",
+      "CLOSED_SUCCESS": "Cerrado | Completo"
     },
     "COST_TYPE": {
       "TOTAL": "Total",
