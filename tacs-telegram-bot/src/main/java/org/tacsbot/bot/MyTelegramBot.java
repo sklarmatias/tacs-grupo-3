@@ -110,12 +110,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private void createArticle(Message message, String commandText) {
-
-        if(usersLoginMap.containsChatIdKey(message.getChatId())) {
+        Long chatId = message.getChatId();
+        User user = redisService.getUser(String.valueOf(chatId));
+        if(user != null) {
             System.out.println("User is logged in");
-            commandsHandlerMap.remove(message.getFrom().getId());
-            ArticleCreationHandler handler = new ArticleCreationHandler(message.getFrom().getId());
-            commandsHandlerMap.put(message.getFrom().getId(), handler);
+            commandsHandlerMap.remove(chatId);
+            ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
+            commandsHandlerMap.put(chatId, handler);
             sendInteraction(message.getFrom(), "ARTICLE_NAME");
         }
         else{
@@ -123,7 +124,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
 
     }
-
 
     private void searchArticles(Message message, String commandText) {
         Long chatId = message.getChatId();
@@ -177,6 +177,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         Long chatId = message.getChatId();
         if(usersLoginMap.containsChatIdKey(chatId)){
             usersLoginMap.removeByChatId(chatId);
+            redisService.deleteChatIdOfUser(String.valueOf(chatId));
             sendInteraction(message.getFrom(), "LOG_OUT");
 
         }

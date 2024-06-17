@@ -161,6 +161,11 @@ public class RedisTest {
     }
 
     @Test
+    public void getUnknownUser() {
+        Assert.assertNull(redisService.getUser("12345678"));
+    }
+
+    @Test
     public void saveAndGetChatIdOfUser() {
         String userId = "userId123456789";
         redisService.saveChatIdOfUser(userId, chatId);

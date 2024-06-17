@@ -14,6 +14,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Pipeline;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -50,6 +51,7 @@ public class RedisService {
             if (!Objects.equals(jedis.ping(), "PONG")){
                 throw new RuntimeException("Connection with DB failed");
             }
+            System.out.println("PING SUCCESSFULLY PASSED");
         }
     }
 
@@ -73,6 +75,8 @@ public class RedisService {
             List<String> savedArticles = jedis.zrange(chatId, 0, -1);
             jedis.expire(chatId, expirationSeconds);
             return savedArticles.stream().map((s) -> articleParser.parseJSONToArticle(s)).collect(Collectors.toList());
+        }catch (IllegalArgumentException e){
+            return new ArrayList<>();
         }
     }
 
@@ -100,12 +104,16 @@ public class RedisService {
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> response = jedis.zrange(chatId, 0, 1);
             return new ArticleCreationHandler(chatId, articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
+        }catch (IllegalArgumentException e){
+            return null;
         }
     }
 
     public User getUser(String chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
             return userParser.parseJSONToUser(jedis.get("u:" + chatId));
+        } catch (IllegalArgumentException e){
+            return null;
         }
     }
 
