@@ -1,6 +1,7 @@
-package org.tacsbot.redis;
+package org.tacsbot.cache.impl;
 
 import lombok.Setter;
+import org.tacsbot.cache.CacheService;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.model.Article;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class RedisService {
+public class RedisService implements CacheService {
 
     JedisPool jedisPool;
     ArticleParser articleParser;
@@ -31,7 +32,7 @@ public class RedisService {
 
     public RedisService() throws RuntimeException {
         this(
-                new JedisPool(new JedisPoolConfig(), "rediss://red-ci72t4unqql0ld93qmig:ZqPkNUQ6Tm397x11FsLGJOjt5zXNTG6v@oregon-redis.render.com:6379"),
+                new JedisPool(new JedisPoolConfig(), System.getenv("REDIS_CON_STRING")),
                 new ArticleJSONParser(),
                 new UserJSONParser(),
                 120L

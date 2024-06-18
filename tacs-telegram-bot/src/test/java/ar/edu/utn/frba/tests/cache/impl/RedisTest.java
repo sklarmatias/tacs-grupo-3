@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tests.redis;
+package ar.edu.utn.frba.tests.cache.impl;
 
 import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
 import org.junit.*;
@@ -9,10 +9,12 @@ import org.tacsbot.model.CostType;
 import org.tacsbot.model.User;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
-import org.tacsbot.redis.RedisService;
+import org.tacsbot.cache.impl.RedisService;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.embedded.RedisServer;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +23,8 @@ import java.util.List;
 public class RedisTest {
 
     private static RedisService redisService;
+
+    private static RedisServer redisServer;
 
     private static JedisPool jedisPool;
 
@@ -66,8 +70,12 @@ public class RedisTest {
     private Long chatId = 123456789L;
 
     @BeforeClass
-    public static void instanciateAll(){
-        jedisPool = new JedisPool(new JedisPoolConfig(), "rediss://red-ci72t4unqql0ld93qmig:ZqPkNUQ6Tm397x11FsLGJOjt5zXNTG6v@oregon-redis.render.com:6379");
+    public static void instanciateAll() throws IOException {
+
+        redisServer = new RedisServer(6379);
+        redisServer.start();
+
+        jedisPool = new JedisPool(new JedisPoolConfig(), "redis://localhost:6379");
         redisService = new RedisService(jedisPool, new ArticleJSONParser(), new UserJSONParser(), 20L);
     }
 
@@ -79,9 +87,10 @@ public class RedisTest {
     }
 
     @AfterClass
-    public static void closeDatabase(){
+    public static void closeDatabase() throws IOException {
         jedisPool.close();
         redisService.closeConnection();
+        redisServer.stop();
     }
 
     private void assertSaving() throws IOException {
@@ -170,7 +179,7 @@ public class RedisTest {
         String userId = "userId123456789";
         redisService.saveChatIdOfUser(userId, chatId);
         Assert.assertEquals(chatId, redisService.getChatIdOfUser(userId));
-    }
+}
 
     @Test
     public void saveAndDeleteUser() throws IOException {
