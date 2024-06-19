@@ -29,7 +29,7 @@ public class User {
     private List<Annotation> annotations;
 
     public boolean hasInteracted(){
-        return !(this.postedArticles.isEmpty() && this.annotations.isEmpty());
+        return !((this.postedArticles == null || this.postedArticles.isEmpty()) && (this.annotations == null || this.annotations.isEmpty()));
     }
 
     public User(String name, String surname, String email, String pass){

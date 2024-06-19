@@ -44,7 +44,7 @@ public class ArticleService {
         return articlesRepository.save(article);
     }
 
-    public void signUpUser(Article article, User user) {
+    public Annotation signUpUser(Article article, User user) {
         System.out.println("Obteniendo Annotations...");
         List<String> currentSubscribers = article.getAnnotations().stream().map(ann -> ann.getUser().getId()).toList();
         System.out.println("Obteniendo article owner...");
@@ -58,7 +58,9 @@ public class ArticleService {
         System.out.println("Cambiando Articulo...");
         articlesRepository.update(article.getId(),article);
 
+
         notificationService.generateSubscriptionNotification (articleName, articleOwner, currentSubscribers);
+        return annotation;
     }
 
     public Article closeArticle(Article article){

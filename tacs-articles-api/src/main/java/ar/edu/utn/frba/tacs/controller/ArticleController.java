@@ -113,7 +113,8 @@ public class ArticleController {
 
 		System.out.println("Se intenta suscribir al usuario...");
 		try {
-			articleService.signUpUser(article, user);
+			Annotation annotation = articleService.signUpUser(article, user);
+			userService.updateAddAnnotation(user.getId(),annotation);
 		}
 		catch (Exception ex){
 			System.out.println(ex.getMessage());
