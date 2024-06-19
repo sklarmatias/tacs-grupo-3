@@ -27,7 +27,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
     };
 
     const loginUser = (formData) => {
-        fetch('http://localhost:8080/restapp/users/login', {
+        fetch('${import.meta.env.VITE_REACT_APP_API_URL}/users/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
     };
 
     const registerUser = (formData) => {
-        fetch('http://localhost:8080/restapp/users/register', {
+        fetch('${import.meta.env.VITE_REACT_APP_API_URL}/users/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ function ArticleList({ userFocus }) {
 
             const token = localStorage.getItem('authToken');
         if (userFocus === 'true') {
-            axios.get('http://localhost:8080/restapp/articles', {
+            axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles`, {
                 headers: {
                     'user': token
                 }
@@ -27,7 +27,7 @@ function ArticleList({ userFocus }) {
                 });
             setIsUserFocus(true);
         } else {
-            axios.get('http://localhost:8080/restapp/articles')
+            axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles`)
                 .then(response => {
                     setArticles(response.data);
                 })
@@ -51,7 +51,7 @@ function ArticleList({ userFocus }) {
 
 
     const subscribe = (id) => {
-        axios.post(`http://localhost:8080/restapp/articles/${id}/users/`, '', {
+        axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/users/`, '', {
             headers: {
                 'user': `${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
@@ -66,25 +66,22 @@ function ArticleList({ userFocus }) {
     };
 
     const close = (id) => {
-        axios.patch(`http://localhost:8080/restapp/articles/${id}/close`, null, {
+        axios.patch(`${import.meta.env.VITE_REACT_APP_API_URL}/close`, null, {
             headers: {
-                user: `${localStorage.getItem('authToken')}` // Include authorization header
+                user: `${localStorage.getItem('authToken')}` 
             }
         })
             .then(response => {
-                // Update article in state after successful closure
                 const updatedArticles = articles.map(article => {
                     if (article.id === id) {
-                        // Update status with the new status received from server
                         return {
                             ...article,
-                            status: response.data.status // Assuming response contains updated status
+                            status: response.data.status
                         };
                     }
-                    return article; // Return unchanged article for other articles
+                    return article;
                 });
 
-                // Update state with new articles array
                 setArticles(updatedArticles);
 
                 alert('Artículo cerrado exitosamente');

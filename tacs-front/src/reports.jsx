@@ -17,11 +17,11 @@ const Reports = () => {
         const fetchData = async () => {
             try {
                 const [totalUsers, totalArticles, successfulArticles, failedArticles, engagedUsers] = await Promise.all([
-                    fetch(`http://localhost:8080/restapp/reports/users`).then(res => res.json()),
-                    fetch(`http://localhost:8080/restapp/reports/articles`).then(res => res.json()),
-                    fetch(`http://localhost:8080/restapp/reports/articles/success`).then(res => res.json()),
-                    fetch(`http://localhost:8080/restapp/reports/articles/failed`).then(res => res.json()),
-                    fetch(`http://localhost:8080/restapp/reports/engaged_users`).then(res => res.json())
+                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/users`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/articles`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/articles/success`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/articles/failed`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/engaged_users`).then(res => res.json())
                 ]);
 
                 setData({
@@ -63,7 +63,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Total Users</Card.Title>
+                            <Card.Title>Total Usuarios</Card.Title>
                             <Card.Text>{data.totalUsers}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -71,7 +71,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Total Articles</Card.Title>
+                            <Card.Title>Total Articulos</Card.Title>
                             <Card.Text>{data.totalArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -79,7 +79,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Successful Articles</Card.Title>
+                            <Card.Title>Articulos Exitosos</Card.Title>
                             <Card.Text>{data.successfulArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -87,7 +87,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Failed Articles</Card.Title>
+                            <Card.Title>Articulos Fallidos</Card.Title>
                             <Card.Text>{data.failedArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -95,7 +95,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Engaged Users</Card.Title>
+                            <Card.Title>Usuarios Activos</Card.Title>
                             <Card.Text>{data.engagedUsers}</Card.Text>
                         </Card.Body>
                     </Card>

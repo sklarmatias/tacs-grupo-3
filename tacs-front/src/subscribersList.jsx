@@ -12,7 +12,7 @@ const SubscribersList = () => {
     }, []);
 
     const fetchSubscribers = () => {
-        axios.get(`http://localhost:8080/restapp/articles/${articleId}/users`, {
+        axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles/${articleId}/users`, {
             headers: {
                 user: `${localStorage.getItem('authToken')}`
             }

@@ -28,7 +28,7 @@ const ArticleForm = () => {
     };
 
     const postFormData = (formData) => {
-        fetch('http://localhost:8080/restapp/articles', {
+        fetch('${import.meta.env.VITE_REACT_APP_API_URL}/articles', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
