@@ -1,72 +1,151 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert, Container } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-const LoginForm = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [pass, setPass] = useState('');
-    const [error, setError] = useState('');
+const LoginForm = ({ onLogin, isRegister }) => {
+    const [formData, setFormData] = useState({
+        email: '',
+        pass: '',
+        confirmpass: isRegister ? '' : undefined,
+        name: isRegister ? '' : undefined,
+        surname: isRegister ? '' : undefined
+    });
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setError('');
-
-        try {
-            const response = await fetch('http://localhost:8080/restapp/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, pass }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Login failed');
-            }
-
-            const data = await response.json();
-            const { id } = data;
-
-            localStorage.setItem('authToken', id);
-            localStorage.setItem('emailUser', email);
-            onLogin(email);
-            navigate('/'); // Redirect to home after login
-        } catch (error) {
-            setError('Invalid email or password');
+        if (isRegister) {
+            registerUser(formData);
+        } else {
+            loginUser(formData);
         }
     };
 
+    const loginUser = (formData) => {
+        fetch('http://localhost:8080/restapp/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: formData.email, pass: formData.pass }),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Login failed');
+            })
+            .then((data) => {
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('emailUser', formData.email);
+                onLogin(formData.email);
+                navigate('/');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error logging in');
+            });
+    };
+
+    const registerUser = (formData) => {
+        fetch('http://localhost:8080/restapp/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: formData.email,
+                pass: formData.pass,
+                name: formData.name,
+                surname: formData.surname
+            }),
+        })
+            .then((response) => {
+                if (response.status === 201) {
+                    alert('Registration successful');
+                    navigate('/login');
+                } else {
+                    alert('Error registering');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error registering');
+            });
+    };
+
     return (
-        <Container>
-            <h2>Login</h2>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formEmail">
-                    <Form.Label>Email address</Form.Label>
+        <Form onSubmit={handleSubmit}>
+            {isRegister && (
+                <>
+                    <Form.Group controlId="name">
+                        <Form.Label>Name</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Enter your name"
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="surname">
+                        <Form.Label>Surname</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="surname"
+                            value={formData.surname}
+                            onChange={handleChange}
+                            placeholder="Enter your surname"
+                            required
+                        />
+                    </Form.Group>
+                </>
+            )}
+            <Form.Group controlId="email">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter email"
+                    required
+                />
+            </Form.Group>
+            <Form.Group controlId="pass">
+                <Form.Label>pass</Form.Label>
+                <Form.Control
+                    type="pass"
+                    name="pass"
+                    value={formData.pass}
+                    onChange={handleChange}
+                    placeholder="Enter pass"
+                    required
+                />
+            </Form.Group>
+            {isRegister && (
+                <Form.Group controlId="confirmpass">
+                    <Form.Label>Confirm pass</Form.Label>
                     <Form.Control
-                        type="email"
-                        placeholder="Enter email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="pass"
+                        name="confirmpass"
+                        value={formData.confirmpass}
+                        onChange={handleChange}
+                        placeholder="Confirm pass"
+                        required
                     />
                 </Form.Group>
-
-                <Form.Group controlId="formPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        type="password"
-                        placeholder="Password"
-                        value={pass}
-                        onChange={(e) => setPass(e.target.value)}
-                    />
-                </Form.Group>
-
-                <Button variant="primary" type="submit">
-                    Login
-                </Button>
-            </Form>
-        </Container>
+            )}
+            <Button variant="primary" type="submit">
+                {isRegister ? 'Register' : 'Login'}
+            </Button>
+        </Form>
     );
 };
 

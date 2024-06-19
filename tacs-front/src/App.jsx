@@ -10,6 +10,8 @@ import ArticleForm from './createArticle.jsx';
 import LoginForm from './login.jsx';
 import Header from './header.jsx';
 import SubscribersList from './subscribersList.jsx';
+import PrivateRoute from './privateroute.jsx';
+import Reports from './reports.jsx';
 
 
 function App() {
@@ -38,10 +40,14 @@ function App() {
     };
     const Layout = ({ isLoggedIn, email, onLogin, onLogout }) => (
         <>
-            <Header isLoggedIn={isLoggedIn} email={email} onLogout={onLogout} />
-            <Container fluid className="mt-4">
-                <Outlet />
-            </Container>
+            <div className="header-container">
+                <Header isLoggedIn={isLoggedIn} email={email} onLogout={onLogout} />
+            </div>
+            <div className="content-container">
+                <Container fluid className="mt-5">
+                    <Outlet />
+                </Container>
+            </div>
         </>
     );
 
@@ -56,7 +62,13 @@ function App() {
                 },
                 {
                     path: 'create',
-                    element: <ArticleForm />,
+                    element: <PrivateRoute />,
+                    children: [
+                        {
+                            path: '',
+                            element: <ArticleForm />,
+                        },
+                    ],
                 },
                 {
                     path: 'login',
@@ -64,11 +76,37 @@ function App() {
                 },
                 {
                     path: 'myarticles',
-                    element: <ArticleList userFocus="true" />,
+                    element: <PrivateRoute />,
+                    children: [
+                        {
+                            path: '',
+                            element: <ArticleList userFocus="true" />,
+                        },
+                    ],
+                },
+                {
+                    path: 'register',
+                    element: <LoginForm isRegister={true} />,
                 },
                 {
                     path: 'subscribers/:articleId',
-                    element: <SubscribersList />,
+                    element: <PrivateRoute />,
+                    children: [
+                        {
+                            path: '',
+                            element: <SubscribersList />,
+                        },
+                    ],
+                },
+                {
+                    path: 'reports',
+                    element: <PrivateRoute />,
+                    children: [
+                        {
+                            path: '',
+                            element: <Reports />,
+                        },
+                    ],
                 },
             ],
         },
