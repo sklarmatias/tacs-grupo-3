@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 const Reports = () => {
+    const { t } = useTranslation();
     const [data, setData] = useState({
         totalUsers: null,
         totalArticles: null,
@@ -17,11 +19,11 @@ const Reports = () => {
         const fetchData = async () => {
             try {
                 const [totalUsers, totalArticles, successfulArticles, failedArticles, engagedUsers] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/users`).then(res => res.json()),
-                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/articles`).then(res => res.json()),
-                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/articles/success`).then(res => res.json()),
-                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/articles/failed`).then(res => res.json()),
-                    fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/reports/engaged_users`).then(res => res.json())
+                    fetch(`${import.meta.env.VITE_API_URL}/reports/users`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_API_URL}/reports/articles`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_API_URL}/reports/articles/success`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_API_URL}/reports/articles/failed`).then(res => res.json()),
+                    fetch(`${import.meta.env.VITE_API_URL}/reports/engaged_users`).then(res => res.json())
                 ]);
 
                 setData({
@@ -52,7 +54,7 @@ const Reports = () => {
     if (error) {
         return (
             <Container className="text-center my-5">
-                <p>Error loading data: {error.message}</p>
+                <p>{t('reports.loadingError')}{error.message}</p>
             </Container>
         );
     }
@@ -63,7 +65,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Total Usuarios</Card.Title>
+                            <Card.Title>{t('reports.totalUsers')}</Card.Title>
                             <Card.Text>{data.totalUsers}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -71,7 +73,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Total Articulos</Card.Title>
+                            <Card.Title>{t('reports.totalArticles')}</Card.Title>
                             <Card.Text>{data.totalArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -79,7 +81,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Articulos Exitosos</Card.Title>
+                            <Card.Title>{t('reports.successfulArticles')}</Card.Title>
                             <Card.Text>{data.successfulArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -87,7 +89,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Articulos Fallidos</Card.Title>
+                            <Card.Title>{t('reports.failedArticles')}</Card.Title>
                             <Card.Text>{data.failedArticles}</Card.Text>
                         </Card.Body>
                     </Card>
@@ -95,7 +97,7 @@ const Reports = () => {
                 <Col md={4}>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Usuarios Activos</Card.Title>
+                            <Card.Title>{t('reports.engagedUsers')}</Card.Title>
                             <Card.Text>{data.engagedUsers}</Card.Text>
                         </Card.Body>
                     </Card>

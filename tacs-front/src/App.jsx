@@ -12,6 +12,7 @@ import Header from './header.jsx';
 import SubscribersList from './subscribersList.jsx';
 import PrivateRoute from './privateroute.jsx';
 import Reports from './reports.jsx';
+import './i18n.jsx';
 
 
 function App() {

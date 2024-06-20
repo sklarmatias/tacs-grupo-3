@@ -1,0 +1,93 @@
+{
+  "login": {
+    "invalidEmail": "Formato de correo electrónico inválido.",
+    "shortPass": "La contraseña debe tener al menos 6 caracteres.",
+    "name": "Nombre",
+    "surname": "Apellido",
+    "email": "Correo Electrónico",
+    "enterEmail": "Introduce el correo electrónico",
+    "pass": "Contraseña",
+    "enterPass": "Introduce la contraseña",
+    "confirmPass": "Confirmar Contraseña",
+    "confirmPassError": "Las contraseñas no coinciden.",
+    "register": "Registrarse",
+    "login": "Iniciar sesión"
+  },
+  "navbar": {
+    "home": "Inicio",
+    "links": "Enlaces",
+    "listArticles": "Listado Artículos",
+    "myArticles": "Mis Artículos",
+    "publishArticles": "Publicar Artículos",
+    "reports": "Reportes",
+    "login": "Iniciar sesión",
+    "register": "Registrar",
+    "logout": "Cerrar sesión"
+  },
+  "articles": {
+    "image": "Imagen",
+    "name": "Nombre",
+    "link": "Enlace",
+    "price": "Precio",
+    "recibes": "Recibes",
+    "status": "Estado",
+    "deadline": "Fecha límite",
+    "subscribe": "Suscribirse",
+    "subscriptors": "Suscriptores",
+    "close": "Cerrar",
+    "createNew": "Crear nuevo",
+    "view": "Ver",
+    "errorFetchingArticles": "Error al obtener artículos:",
+    "errorSubscribing": "Error al suscribirse:",
+    "articleClosedSuccessfully": "Artículo cerrado exitosamente",
+    "errorClosingArticle": "Error al cerrar artículo:",
+    "confirmSubscribing": "Se ha subscripto exitosamente"
+  },
+  "form": {
+    "articleName": "Nombre del artículo",
+    "enterArticleName": "Ingrese el nombre del artículo",
+    "imageURL": "URL de la imagen",
+    "enterImageURL": "Ingrese la URL de la imagen",
+    "deadline": "Fecha límite",
+    "maximumUsers": "Usuarios máximos",
+    "minimumUsers": "Usuarios mínimos",
+    "cost": "Costo",
+    "costType": "Tipo de costo",
+    "total": "TOTAL",
+    "perUser": "POR USUARIO",
+    "userGets": "Usuario obtiene",
+    "submit": "Enviar",
+    "link": "Enlace",
+    "enterLink": "Ingrese una URL",
+    "validation": {
+      "required": "Este campo es obligatorio",
+      "invalidEmail": "Formato de correo electrónico no válido",
+      "passwordLength": "La contraseña debe tener al menos 8 caracteres",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "greaterThanZero": "Debe ser mayor que cero",
+      "greaterThanMin": "Debe ser mayor que usuarios mínimos",
+      "invalidURL": "Debe ser una URL válida",
+      "invalidImageURL": "Debe ser una URL de imagen válida",
+      "futureDate": "Debe ser una fecha futura"
+    },
+    "success": "Artículo creado con éxito",
+    "error": "Error al crear el artículo"
+  },
+  "reports": {
+    "totalUsers": "Total Usuarios",
+    "totalArticles": "Total Artículos",
+    "successfulArticles": "Artículos Exitosos",
+    "failedArticles": "Artículos Fallidos",
+    "engagedUsers": "Usuarios Activos",
+    "loadingError": "Error al cargar datos: "
+  },
+  "subscribersList": {
+    "title": "Suscriptores",
+    "errorFetchingSubscribers": "Error al obtener suscriptores:",
+    "name": "Nombre",
+    "surname": "Apellido",
+    "email": "Email",
+    "subscriptionDate": "Fecha de suscripción",
+    "back": "Volver"
+  }
+}

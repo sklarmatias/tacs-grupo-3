@@ -28,9 +28,17 @@ services:
     build:
       context: ./tacs-telegram-bot
     environment:
-      RESOURCE_URL: ${RESOURCE_URL}
+      RESOURCE_URL: http://api:8080/app
       BOT_TOKEN: ${BOT_TOKEN}
       BOT_USERNAME: ${BOT_USERNAME}
       NOTIFICATION_REFRESHING_TIME: ${NOTIFICATION_REFRESHING_TIME}
     env_file:
       - .env
+
+  web:
+    build:
+      context: ./tacs-front
+    ports:
+      - "3000:80"
+    stdin_open: true
+    tty: true 

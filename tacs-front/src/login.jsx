@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const LoginForm = ({ onLogin, isRegister }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         email: '',
         pass: '',
@@ -11,6 +13,11 @@ const LoginForm = ({ onLogin, isRegister }) => {
         surname: isRegister ? '' : undefined
     });
     const navigate = useNavigate();
+    const [errors, setErrors] = useState({
+        email: '',
+        pass: '',
+        confirmpass: '',
+    });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -19,15 +26,39 @@ const LoginForm = ({ onLogin, isRegister }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (isRegister) {
-            registerUser(formData);
-        } else {
-            loginUser(formData);
+        const newErrors = { email: '', pass: '', confirmpass: '' };
+
+        if (!validateEmail(formData.email)) {
+            newErrors.email = t('login.invalidEmail');
+        }
+        if (!validatePasswordLength(formData.pass)) {
+            newErrors.pass = t('login.shortPass');
+        }
+        if (isRegister && formData.pass !== formData.confirmpass) {
+            newErrors.confirmpass = t('login.confirmPassError');
+        }
+
+        setErrors(newErrors);
+        if (!newErrors.email && !newErrors.pass && (!isRegister || !newErrors.confirmpass)) {
+            if (isRegister) {
+                registerUser(formData);
+            } else {
+                loginUser(formData);
+            }
         }
     };
 
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const validatePasswordLength = (pass) => {
+        return pass.length >= 6; // Example minimum length
+    };
+
     const loginUser = (formData) => {
-        fetch('${import.meta.env.VITE_REACT_APP_API_URL}/users/login', {
+        fetch(`${import.meta.env.VITE_API_URL}/users/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +72,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
                 throw new Error('Login failed');
             })
             .then((data) => {
-                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('authToken', data.id);
                 localStorage.setItem('emailUser', formData.email);
                 onLogin(formData.email);
                 navigate('/');
@@ -53,7 +84,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
     };
 
     const registerUser = (formData) => {
-        fetch('${import.meta.env.VITE_REACT_APP_API_URL}/users/register', {
+        fetch(`${import.meta.env.VITE_API_URL}/users/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -84,66 +115,78 @@ const LoginForm = ({ onLogin, isRegister }) => {
             {isRegister && (
                 <>
                     <Form.Group controlId="name">
-                        <Form.Label>Name</Form.Label>
+                        <Form.Label>{t('login.name')}</Form.Label>
                         <Form.Control
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Enter your name"
+                            placeholder={t('login.name')}
                             required
                         />
                     </Form.Group>
                     <Form.Group controlId="surname">
-                        <Form.Label>Surname</Form.Label>
+                        <Form.Label>{t('login.surname')}</Form.Label>
                         <Form.Control
                             type="text"
                             name="surname"
                             value={formData.surname}
                             onChange={handleChange}
-                            placeholder="Enter your surname"
+                            placeholder={t('login.surname')}
                             required
                         />
                     </Form.Group>
                 </>
             )}
             <Form.Group controlId="email">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>{t('login.email')}</Form.Label>
                 <Form.Control
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Enter email"
+                    placeholder={t('login.enterEmail')}
                     required
+                    isInvalid={!!errors.email}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                </Form.Control.Feedback>
             </Form.Group>
             <Form.Group controlId="pass">
-                <Form.Label>pass</Form.Label>
+                <Form.Label>{t('login.pass')}</Form.Label>
                 <Form.Control
-                    type="pass"
+                    type="password"
                     name="pass"
                     value={formData.pass}
                     onChange={handleChange}
-                    placeholder="Enter pass"
+                    placeholder={t('login.enterPass')}
                     required
+                    isInvalid={!!errors.pass}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {errors.pass}
+                </Form.Control.Feedback>
             </Form.Group>
             {isRegister && (
                 <Form.Group controlId="confirmpass">
-                    <Form.Label>Confirm pass</Form.Label>
+                    <Form.Label>{t('login.confirmPass')}</Form.Label>
                     <Form.Control
-                        type="pass"
+                        type="password"
                         name="confirmpass"
                         value={formData.confirmpass}
                         onChange={handleChange}
-                        placeholder="Confirm pass"
+                        placeholder={t('login.confirmPass')}
                         required
+                        isInvalid={!!errors.confirmpass}
                     />
+                    <Form.Control.Feedback type="invalid">
+                        {errors.confirmpass}
+                    </Form.Control.Feedback>
                 </Form.Group>
             )}
             <Button variant="primary" type="submit">
-                {isRegister ? 'Register' : 'Login'}
+                {isRegister ? t('login.register') : t('login.login')}
             </Button>
         </Form>
     );

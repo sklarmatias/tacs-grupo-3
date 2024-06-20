@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { Stack, Table, Button } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 function ArticleList({ userFocus }) {
+    const { t } = useTranslation();
     const [articles, setArticles] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
     const [isUserFocus, setIsUserFocus] = useState(false);
@@ -11,32 +13,22 @@ function ArticleList({ userFocus }) {
     const navigate = useNavigate();
 
     useEffect(() => {
-
-            const token = localStorage.getItem('authToken');
-        if (userFocus === 'true') {
-            axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles`, {
-                headers: {
-                    'user': token
-                }
-            })
+        const token = localStorage.getItem('authToken');
+        const fetchArticles = () => {
+            const headers = userFocus === 'true' ? { 'user': token } : {};
+            axios.get(`${import.meta.env.VITE_API_URL}/articles`, { headers })
                 .then(response => {
                     setArticles(response.data);
                 })
                 .catch(error => {
-                    alert('Error al obtener artículos:', error);
+                    alert(`${t('articles.errorFetchingArticles')} ${error}`);
                 });
-            setIsUserFocus(true);
-        } else {
-            axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles`)
-                .then(response => {
-                    setArticles(response.data);
-                })
-                .catch(error => {
-                    alert('Error al obtener artículos:', error);
-                });
-        }
 
-        // Check if user is logged in
+            setIsUserFocus(userFocus === 'true');
+        };
+
+        fetchArticles();
+
         if (token) {
             setIsLoggedIn(true);
             setUser(token);
@@ -47,26 +39,26 @@ function ArticleList({ userFocus }) {
         else {
             setIsUserFocus(false);
         }
-    }, [userFocus]);
-
+    }, [userFocus, t]);
+    
 
     const subscribe = (id) => {
-        axios.post(`${import.meta.env.VITE_REACT_APP_API_URL}/users/`, '', {
+        axios.post(`${import.meta.env.VITE_API_URL}/articles/${id}/users/`, '', {
             headers: {
                 'user': `${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             }
         })
             .then(response => {
-                alert('Ok');
+                alert(`${t('articles.confirmSubscribing')} ${error}`);
             })
             .catch(error => {
-                alert('Error al suscribirse:', error);
+                alert(`${t('articles.errorSubscribing')} ${error}`);
             });
     };
 
     const close = (id) => {
-        axios.patch(`${import.meta.env.VITE_REACT_APP_API_URL}/close`, null, {
+        axios.patch(`${import.meta.env.VITE_API_URL}/articles/${id}/close`, null, {
             headers: {
                 user: `${localStorage.getItem('authToken')}` 
             }
@@ -84,10 +76,10 @@ function ArticleList({ userFocus }) {
 
                 setArticles(updatedArticles);
 
-                alert('Artículo cerrado exitosamente');
+                alert(t('articles.articleClosedSuccessfully'));
             })
             .catch(error => {
-                alert('Error al cerrar artículo:', error);
+                calert(t('articles.articleClosedSuccessfully'));
             });
     };
 
@@ -100,20 +92,20 @@ function ArticleList({ userFocus }) {
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>Enlace</th>
-                        <th>Costo</th>
-                        <th>Recibe</th>
-                        <th>Estado</th>
-                        <th>Fecha Limite</th>
+                        <th>{t('articles.image')}</th>
+                        <th>{t('articles.name')}</th>
+                        <th>{t('articles.link')}</th>
+                        <th>{t('articles.price')}</th>
+                        <th>{t('articles.recibes')}</th>
+                        <th>{t('articles.status')}</th>
+                        <th>{t('articles.deadline')}</th>
                         {!isUserFocus && isLoggedIn && (
-                            <th>Suscribir</th>
+                            <th>{t('articles.subscribe')}</th>
                         )}
                         {isUserFocus && (
                             <>
-                                <th>Suscriptores</th>
-                                <th>Cerrar</th>
+                                <th>{t('articles.subscriptors')}</th>
+                                <th>{t('articles.close')}</th>
                             </>
                         )}
                     </tr>
@@ -128,22 +120,22 @@ function ArticleList({ userFocus }) {
                             <td>{article.user_gets}</td>
                             <td>{article.status}</td>
                             <td>{article.deadline}</td>
-                            {!isUserFocus && isLoggedIn && article.owner !== user && article.status == "OPEN" && (
+                            {!isUserFocus && isLoggedIn && article.owner !== user && article.status === "OPEN" && (
                                 <td>
-                                    <Button onClick={() => subscribe(article.id)}>Subscribir</Button>
+                                    <Button onClick={() => subscribe(article.id)}>{t('articles.subscribe')}</Button>
                                 </td>
                             )}
                             {isUserFocus && (
                                 <>
                                     <td>
-                                        <Button onClick={() => navigate(`/subscribers/${article.id}`)}>Ver</Button>
+                                        <Button onClick={() => navigate(`/subscribers/${article.id}`)}>{t('articles.view')}</Button>
                                     </td>
                                 </>
                             )}
-                            {isUserFocus && article.status == "OPEN" && (
+                            {isUserFocus && article.status === "OPEN" && (
                                 <>
                                     <td>
-                                        <Button onClick={() => close(article.id)}>Cerrar</Button>
+                                        <Button onClick={() => close(article.id)}>{t('articles.close')}</Button>
                                     </td>
                                 </>
                             )}
@@ -152,7 +144,7 @@ function ArticleList({ userFocus }) {
                 </tbody>
             </Table>
             {isLoggedIn && (
-                <Link to='/create'>Crear</Link>
+                <Link to='/create'>{t('articles.createNew')}</Link>
             )}
         </Stack>
     );

@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Table, Button } from 'react-bootstrap';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 const SubscribersList = () => {
     const { articleId } = useParams();
+    const { t } = useTranslation();
     const [subscribers, setSubscribers] = useState([]);
 
     useEffect(() => {
@@ -12,25 +14,25 @@ const SubscribersList = () => {
     }, []);
 
     const fetchSubscribers = () => {
-        axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/articles/${articleId}/users`, {
+        axios.get(`${import.meta.env.VITE_API_URL}/articles/${articleId}/users`, {
             headers: {
                 user: `${localStorage.getItem('authToken')}`
             }
         })
             .then(response => setSubscribers(response.data))
-            .catch(error => alert('Error al obtener suscriptores:', error));
+            .catch(error => alert(`${t('subscribersList.errorFetchingSubscribers')} ${error}`));
     };
 
     return (
         <div>
-            <h2>Suscriptores</h2>
+            <h2>{t('subscribersList.title')}</h2>
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Email</th>
-                        <th>Fecha</th>
+                        <th>{t('subscribersList.name')}</th>
+                        <th>{t('subscribersList.surname')}</th>
+                        <th>{t('subscribersList.email')}</th>
+                        <th>{t('subscribersList.subscriptionDate')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +46,7 @@ const SubscribersList = () => {
                     ))}
                 </tbody>
             </Table>
-            <Button onClick={() => window.history.back()}>Back</Button>
+            <Button onClick={() => window.history.back()}>{t('subscribersList.back')}</Button>
         </div>
     );
 };

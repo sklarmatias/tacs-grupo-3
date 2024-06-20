@@ -1,0 +1,93 @@
+{
+  "navbar": {
+    "home": "Home",
+    "links": "Links",
+    "listArticles": "List Articles",
+    "myArticles": "My Articles",
+    "publishArticles": "Publish Articles",
+    "reports": "Reports",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "articles": {
+    "image": "Image",
+    "name": "Name",
+    "link": "Link",
+    "price": "Price",
+    "recibes": "User Gets",
+    "status": "Status",
+    "deadline": "Deadline",
+    "subscribe": "Subscribe",
+    "subscriptors": "Subscribers",
+    "close": "Close",
+    "createNew": "Create New",
+    "view": "View",
+    "errorFetchingArticles": "Error fetching articles:",
+    "errorSubscribing": "Error subscribing:",
+    "articleClosedSuccessfully": "Article closed successfully",
+    "errorClosingArticle": "Error closing article:",
+    "confirmSubscribing": "Subscription successful"
+  },
+  "login": {
+    "name": "Name",
+    "surname": "Surname",
+    "email": "Email",
+    "enterEmail": "Enter email",
+    "pass": "Password",
+    "enterPass": "Enter password",
+    "confirmPass": "Confirm Password",
+    "confirmPassError": "Passwords do not match.",
+    "invalidEmail": "Invalid email format.",
+    "shortPass": "Password must be at least 6 characters long.",
+    "register": "Register",
+    "login": "Login"
+  },
+  "form": {
+    "articleName": "Article Name",
+    "enterArticleName": "Enter article name",
+    "imageURL": "Image URL",
+    "enterImageURL": "Enter image URL",
+    "deadline": "Deadline",
+    "maximumUsers": "Maximum Users",
+    "minimumUsers": "Minimum Users",
+    "cost": "Cost",
+    "costType": "Cost Type",
+    "total": "TOTAL",
+    "perUser": "PER_USER",
+    "userGets": "User Gets",
+    "submit": "Submit",
+    "link": "Link",
+    "enterLink": "Enter a URL",
+    "validation": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email format",
+      "passwordLength": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "greaterThanZero": "Must be greater than zero",
+      "greaterThanMin": "Must be greater than minimum users",
+      "invalidURL": "Must be a valid URL",
+      "invalidImageURL": "Must be a valid image URL",
+      "futureDate": "Must be a future date"
+    },
+    "success": "Article created successfully",
+    "error": "Error creating article"
+  },
+  "reports": {
+    "totalUsers": "Total Users",
+    "totalArticles": "Total Articles",
+    "successfulArticles": "Successful Articles",
+    "failedArticles": "Failed Articles",
+    "engagedUsers": "Engaged Users",
+    "loadingError": "Error loading data: "
+  },
+  "subscribersList": {
+    "title": "Subscribers",
+    "errorFetchingSubscribers": "Error fetching subscribers:",
+    "name": "Name",
+    "surname": "Surname",
+    "email": "Email",
+    "subscriptionDate": "Subscription Date",
+    "back": "Back"
+  }
+}
