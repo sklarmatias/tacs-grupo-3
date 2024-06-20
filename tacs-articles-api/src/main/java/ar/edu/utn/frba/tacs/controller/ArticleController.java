@@ -23,7 +23,7 @@ public class ArticleController {
 	@Produces("application/json")
 	public List<Article.ArticleDTO> listArticles(@HeaderParam("user") String userId) {
 		if(userId == null){
-			return articleService.listArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
+			return articleService.listOpenArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
 		}
 		else {
 			return articleService.listUserArticles(userId).stream().map(Article::convertToDTO).collect(Collectors.toList());
@@ -149,9 +149,4 @@ public class ArticleController {
 		return articleService.getUsersSignedUp(id);
 	}
 
-	@DELETE
-	@Path("/{id}/")
-	public void deleteArticle(@PathParam("id") String id){
-		articleService.clearArticle(id);
-	}
 }

@@ -20,17 +20,22 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class UserTest {
     static UserService userService;
+    static ArticleService articleService;
+    static TestFunctions testFunctions;
     @BeforeClass
     public static void setUp(){
         TransitionWalker.ReachedState<RunningMongodProcess> running = Mongod.instance().start(Version.Main.V7_0);
         ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
         userService = new UserService("mongodb://" + serverAddress);
+        articleService = new ArticleService("mongodb://" + serverAddress);
+        testFunctions = new TestFunctions(userService,articleService);
     }
     @Test
     public void signUpUserRepeatedEmail() throws DuplicatedEmailException {
@@ -44,7 +49,7 @@ public class UserTest {
 
     @Test
     public void userWithAnnotationHasInteracted(){
-        User user = new User("thiago", "cabrera", "thiago@tacs.com","tacs2024");
+        User user =testFunctions.createTestUser();
         user.addAnnotation(new Annotation());
 
         Assert.assertTrue(user.hasInteracted());
@@ -53,8 +58,8 @@ public class UserTest {
 
     @Test
     public void userWithArticleHasInteracted(){
-        User user = new User("thiago", "cabrera", "thiago@tacs.com","tacs2024");
-        user.getPostedArticles().add(new Article());
+        User user = testFunctions.createTestUser();
+        user.getPostedArticles().add(testFunctions.createTestArticle(user.getId()));
 
         Assert.assertTrue(user.hasInteracted());
 
@@ -62,14 +67,24 @@ public class UserTest {
 
     @Test
     public void userHasntInteracted(){
-        User user = new User("thiago", "cabrera", "thiago@tacs.com","tacs2024");
+        User user = testFunctions.createTestUser();
         Assert.assertFalse(user.hasInteracted());
-
     }
-    private User createTestUser() throws DuplicatedEmailException {
-        User user = new User("juan","perez","a@gmail.com","123456");
-        user.setId(userService.saveUser(user));
-        return user;
+    @Test
+    public void testLoginWrong(){
+        User user = testFunctions.createTestUser();
+        Assert.assertThrows(LoginException.class,()->userService.loginUser("wrong@gmail.com","1234"));
+    }
+    @Test
+    public void testUpdateUser(){
+        User user = testFunctions.createTestUser();
+        user.setName("pablo");
+        user.setSurname("alvarez");
+        userService.updateUser(user.getId(),user);
+        User usernew = userService.listUsers().get(0);
+        Assert.assertEquals(usernew.getId(),user.getId());
+        Assert.assertEquals("pablo",usernew.getName());
+        Assert.assertEquals("alvarez",usernew.getSurname());
     }
 
 }

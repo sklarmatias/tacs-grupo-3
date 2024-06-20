@@ -97,6 +97,9 @@ public class Article {
             Annotation annotation = new Annotation(user.convertToDTO());
             this.annotations.add(annotation);
             this.annotationsCounter++;
+            if (annotationsCounter.equals(usersMax)){
+                close();
+            }
             return annotation;
     }
 

@@ -11,8 +11,16 @@ import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
 
 public class ReportService {
 
-    private final UsersRepository usersRepository = new MongoUsersRepository();
-    private final ArticlesRepository articlesRepository = new MongoArticlesRepository();
+    private final UsersRepository usersRepository;
+    private final ArticlesRepository articlesRepository;
+    public ReportService(){
+        usersRepository = new MongoUsersRepository();
+        articlesRepository = new MongoArticlesRepository();
+    }
+    public ReportService(String url){
+        articlesRepository = new MongoArticlesRepository(url);
+        usersRepository = new MongoUsersRepository(url);
+    }
 
     public int getUsersCount() {
         return usersRepository.findAll().size();
@@ -27,7 +35,7 @@ public class ReportService {
     }
 
     public int countFailedArticles() {
-        return (int) articlesRepository.findAll().stream().filter(article -> !article.wasClosedSuccessfully()).count();
+        return (int) articlesRepository.findAll().stream().filter(article -> article.isClosed() && !article.wasClosedSuccessfully()).count();
     }
 
     public int getEngagedUsers() {

@@ -5,7 +5,10 @@ import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ArticleService {
@@ -24,6 +27,11 @@ public class ArticleService {
 
     public List<Article> listArticles() {
         return articlesRepository.findAll();
+    }
+    public List<Article> listOpenArticles() {
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("status", "OPEN");
+        return articlesRepository.findAllCondition(conditions);
     }
     public List<Article> listUserArticles(String user) {
         return articlesRepository.filter(user);
@@ -77,10 +85,6 @@ public class ArticleService {
     public List<Annotation> getUsersSignedUp(String articleId) {
         Article article = getArticle(articleId);
         return article.getAnnotations();
-    }
-
-    public void clearArticle(String id){
-        articlesRepository.delete(id);
     }
 
 }

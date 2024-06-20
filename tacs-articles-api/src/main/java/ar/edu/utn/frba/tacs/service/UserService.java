@@ -60,10 +60,6 @@ public class UserService {
         user.setPass(hashingHelper.hash(user.getPass()));
         return usersRepository.save(user);
     }
-    // TODO delete this method
-    public void cleanUser(String id){
-        usersRepository.delete(id);
-    }
 
     public void updateUserAddArticle(String id, Article article){
         usersRepository.updateAddArticle(id,article);

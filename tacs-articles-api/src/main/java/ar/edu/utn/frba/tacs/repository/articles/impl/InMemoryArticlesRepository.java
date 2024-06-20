@@ -5,6 +5,7 @@ import ar.edu.utn.frba.tacs.model.Article;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class InMemoryArticlesRepository implements ArticlesRepository {
 
@@ -15,6 +16,11 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     @Override
     public List<Article> findAll() {
         return new ArrayList<>(ARTICLES);
+    }
+
+    @Override
+    public List<Article> findAllCondition(Map<String, Object> conditions) {
+        return List.of();
     }
 
     @Override

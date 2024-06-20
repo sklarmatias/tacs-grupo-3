@@ -25,8 +25,13 @@ public class MongoArticlesRepository implements ArticlesRepository {
 
     @Override
     public List<Article> findAll() {
-        Map<String, Object> conditions = new HashMap<>();
-        conditions.put("status", "OPEN");
+        List<Document> documents = dbConnector.selectAll("articles");
+        return documents.stream()
+                .map(MongoArticleMapper::convertDocumentToArticle)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<Article> findAllCondition(Map<String, Object> conditions) {
         List<Document> documents = dbConnector.selectByCondition("articles",conditions);
         return documents.stream()
                 .map(MongoArticleMapper::convertDocumentToArticle)

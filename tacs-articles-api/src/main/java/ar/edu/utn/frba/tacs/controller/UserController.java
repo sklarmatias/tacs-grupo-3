@@ -63,12 +63,6 @@ public class UserController {
         return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
     }
 
-    // TODO delete this method
-    @DELETE
-    @Path("/{id}/")
-    public void cleanUsers(@PathParam("id") String id){
-        userService.cleanUser(id);
-    }
 }
 
 
