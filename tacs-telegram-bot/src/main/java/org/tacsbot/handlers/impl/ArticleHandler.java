@@ -100,7 +100,7 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
-                        if(bot.getCacheService().getUser(chatId) != null) {
+                        if(bot.getCacheService().getUser(chatId) != null && !articleList.isEmpty()) {
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
@@ -108,8 +108,10 @@ public class ArticleHandler implements CommandsHandler {
                     case PROPIOS:
                         user = bot.getCacheService().getUser(chatId).getId();
                         getArticlesOf(message, user, bot);
-                        currentStep = CurrentStep.CHOOSE_ARTICLE;
-                        bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
+                        if (!articleList.isEmpty()){
+                            currentStep = CurrentStep.CHOOSE_ARTICLE;
+                            bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
+                        }
                         return;
                 }
             case CHOOSE_ARTICLE:
@@ -122,7 +124,7 @@ public class ArticleHandler implements CommandsHandler {
                 }
                 selectedArticleIndex = selectedIndex;
                 articleId = articleList.get(selectedArticleIndex).getId();
-                bot.sendInteraction(message.getFrom(), "CHOSEN_ARTICLE", selectedIndex);
+                bot.sendInteraction(message.getFrom(), "CHOSEN_ARTICLE", selectedIndex + 1);
                 if (articleType == ArticleType.TODOS)
                     bot.sendInteraction(message.getFrom(), "SUBSCRIBE_CONFIRMATION");
                 else bot.sendInteraction(message.getFrom(), "CHOOSE_OWN_ARTICLES_ACTION");
@@ -135,7 +137,7 @@ public class ArticleHandler implements CommandsHandler {
                         user = bot.getCacheService().getUser(chatId).getId();
                         subscribe(message, user, bot);
                     } else if (action.equals("B")) {
-                        bot.sendInteraction(message.getFrom(), "CANCELLATION");
+                        bot.sendInteraction(message.getFrom(), "CANCELLATION", bot.getCacheService().getUser(chatId).getName());
                     } else{
                         bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     }

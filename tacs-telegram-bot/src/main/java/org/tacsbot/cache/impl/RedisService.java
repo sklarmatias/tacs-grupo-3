@@ -104,7 +104,7 @@ public class RedisService implements CacheService {
     public ArticleCreationHandler getArticleCreationHandler(Long chatId){
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> response = jedis.zrange(String.valueOf(chatId), 0, 1);
-            return new ArticleCreationHandler(chatId, articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
+            return new ArticleCreationHandler(articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
         }catch (IllegalArgumentException e){
             return null;
         }

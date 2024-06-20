@@ -24,16 +24,23 @@ public class ArticleCreationHandler implements CommandsHandler {
 
     private ArticleApi articleApi;
 
-    public ArticleCreationHandler(Long userId) {
+    public ArticleCreationHandler(String userId) {
         this(userId, new Article(), ArticleCreationStep.REQUEST_NAME);
     }
 
-    public ArticleCreationHandler(Long userId, Article article, ArticleCreationStep articleCreationStep) {
+    public ArticleCreationHandler(String userId, Article article, ArticleCreationStep articleCreationStep) {
 
         this.currentStep = articleCreationStep;
         this.articleApi = new ArticleApiConnection();
         this.article = article;
-        this.article.setOwner(String.valueOf(userId));
+        this.article.setOwner(userId);
+    }
+
+    public ArticleCreationHandler(Article article, ArticleCreationStep articleCreationStep) {
+
+        this.currentStep = articleCreationStep;
+        this.articleApi = new ArticleApiConnection();
+        this.article = article;
     }
 
     private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {

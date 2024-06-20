@@ -143,7 +143,7 @@ public class RedisTest {
 
     @Test
     public void saveCreationStep() {
-        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(chatId, article1, ArticleCreationStep.REQUEST_DEADLINE);
+        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(article1, ArticleCreationStep.REQUEST_DEADLINE);
         redisService.saveArticleCreationHandler(chatId, articleCreationHandler);
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> strings = jedis.zrange(String.valueOf(chatId), 0, -1);
@@ -154,7 +154,7 @@ public class RedisTest {
 
     @Test
     public void getCreationStep() {
-        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(chatId, article1, ArticleCreationStep.REQUEST_MAX_USERS);
+        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(article1, ArticleCreationStep.REQUEST_MAX_USERS);
         redisService.saveArticleCreationHandler(chatId, articleCreationHandler);
         ArticleCreationHandler savedArticleCreationHandler = redisService.getArticleCreationHandler(chatId);
         Assert.assertEquals(articleCreationHandler.getCurrentStep(), savedArticleCreationHandler.getCurrentStep());

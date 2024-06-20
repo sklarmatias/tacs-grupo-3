@@ -69,6 +69,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception){
         sendInteraction(user, "INTERNAL_ERROR");
         System.err.printf("[Error] Error:\n%s\n", exception.getMessage());
+        exception.printStackTrace();
     }
 
     @Override
@@ -116,7 +117,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         User user = cacheService.getUser(chatId);
         if(user != null) {
             commandsHandlerMap.remove(chatId);
-            ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
+            ArticleCreationHandler handler = new ArticleCreationHandler(user.getId());
             commandsHandlerMap.put(chatId, handler);
             sendInteraction(message.getFrom(), "ARTICLE_NAME");
         }
