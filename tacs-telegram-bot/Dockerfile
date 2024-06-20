@@ -1,4 +1,5 @@
 FROM maven:3.9.6-eclipse-temurin-22 as builder
+ENV TZ="America/Buenos_Aires"
 WORKDIR /app
 COPY pom.xml .
 COPY . .
@@ -8,4 +9,4 @@ FROM openjdk:22
 WORKDIR /app
 COPY --from=builder app/target/*.jar .
 EXPOSE 80
-ENTRYPOINT ["java", "-jar", "/app/BotTACS-1.0-SNAPSHOT-jar-with-dependencies.jar"]
+ENTRYPOINT ["java", "-jar", "/app/BotTACS-1.1.0-jar-with-dependencies.jar"]

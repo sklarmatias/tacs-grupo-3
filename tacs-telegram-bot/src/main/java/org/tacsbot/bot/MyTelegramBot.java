@@ -1,22 +1,25 @@
 package org.tacsbot.bot;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
-import org.tacsbot.dictionary.JSONMessageDictionary;
+import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
 import org.tacsbot.model.NotificationDTO;
-import org.tacsbot.model.UserChatMapping;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
+import org.tacsbot.cache.impl.RedisService;
+import org.tacsbot.cache.CacheService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +35,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private final Map<String, CommandAction> commandActions = new HashMap<>();
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
-    public final UserChatMapping usersLoginMap = new UserChatMapping();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final NotificationApi notificationApi = new NotificationApiConnection();
 
-    public final Map<Long, User> loggedUsersMap = new HashMap<>();
+    @Getter
+    private final CacheService cacheService;
 
-    public MyTelegramBot() {
+    public MyTelegramBot(CacheService cacheService) {
         super(System.getenv("BOT_TOKEN"));
         // Initialization of the commandActions map with the actions associated with the commands
         commandActions.put("/help", this::helpCommand);
@@ -50,6 +53,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
         messageDictionary = new JSONMessageDictionary();
 
+        this.cacheService = cacheService;
+
+    }
+
+    public MyTelegramBot() {
+        this(new RedisService());
     }
 
     @Override
@@ -57,9 +66,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_USERNAME");
     }
 
-    public void sendInternalErrorMsg(Long chatId, Exception exception){
-        sendText(chatId, "Tuvimos un error interno. Por favor. Volve a intentarlo más tarde!");
-        System.out.printf("[Error] Error:\n%s\n", exception.getMessage());
+    public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception){
+        sendInteraction(user, "INTERNAL_ERROR");
+        System.err.printf("[Error] Error:\n%s\n", exception.getMessage());
         exception.printStackTrace();
     }
 
@@ -79,7 +88,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 try{
                     commandActions.get(command).execute(msg, txt);
                 } catch (Exception e){
-                    sendInternalErrorMsg(id, e);
+                    sendInternalErrorMsg(user, e);
                 }
             } else{
                 sendInteraction(user, "UNKNOWN_COMMAND");
@@ -89,7 +98,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
             } catch (Exception e){
-                sendInternalErrorMsg(id, e);
+                sendInternalErrorMsg(user, e);
             }
 
         }else sendInteraction(user, "WELCOME");
@@ -104,12 +113,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private void createArticle(Message message, String commandText) {
-
-        if(usersLoginMap.containsChatIdKey(message.getChatId())) {
-            System.out.println("User is logged in");
-            commandsHandlerMap.remove(message.getFrom().getId());
-            ArticleCreationHandler handler = new ArticleCreationHandler(message.getFrom().getId());
-            commandsHandlerMap.put(message.getFrom().getId(), handler);
+        Long chatId = message.getChatId();
+        User user = cacheService.getUser(chatId);
+        if(user != null) {
+            commandsHandlerMap.remove(chatId);
+            ArticleCreationHandler handler = new ArticleCreationHandler(user.getId());
+            commandsHandlerMap.put(chatId, handler);
             sendInteraction(message.getFrom(), "ARTICLE_NAME");
         }
         else{
@@ -118,10 +127,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
 
-
     private void searchArticles(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)) {
+        User user = cacheService.getUser(chatId);
+        if(user != null) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -133,7 +142,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try{
                 handler.processResponse(message, this);
             } catch(HttpException e){
-                sendInternalErrorMsg(message.getChatId(), e);
+                sendInternalErrorMsg(message.getFrom(), e);
             }
 
         }
@@ -141,9 +150,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     private void register(Message message, String commandText) {
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(message.getChatId())){
-            User u = loggedUsersMap.get(chatId);
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
+        User user = cacheService.getUser(chatId);
+        if(user != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -156,9 +165,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void login(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)){
-            User u = loggedUsersMap.get(chatId);
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", u.getName());
+        User user = cacheService.getUser(chatId);
+        if(user != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -169,8 +178,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     private void logout(Message message, String commandText){
         Long chatId = message.getChatId();
-        if(usersLoginMap.containsChatIdKey(chatId)){
-            usersLoginMap.removeByChatId(chatId);
+        User user = cacheService.getUser(chatId);
+        if(user != null) {
+            logOutUser(chatId, user);
             sendInteraction(message.getFrom(), "LOG_OUT");
 
         }
@@ -231,7 +241,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             System.out.println("Intentando enviar notificaciones...");
             List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
             for (NotificationDTO notification : notifications) {
-                Long chatId = usersLoginMap.getChatId(notification.getSubscriber());
+                Long chatId = cacheService.getChatIdOfUser(notification.getSubscriber());
                 if (chatId == null) {
                     System.out.println("Chat ID is null for user: " + notification.getSubscriber());
                     continue;  // Skip this notification
@@ -253,18 +263,16 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
     private String generateMessage(NotificationDTO notification) {
-        switch (notification.getType()) {
-            case "ClosedArticleNotification":
-                return "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "OwnerClosedArticleNotification":
-                return "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "SubscriptionNotification":
-                return "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
-            case "OwnerSubscriptionNotification":
-                return "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
-            default:
-                return "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
-        }
+        return switch (notification.getType()) {
+            case "ClosedArticleNotification" ->
+                    "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "OwnerClosedArticleNotification" ->
+                    "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
+            case "SubscriptionNotification" -> "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
+            case "OwnerSubscriptionNotification" ->
+                    "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
+            default -> "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
+        };
     }
 
 
@@ -273,6 +281,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
 
+    public void logOutUser(Long chatId, User user){
+        cacheService.deleteUserMapping(chatId, user);
+    }
 
-
+    public void logInUser(Long chatId, User user) throws IOException {
+        cacheService.addUserMapping(chatId, user);
+    }
 }

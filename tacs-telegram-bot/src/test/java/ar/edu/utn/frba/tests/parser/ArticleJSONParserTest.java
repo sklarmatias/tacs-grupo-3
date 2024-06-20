@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tests.parser;
 
-import ar.edu.utn.frba.tests.helpers.ArticleTestHelper;
+import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -94,14 +94,14 @@ public class ArticleJSONParserTest {
                   "users_max" : 2
                 }]""";
         List<Article> convertedArticles = new ArticleJSONParser().parseJSONToArticleList(testJSONList);
-        ArticleTestHelper.assertArticlesEqual(article1, convertedArticles.get(0));
-        ArticleTestHelper.assertArticlesEqual(article2, convertedArticles.get(1));
+        ModelEqualsHelper.assertEquals(article1, convertedArticles.get(0));
+        ModelEqualsHelper.assertEquals(article2, convertedArticles.get(1));
     }
 
     @Test
     public void JSONToArticleTest(){
         Article convertedArticle = new ArticleJSONParser().parseJSONToArticle(testJSON);
-        ArticleTestHelper.assertArticlesEqual(article1, convertedArticle);
+        ModelEqualsHelper.assertEquals(article1, convertedArticle);
     }
 
     @Test

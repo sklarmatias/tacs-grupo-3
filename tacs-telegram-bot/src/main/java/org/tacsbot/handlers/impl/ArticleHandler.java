@@ -79,7 +79,7 @@ public class ArticleHandler implements CommandsHandler {
             else
                 bot.sendAnnotationList(message.getFrom(), subscriptions);
         } catch (IllegalArgumentException e){
-            bot.sendInternalErrorMsg(chatId, e);
+            bot.sendInternalErrorMsg(message.getFrom(), e);
         }
     }
 
@@ -100,16 +100,18 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
-                        if (bot.usersLoginMap.containsChatIdKey(chatId)){
+                        if(bot.getCacheService().getUser(chatId) != null && !articleList.isEmpty()) {
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
                         return;
                     case PROPIOS:
-                        user = bot.usersLoginMap.getUserId(chatId);
+                        user = bot.getCacheService().getUser(chatId).getId();
                         getArticlesOf(message, user, bot);
-                        currentStep = CurrentStep.CHOOSE_ARTICLE;
-                        bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
+                        if (!articleList.isEmpty()){
+                            currentStep = CurrentStep.CHOOSE_ARTICLE;
+                            bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
+                        }
                         return;
                 }
             case CHOOSE_ARTICLE:
@@ -122,7 +124,7 @@ public class ArticleHandler implements CommandsHandler {
                 }
                 selectedArticleIndex = selectedIndex;
                 articleId = articleList.get(selectedArticleIndex).getId();
-                bot.sendInteraction(message.getFrom(), "CHOSEN_ARTICLE", selectedIndex);
+                bot.sendInteraction(message.getFrom(), "CHOSEN_ARTICLE", selectedIndex + 1);
                 if (articleType == ArticleType.TODOS)
                     bot.sendInteraction(message.getFrom(), "SUBSCRIBE_CONFIRMATION");
                 else bot.sendInteraction(message.getFrom(), "CHOOSE_OWN_ARTICLES_ACTION");
@@ -130,24 +132,22 @@ public class ArticleHandler implements CommandsHandler {
                 break;
             case CHOOSE_ACTION:
                 String action = message.getText().toUpperCase();
-                System.out.println(action);
                 if (articleType == ArticleType.TODOS){
                     if (action.equals("A")){
-                        user = bot.usersLoginMap.getUserId(chatId);
+                        user = bot.getCacheService().getUser(chatId).getId();
                         subscribe(message, user, bot);
                     } else if (action.equals("B")) {
-                        bot.sendInteraction(message.getFrom(), "CANCELLATION");
+                        bot.sendInteraction(message.getFrom(), "CANCELLATION", bot.getCacheService().getUser(chatId).getName());
                     } else{
                         bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     }
                 } else if (articleType == ArticleType.PROPIOS) {
+                    user = bot.getCacheService().getUser(chatId).getId();
                     switch (action) {
                         case "A":
-                            user = bot.usersLoginMap.getUserId(chatId);
                             getSubscriptions(message, articleId, bot);
                             break;
                         case "B":
-                            user = bot.usersLoginMap.getUserId(chatId);
                             closeArticle(message, user, bot);
                             break;
                     }

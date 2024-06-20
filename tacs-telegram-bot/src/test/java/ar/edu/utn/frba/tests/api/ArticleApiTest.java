@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tests.api;
 
-import ar.edu.utn.frba.tests.helpers.ArticleTestHelper;
+import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
 import org.apache.http.HttpException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -161,8 +161,8 @@ public class ArticleApiTest {
         // assert
         List<Article> gottenArticles = articleApiConnection.getArticlesOf("qwerty");
 
-        ArticleTestHelper.assertArticlesEqual(articles.get(0), gottenArticles.get(0));
-        ArticleTestHelper.assertArticlesEqual(articles.get(1), gottenArticles.get(1));
+        ModelEqualsHelper.assertEquals(articles.get(0), gottenArticles.get(0));
+        ModelEqualsHelper.assertEquals(articles.get(1), gottenArticles.get(1));
 
     }
 
@@ -245,8 +245,8 @@ public class ArticleApiTest {
         // assert
         List<Article> gottenArticles = articleApiConnection.getAllArticles();
 
-        ArticleTestHelper.assertArticlesEqual(articles.get(0), gottenArticles.get(0));
-        ArticleTestHelper.assertArticlesEqual(articles.get(1), gottenArticles.get(1));
+        ModelEqualsHelper.assertEquals(articles.get(0), gottenArticles.get(0));
+        ModelEqualsHelper.assertEquals(articles.get(1), gottenArticles.get(1));
 
     }
 

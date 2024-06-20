@@ -22,7 +22,7 @@ public class UserJSONParser implements UserParser {
         try {
             return objectMapper.writeValueAsString(user);
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot parse user:\n%s\n%s\n", user, e.getMessage());
+            System.err.printf("[Error] Cannot parse user:\n%s\n%s\n", user, e.getMessage());
             throw new IOException();
         }
     }
@@ -36,7 +36,7 @@ public class UserJSONParser implements UserParser {
         try {
             return mapper.readValue(json, User.class);
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
+            System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
                     json,
                     e.getMessage());
             e.printStackTrace();

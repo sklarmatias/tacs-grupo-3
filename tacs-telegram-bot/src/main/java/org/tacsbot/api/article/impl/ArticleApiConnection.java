@@ -31,12 +31,11 @@ public class ArticleApiConnection implements ArticleApi {
     public String createArticle(Article article) throws IllegalArgumentException, HttpException {
         try {
             String JSONArticle = articleJSONParser.parseArticleToJSON(article);
-            System.out.println(JSONArticle);
             HttpResponse<String> response = articleHttpConnector.createArticleConnector(JSONArticle, article.getOwner());
             if (response.statusCode() == 201)
                 return response.headers().firstValue("Location").get();
             else {
-                System.out.printf("Response code %d creating the following Article:\n%s\nResponse body: %s",
+                System.err.printf("Response code %d creating the following Article:\n%s\nResponse body: %s",
                         response.statusCode(),
                         JSONArticle,
                         response.body());
@@ -60,14 +59,14 @@ public class ArticleApiConnection implements ArticleApi {
             if (response.statusCode() == 200)
                 return articleJSONParser.parseJSONToArticleList(response.body());
             else{
-                System.out.printf("Status code %d requesting all articles of %s.\nResponse body:\n%s\n",
+                System.err.printf("Status code %d requesting all articles of %s.\nResponse body:\n%s\n",
                         response.statusCode(),
                         ownerId,
                         response.body());
                 throw new IllegalArgumentException(response.body());
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            System.out.printf("Exception getting all articles\nownerId = %s\n", ownerId);
+            System.err.printf("Exception getting all articles\nownerId = %s\n", ownerId);
             throw new HttpException(String.format("[Error] Exception getting all articles\nownerId = %s\n%s\n",
                     ownerId, e.getMessage()));
         }
