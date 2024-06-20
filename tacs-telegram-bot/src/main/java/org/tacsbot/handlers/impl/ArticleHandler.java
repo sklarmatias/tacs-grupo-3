@@ -130,7 +130,6 @@ public class ArticleHandler implements CommandsHandler {
                 break;
             case CHOOSE_ACTION:
                 String action = message.getText().toUpperCase();
-                System.out.println(action);
                 if (articleType == ArticleType.TODOS){
                     if (action.equals("A")){
                         user = bot.getCacheService().getUser(chatId).getId();

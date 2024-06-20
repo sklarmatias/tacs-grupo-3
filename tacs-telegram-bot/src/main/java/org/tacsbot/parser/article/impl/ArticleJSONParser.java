@@ -24,7 +24,7 @@ public class ArticleJSONParser implements ArticleParser {
         try {
             return objectMapper.writeValueAsString(article);
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot parse article:\n%s\n%s\n", article.getDetailedString(), e.getMessage());
+            System.err.printf("[Error] Cannot parse article:\n%s\n%s\n", article.getDetailedString(), e.getMessage());
             throw new IOException();
         }
     }
@@ -37,7 +37,7 @@ public class ArticleJSONParser implements ArticleParser {
             try {
             return mapper.readValue(json, Article.class);
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
+            System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
                     json,
                     e.getMessage());
             e.printStackTrace();
@@ -51,7 +51,7 @@ public class ArticleJSONParser implements ArticleParser {
             return mapper.readValue(json, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
+            System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
                     json,
                     e.getMessage());
             e.printStackTrace();

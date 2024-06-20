@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
-import org.tacsbot.dictionary.JSONMessageDictionary;
+import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
@@ -68,7 +68,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception){
         sendInteraction(user, "INTERNAL_ERROR");
-        System.out.printf("[Error] Error:\n%s\n", exception.getMessage());
+        System.err.printf("[Error] Error:\n%s\n", exception.getMessage());
     }
 
     @Override
@@ -115,7 +115,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
-            System.out.println("User is logged in");
             commandsHandlerMap.remove(chatId);
             ArticleCreationHandler handler = new ArticleCreationHandler(chatId);
             commandsHandlerMap.put(chatId, handler);

@@ -17,7 +17,7 @@ public class AnnotationJSONParser implements AnnotationParser {
             return mapper.readValue(json, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            System.out.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
+            System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
                     json,
                     e.getMessage());
             e.printStackTrace();

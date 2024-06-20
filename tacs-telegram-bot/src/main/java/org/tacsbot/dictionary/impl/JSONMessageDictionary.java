@@ -1,20 +1,21 @@
-package org.tacsbot.dictionary;
+package org.tacsbot.dictionary.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.ArticleStatus;
 import org.tacsbot.model.CostType;
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class JSONMessageDictionary implements MessageDictionary{
+public class JSONMessageDictionary implements MessageDictionary {
 
     @Override
     public String getMessage(String message, String languageCode) {
@@ -63,10 +64,10 @@ public class JSONMessageDictionary implements MessageDictionary{
     // utils
 
     private JsonNode getJSONNode(String languageCode){
-        try {
-            File file = new File(Objects.requireNonNull(getClass().getResource("/messages/" + languageCode + ".json")).toURI());
-            return new ObjectMapper().readTree(file);
-        } catch (IOException | URISyntaxException | NullPointerException e) {
+        try (InputStream in = getClass().getResourceAsStream("/messages/" + languageCode + ".json");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            return new ObjectMapper().readTree(reader);
+        } catch (IOException | NullPointerException e) {
             throw new RuntimeException(e);
         }
     }
