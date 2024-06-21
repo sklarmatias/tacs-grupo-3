@@ -50,7 +50,7 @@ function ArticleList({ userFocus }) {
             }
         })
             .then(response => {
-                alert(`${t('articles.confirmSubscribing')} ${error}`);
+                alert(`${t('articles.confirmSubscribing')}`);
             })
             .catch(error => {
                 alert(`${t('articles.errorSubscribing')} ${error}`);
