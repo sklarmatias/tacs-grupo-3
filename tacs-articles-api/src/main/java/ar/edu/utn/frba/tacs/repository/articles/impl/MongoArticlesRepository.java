@@ -19,9 +19,6 @@ public class MongoArticlesRepository implements ArticlesRepository {
     public MongoArticlesRepository(String url){
         dbConnector = new MongoDBConnector(url);
     }
-    public MongoArticlesRepository(){
-        dbConnector = new MongoDBConnector();
-    }
 
     @Override
     public List<Article> findAll() {

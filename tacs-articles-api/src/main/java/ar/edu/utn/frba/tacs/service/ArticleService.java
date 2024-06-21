@@ -15,10 +15,6 @@ public class ArticleService {
 
     private final ArticlesRepository articlesRepository;
     private final NotificationService notificationService;
-    public ArticleService(){
-        notificationService = new NotificationService();
-        articlesRepository = new MongoArticlesRepository();
-    }
     public ArticleService(String url){
         articlesRepository = new MongoArticlesRepository(url);
         notificationService = new NotificationService(url);
@@ -71,14 +67,13 @@ public class ArticleService {
         return annotation;
     }
 
-    public Article closeArticle(Article article){
+    public void closeArticle(Article article){
         article.close();
         List<String> currentSubscribers = article.getAnnotations().stream().map(ann -> ann.getUser().getId()).toList();
         String articleOwner = article.getOwner();
         String articleName = article.getName();
         articlesRepository.update(article.getId(),article);
         notificationService.generateClosedArticleNotification (articleName, articleOwner, currentSubscribers);
-        return article;
     }
 
 

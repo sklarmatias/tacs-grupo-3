@@ -22,9 +22,6 @@ public class MongoUsersRepository implements UsersRepository {
     public MongoUsersRepository(String url){
         dbConnector = new MongoDBConnector(url);
     }
-    public MongoUsersRepository(){
-        dbConnector = new MongoDBConnector();
-    }
 
     @Override
     public List<User> findAll() {

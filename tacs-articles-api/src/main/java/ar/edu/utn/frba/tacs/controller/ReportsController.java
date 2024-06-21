@@ -6,7 +6,14 @@ import jakarta.ws.rs.Path;
 
 @Path("/reports")
 public class ReportsController {
-	private final ReportService reportService = new ReportService();
+	private final ReportService reportService;
+    public ReportsController(){
+        reportService = new ReportService(System.getenv("CON_STRING"));
+    }
+    public  ReportsController(ReportService reportService){
+        this.reportService = reportService;
+    }
+
 
     @GET
     @Path("/users")

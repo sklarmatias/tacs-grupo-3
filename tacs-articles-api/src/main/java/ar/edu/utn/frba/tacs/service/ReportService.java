@@ -13,10 +13,6 @@ public class ReportService {
 
     private final UsersRepository usersRepository;
     private final ArticlesRepository articlesRepository;
-    public ReportService(){
-        usersRepository = new MongoUsersRepository();
-        articlesRepository = new MongoArticlesRepository();
-    }
     public ReportService(String url){
         articlesRepository = new MongoArticlesRepository(url);
         usersRepository = new MongoUsersRepository(url);

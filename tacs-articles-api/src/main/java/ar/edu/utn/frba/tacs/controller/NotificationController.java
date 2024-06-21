@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.service.NotificationService;
+import ar.edu.utn.frba.tacs.service.ReportService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
@@ -11,8 +12,13 @@ import jakarta.ws.rs.core.Response;
 @Produces("application/json")
 public class NotificationController {
 
-    private final NotificationService notificationService = new NotificationService();
-
+    private final NotificationService notificationService;
+    public NotificationController(){
+        notificationService = new NotificationService(System.getenv("CON_STRING"));
+    }
+    public  NotificationController(NotificationService notificationService){
+        this.notificationService = notificationService;
+    }
     @GET
     public List<Notification.NotificationDTO> getPendingNotifications() {
         List<Notification> pendingNotifications = notificationService.getPendingNotifications();

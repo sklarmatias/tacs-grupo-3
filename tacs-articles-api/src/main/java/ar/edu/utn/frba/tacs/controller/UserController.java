@@ -20,7 +20,7 @@ import javax.security.auth.login.LoginException;
 public class UserController {
     private final UserService userService;
     public UserController(){
-        userService= new UserService();
+        userService= new UserService(System.getenv("CON_STRING"));
     }
     public UserController(UserService userService){
         this.userService = userService;

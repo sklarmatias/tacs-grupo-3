@@ -18,8 +18,8 @@ public class ArticleController {
 	private final ArticleService articleService;
 	private final UserService userService;
 	public ArticleController(){
-		articleService= new ArticleService();
-		userService= new UserService();
+		articleService= new ArticleService(System.getenv("CON_STRING"));
+		userService= new UserService(System.getenv("CON_STRING"));
 	}
 	public ArticleController(ArticleService articleService, UserService userService){
 		this.articleService = articleService;
@@ -111,13 +111,13 @@ public class ArticleController {
 		Article article = articleService.getArticle(articleId);
 		if (article == null){
 			System.out.println("Articulo no encontrado.");
-			throw new ClientErrorException(400);
+			return Response.status(Response.Status.BAD_REQUEST).entity("Articulo no encontrado.").type( MediaType.TEXT_PLAIN).build();
 		}
 
 		User user = userService.getUser(userId);
 		if (user == null){
 			System.out.println("Usuario no encontrado.");
-			throw new ClientErrorException(400);
+			return Response.status(Response.Status.BAD_REQUEST).entity("Usuario no encontrado.").type( MediaType.TEXT_PLAIN).build();
 		}
 
 		System.out.println("Se intenta suscribir al usuario...");
@@ -127,7 +127,7 @@ public class ArticleController {
 		}
 		catch (Exception ex){
 			System.out.println(ex.getMessage());
-			throw new ClientErrorException(400);
+			return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).type( MediaType.TEXT_PLAIN).build();
 		}
 		return Response.ok().build();
 	}
@@ -144,18 +144,24 @@ public class ArticleController {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		else{
-			return Response.ok(articleService.closeArticle(articleService.getArticle(articleId)).convertToDTO()).build();
+			try {
+				articleService.closeArticle(articleService.getArticle(articleId));
+				return Response.ok().build();
+			}
+			catch(Exception exception){
+				return Response.status(Response.Status.BAD_REQUEST).entity(exception.getMessage()).type( MediaType.TEXT_PLAIN).build();
+			}
 		}
 	}
 
 	@GET
 	@Path("/{id}/users")
 	@Produces("application/json")
-	public List<Annotation> getUsersSignedUp(@PathParam("id") String id) {
+	public Response getUsersSignedUp(@PathParam("id") String id) {
 		Article article = articleService.getArticle(id);
 		if (article == null)
-			throw new ClientErrorException(400);
-		return articleService.getUsersSignedUp(id);
+			return Response.status(Response.Status.BAD_REQUEST).build();
+		return Response.ok(articleService.getUsersSignedUp(id)).build();
 	}
 
 }

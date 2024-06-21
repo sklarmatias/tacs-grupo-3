@@ -16,15 +16,11 @@ import lombok.Setter;
 import javax.security.auth.login.LoginException;
 import java.util.List;
 
-@Setter
 public class UserService {
 
     private final UsersRepository usersRepository;
-    private HashingHelper hashingHelper = new GuavaHashingHelper();
+    private final HashingHelper hashingHelper = new GuavaHashingHelper();
 
-    public UserService(){
-        usersRepository = new MongoUsersRepository();
-    }
     public UserService(String url){
         usersRepository = new MongoUsersRepository(url);
     }

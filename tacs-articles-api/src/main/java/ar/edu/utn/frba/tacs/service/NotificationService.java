@@ -16,11 +16,6 @@ public class NotificationService {
     private final MongoDBConnector mongoDBConnector;
     private final MongoCollection<Document> collection;
 
-    public NotificationService() {
-        mongoDBConnector = new MongoDBConnector();
-        collection = mongoDBConnector.getCollection("notifications");
-    }
-
     public NotificationService(String url) {
         mongoDBConnector = new MongoDBConnector(url);
         collection = mongoDBConnector.getCollection("notifications");

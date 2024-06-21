@@ -34,14 +34,17 @@ public class TestFunctions {
     }
 
     public Article createTestArticle(String userId) throws IllegalArgumentException{
-        Date dt = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(dt);
-        c.add(Calendar.DATE, 2);
-        dt = c.getTime();
-        Article article = new Article("article","image","","user get",userId,dt,2000.00, CostType.PER_USER,2,3);
+        Article article = new Article("article","image","","user get",userId,getDate(2),2000.00, CostType.PER_USER,2,3);
         article.setId(articleService.saveArticle(article));
         userService.updateUserAddArticle(userId,article);
         return article;
+    }
+    public Date getDate(int days){
+        Date dt = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(dt);
+        c.add(Calendar.DATE, days);
+        dt = c.getTime();
+        return dt;
     }
 }

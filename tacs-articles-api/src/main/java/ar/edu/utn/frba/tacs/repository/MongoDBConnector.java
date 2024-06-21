@@ -22,12 +22,7 @@ public class MongoDBConnector {
 
     public MongoDBConnector(String url){
         mongoClient = MongoClients.create(url);
-        database = mongoClient.getDatabase("admin");
-    }
-
-    public MongoDBConnector(){
-        mongoClient = MongoClients.create(System.getenv("CON_STRING"));
-        database = mongoClient.getDatabase(System.getenv("MONGO_DB"));
+        database = mongoClient.getDatabase(System.getenv("MONGO_DB") != null ? System.getenv("MONGO_DB") : "admin");
     }
 
     public MongoCollection<Document> getCollection(String collectionName) {
@@ -76,9 +71,6 @@ public class MongoDBConnector {
         UpdateResult result = collection.updateOne(query, updates);
     }
 
-    public void closeConnection(){
-        mongoClient.close();
-    }
 
     private Iterable<Bson> createFilters(Map<String,Object> conditions){
         List<Bson> list = new ArrayList<>();

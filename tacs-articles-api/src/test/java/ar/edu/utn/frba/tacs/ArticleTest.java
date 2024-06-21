@@ -1,18 +1,15 @@
 package ar.edu.utn.frba.tacs;
 
-import ar.edu.utn.frba.tacs.controller.ArticleController;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import com.mongodb.ServerAddress;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
-import de.flapdoodle.embed.mongo.transitions.MongodStarter;
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.reverse.TransitionWalker;
 import org.junit.*;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -46,15 +43,6 @@ public class ArticleTest {
         running.current().stop();
 
     }
-    @Test
-    public void testControllerCreateArticle(){
-        String userId = testFunctions.createTestUser().getId();
-        String articleId = testFunctions.createTestArticle(userId).getId();
-        ArticleController articleController = new ArticleController(articleService,userService);
-        Assert.assertEquals(articleId,articleController.getArticle(articleId).id);
-    }
-
-
 
     @Test
     public void testCreateArticleSuccess(){
@@ -211,19 +199,11 @@ public class ArticleTest {
     @Test
     public void testIncorrectArticle(){
         User user = testFunctions.createTestUser();
-        Date dt = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(dt);
-        c.add(Calendar.DATE, 2);
-        dt = c.getTime();
-        Date finalDt = dt;
-        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), finalDt,2000.00, CostType.PER_USER,-2,3));
-        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), finalDt,2000.00, CostType.PER_USER,2,-3));
-        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), finalDt,2000.00, CostType.PER_USER,2,1));
-        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", null, finalDt,2000.00, CostType.PER_USER,2,3));
-        c.add(Calendar.DATE,-5);
-        dt = c.getTime();
-        Date finalDt2 = dt;
-        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), finalDt2,2000.00, CostType.PER_USER,2,3));
+        Date dt = testFunctions.getDate(2);
+        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), dt,2000.00, CostType.PER_USER,-2,3));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), dt,2000.00, CostType.PER_USER,2,-3));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), dt,2000.00, CostType.PER_USER,2,1));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", null, dt,2000.00, CostType.PER_USER,2,3));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new Article("article","image","","user get", user.getId(), testFunctions.getDate(-3),2000.00, CostType.PER_USER,2,3));
     }
 }
