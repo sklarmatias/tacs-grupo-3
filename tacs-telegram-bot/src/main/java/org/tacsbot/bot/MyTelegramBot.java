@@ -4,6 +4,7 @@ import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
+import org.tacsbot.api.report.impl.ReportApiImpl;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
@@ -50,7 +51,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
         commandActions.put("/registrarme", this::register);
-
+//        commandActions.put("/reportes", this::register);
         messageDictionary = new JSONMessageDictionary();
 
         this.cacheService = cacheService;
@@ -66,7 +67,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         return System.getenv("BOT_USERNAME");
     }
 
-    public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception){
+    public void sendInternalErrorMsg(org.telegram.telegrambots.meta.api.objects.User user, Exception exception) {
         sendInteraction(user, "INTERNAL_ERROR");
         System.err.printf("[Error] Error:\n%s\n", exception.getMessage());
         exception.printStackTrace();
@@ -80,31 +81,45 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         String txt = msg.getText();
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
 
-        if(msg.isCommand()){
+        if (msg.isCommand()) {
             resetUserHandlers(id);
             String command = msg.getText();
 
-            if (commandActions.containsKey(command)){
-                try{
+            if (commandActions.containsKey(command)) {
+                try {
                     commandActions.get(command).execute(msg, txt);
-                } catch (Exception e){
+                } catch (Exception e) {
                     sendInternalErrorMsg(user, e);
                 }
-            } else{
+            } else {
                 sendInteraction(user, "UNKNOWN_COMMAND");
             }
 
-        }else if (commandsHandlerMap.containsKey(id)){
+        } else if (commandsHandlerMap.containsKey(id)) {
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
-            } catch (Exception e){
+            } catch (Exception e) {
                 sendInternalErrorMsg(user, e);
             }
 
-        }else sendInteraction(user, "WELCOME");
+        } else sendInteraction(user, "WELCOME");
+    }
+
+    private void addNewCommandHandler(Long chatId, CommandsHandler commandsHandler){
+        commandsHandlerMap.remove(chatId);
+        commandsHandlerMap.put(chatId, commandsHandler);
     }
 
     // commands
+
+    private void reportCommand(Message message, String commandText){
+        Long chatId = message.getChatId();
+
+        addNewCommandHandler(chatId, new ReportHandler(new ReportApiImpl()));
+
+        sendInteraction(message.getFrom(), "SELECT_REPORT");
+
+    }
 
     private void helpCommand(Message message, String commandText) {
 
