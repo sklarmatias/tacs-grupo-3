@@ -10,7 +10,7 @@
       "PER_USER": "Each"
     }
   },
-  "HELP": "/crear_articulo - Create an article\n/obtener_articulos - View articles\n/login - Log in\n/logout - Log out\n/registrarme - Register as a user!",
+  "HELP": "/crear_articulo - Create an article\n/obtener_articulos - View articles\n/login - Log in\n/logout - Log out\n/registrarme - Register as a user!\n/reportes - See system reports!\n",
   "INTERNAL_ERROR": "We had an internal error. Please try again later!",
   "WELCOME": "Hello, welcome! To view the available commands, enter /help",
   "UNKNOWN_COMMAND": "Oops, I didn't understand you. Try checking the existing commands with /help!",

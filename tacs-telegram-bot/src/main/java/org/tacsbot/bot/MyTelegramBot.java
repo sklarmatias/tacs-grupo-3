@@ -51,7 +51,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         commandActions.put("/login", this::login);
         commandActions.put("/logout", this::logout);
         commandActions.put("/registrarme", this::register);
-//        commandActions.put("/reportes", this::register);
+        commandActions.put("/reportes", this::reportCommand);
         messageDictionary = new JSONMessageDictionary();
 
         this.cacheService = cacheService;
