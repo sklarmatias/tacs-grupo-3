@@ -13,7 +13,7 @@ public interface UsersRepository {
     User find(String id);
     User find(String email, String pass);
     void update(String id, User user);
-
+    void delete(String id);
     String save(User user);
 
     void updateAddArticle(String id, Article article);

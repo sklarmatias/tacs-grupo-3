@@ -51,6 +51,12 @@ public class MongoUsersRepository implements UsersRepository {
     public void update(String id, User user) {
         dbConnector.update("users", id, MongoUserMapper.convertUserToDocument(user));
     }
+
+    @Override
+    public void delete(String id) {
+        dbConnector.deleteById("users",id);
+    }
+
     @Override
     public void updateAddArticle(String id, Article article){
         dbConnector.updateInsertInArray("users",id,"postedArticles", MongoArticleMapper.convertArticleToDocument(article));

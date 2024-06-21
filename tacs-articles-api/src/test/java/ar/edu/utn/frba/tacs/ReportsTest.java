@@ -12,25 +12,41 @@ import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.reverse.TransitionWalker;
 import org.checkerframework.checker.units.qual.A;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.List;
 
 public class ReportsTest {
     static ArticleService articleService;
     static UserService userService;
+    static TestFunctions testFunctions;
     static ReportService reportsService;
-    TestFunctions testFunctions;
-    @Before
-    public void setUp(){
-        TransitionWalker.ReachedState<RunningMongodProcess> running = Mongod.instance().start(Version.Main.V7_0);
+    static TransitionWalker.ReachedState<RunningMongodProcess> running;
+
+    @BeforeClass
+    public static void setUp(){
+        running = Mongod.instance().start(Version.Main.V7_0);
         ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
         articleService = new ArticleService("mongodb://" + serverAddress);
         userService = new UserService("mongodb://" + serverAddress);
-        reportsService = new ReportService("mongodb://" + serverAddress);
         testFunctions = new TestFunctions(userService,articleService);
+        reportsService = new ReportService("mongodb://" + serverAddress);
+    }
+    @Before
+    public void cleanDB(){
+        List<User> usersList = userService.listUsers();
+        for(User user : usersList){
+            userService.delete(user.getId());
+        }
+        List<Article> articleList = articleService.listArticles();
+        for(Article article : articleList){
+            articleService.delete(article.getId());
+        }
+    }
+    @AfterClass
+    public static void stop(){
+        running.current().stop();
+
     }
     @Test
     public void testReportUsers(){

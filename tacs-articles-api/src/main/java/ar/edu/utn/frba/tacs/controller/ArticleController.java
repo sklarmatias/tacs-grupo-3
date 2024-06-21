@@ -15,9 +15,17 @@ import jakarta.ws.rs.core.*;
 @Path("/articles")
 public class ArticleController {
 
-	private final ArticleService articleService = new ArticleService();
+	private final ArticleService articleService;
+	private final UserService userService;
+	public ArticleController(){
+		articleService= new ArticleService();
+		userService= new UserService();
+	}
+	public ArticleController(ArticleService articleService, UserService userService){
+		this.articleService = articleService;
+		this.userService = userService;
+	}
 
-	private final UserService userService = new UserService();
 
 	@GET
 	@Produces("application/json")
@@ -59,7 +67,7 @@ public class ArticleController {
 	// Location header -> get URL
 	@POST
 	@Consumes("application/json")
-	public Response saveArticle(@HeaderParam("user") String userId, Article article, @Context UriInfo uriInfo){
+	public Response saveArticle(@HeaderParam("user") String userId, Article article){
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -83,9 +91,10 @@ public class ArticleController {
 		completeNewArticle.setId(articleId);
 		userService.updateUserAddArticle(user.getId(),completeNewArticle);
 		// get Location URI
-		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
-		articleURIBuilder.path(articleId);
-		return Response.created(articleURIBuilder.build()).build();
+//		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
+//		articleURIBuilder.path(articleId);
+//		return Response.created(articleURIBuilder.build()).build();
+		return Response.status(201).build();
 	}
 
 	// 204 NoContent

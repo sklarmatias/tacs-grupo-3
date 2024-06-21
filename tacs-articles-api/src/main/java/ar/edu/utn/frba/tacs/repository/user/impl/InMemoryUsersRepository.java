@@ -40,6 +40,11 @@ public class InMemoryUsersRepository implements UsersRepository {
     }
 
     @Override
+    public void delete(String id) {
+
+    }
+
+    @Override
     public String save(User user) {
         if (user.getName() == null)
             throw new IllegalArgumentException("\"nombre\" field required");

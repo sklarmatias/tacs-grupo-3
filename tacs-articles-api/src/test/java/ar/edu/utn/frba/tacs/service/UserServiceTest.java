@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.tacs.service;
 
+import ar.edu.utn.frba.tacs.TestFunctions;
+import ar.edu.utn.frba.tacs.controller.UserController;
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
 import ar.edu.utn.frba.tacs.model.User;
@@ -12,17 +14,32 @@ import de.flapdoodle.reverse.TransitionWalker;
 import org.junit.*;
 
 import javax.security.auth.login.LoginException;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 public class UserServiceTest {
 
     static UserService userService;
+    static TransitionWalker.ReachedState<RunningMongodProcess> running;
     @BeforeClass
     public static void setUp(){
-        TransitionWalker.ReachedState<RunningMongodProcess> running = Mongod.instance().start(Version.Main.V7_0);
+        running = Mongod.instance().start(Version.Main.V7_0);
         ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
         userService = new UserService("mongodb://" + serverAddress);
+    }
+    @Before
+    public void cleanDB(){
+        List<User> usersList = userService.listUsers();
+        for(User user : usersList){
+            userService.delete(user.getId());
+        }
+    }
+    @AfterClass
+    public static void stop(){
+        running.current().stop();
+
     }
 
     @Test

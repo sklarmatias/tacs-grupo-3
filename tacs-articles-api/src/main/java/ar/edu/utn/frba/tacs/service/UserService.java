@@ -67,5 +67,7 @@ public class UserService {
     public void updateAddAnnotation(String id, Annotation annotation){
         usersRepository.updateAddAnnotation(id, annotation);
     }
-
+    public void delete(String id){
+        usersRepository.delete(id);
+    }
 }

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.User;
+import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -17,8 +18,13 @@ import javax.security.auth.login.LoginException;
 @Path("/users")
 @Produces("application/json")
 public class UserController {
-
-    private final UserService userService = new UserService();
+    private final UserService userService;
+    public UserController(){
+        userService= new UserService();
+    }
+    public UserController(UserService userService){
+        this.userService = userService;
+    }
 
 
 
@@ -45,13 +51,14 @@ public class UserController {
     @POST
     @Path("/register")
     @Consumes("application/json")
-    public Response saveUser(User user, @Context UriInfo uriInfo) {
+    public Response saveUser(User user) {
         try{
             String userId = userService.saveUser(user);
             // URI
-            UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
-            userURIBuilder.path(userId);
-            return Response.created(userURIBuilder.build()).build();
+//            UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
+//            userURIBuilder.path(userId);
+//            return Response.created(userURIBuilder.build()).build();
+            return Response.status(201).build();
         } catch (DuplicatedEmailException e){
             return Response.status(400).entity(e.getMessage()).build();
         }
@@ -59,10 +66,12 @@ public class UserController {
     @POST
     @Path("/login")
     @Consumes("application/json")
-    public User.UserDTO loginUser(User user, @Context UriInfo uriInfo) throws LoginException {
+    public User.UserDTO loginUser(User user) throws LoginException {
         return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
     }
-
+    public void delete(String id){
+        userService.delete(id);
+    }
 }
 
 

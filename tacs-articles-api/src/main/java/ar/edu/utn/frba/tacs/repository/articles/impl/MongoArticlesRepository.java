@@ -74,5 +74,10 @@ public class MongoArticlesRepository implements ArticlesRepository {
         dbConnector.updateInsertInArray("articles",id,"annotations", MongoAnnotationMapper.convertAnnotationToDocument(annotation));
     }
 
+    @Override
+    public void delete(String id) {
+        dbConnector.deleteById("articles",id);
+    }
+
 
 }

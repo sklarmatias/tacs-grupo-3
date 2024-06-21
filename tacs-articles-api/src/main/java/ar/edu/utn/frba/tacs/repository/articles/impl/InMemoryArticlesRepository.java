@@ -80,4 +80,9 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     public void updateAddAnnotation(String id, Annotation annotation) {
 
     }
+
+    @Override
+    public void delete(String id) {
+
+    }
 }

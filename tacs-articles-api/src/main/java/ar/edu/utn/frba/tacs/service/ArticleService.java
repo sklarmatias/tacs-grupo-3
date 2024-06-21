@@ -86,6 +86,9 @@ public class ArticleService {
         Article article = getArticle(articleId);
         return article.getAnnotations();
     }
+    public void delete(String id){
+        articlesRepository.delete(id);
+    }
 
 }
 

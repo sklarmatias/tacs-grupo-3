@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs;
 
+import ar.edu.utn.frba.tacs.controller.ArticleController;
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -18,22 +19,42 @@ import java.util.List;
 public class ArticleTest {
     static ArticleService articleService;
     static UserService userService;
-    TestFunctions testFunctions;
-    TransitionWalker.ReachedState<RunningMongodProcess> running;
+    static TestFunctions testFunctions;
+    static TransitionWalker.ReachedState<RunningMongodProcess> running;
 
-    @Before
-    public void setUp(){
+    @BeforeClass
+    public static void setUp(){
         running = Mongod.instance().start(Version.Main.V7_0);
         ServerAddress serverAddress = new ServerAddress(String.valueOf(running.current().getServerAddress()));
         articleService = new ArticleService("mongodb://" + serverAddress);
         userService = new UserService("mongodb://" + serverAddress);
         testFunctions = new TestFunctions(userService,articleService);
     }
-    @After
-    public void stop(){
+    @Before
+    public void cleanDB(){
+        List<User> usersList = userService.listUsers();
+        for(User user : usersList){
+            userService.delete(user.getId());
+        }
+        List<Article> articleList = articleService.listArticles();
+        for(Article article : articleList){
+            articleService.delete(article.getId());
+        }
+    }
+    @AfterClass
+    public static void stop(){
         running.current().stop();
 
     }
+    @Test
+    public void testControllerCreateArticle(){
+        String userId = testFunctions.createTestUser().getId();
+        String articleId = testFunctions.createTestArticle(userId).getId();
+        ArticleController articleController = new ArticleController(articleService,userService);
+        Assert.assertEquals(articleId,articleController.getArticle(articleId).id);
+    }
+
+
 
     @Test
     public void testCreateArticleSuccess(){
