@@ -1,11 +1,11 @@
-package ar.edu.utn.frba.tests.dictionary;
+package ar.edu.utn.frba.tests.dictionary.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.tacsbot.dictionary.JSONMessageDictionary;
+import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.model.*;
 import java.io.File;
 import java.io.IOException;

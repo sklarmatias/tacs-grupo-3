@@ -1,5 +1,6 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.Getter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
@@ -15,30 +16,31 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ArticleCreationHandler implements CommandsHandler {
-    private ArticleCreationStep currentStep;
+    @Getter
+    public ArticleCreationStep currentStep;
 
+    @Getter
     private final Article article;
 
     private ArticleApi articleApi;
 
-
-    // Enum to represent the different steps of the article creation process
-    private enum ArticleCreationStep {
-        REQUEST_NAME,
-        REQUEST_DEADLINE,
-        REQUEST_COST_TYPE,
-        REQUEST_COST,
-        REQUEST_USERGETS,
-        REQUEST_MIN_USERS,
-        REQUEST_MAX_USERS,
-        REQUEST_LINK,
-        REQUEST_IMAGE
+    public ArticleCreationHandler(String userId) {
+        this(userId, new Article(), ArticleCreationStep.REQUEST_NAME);
     }
 
-    public ArticleCreationHandler(Long userId) {
-        this.currentStep = ArticleCreationStep.REQUEST_NAME;
+    public ArticleCreationHandler(String userId, Article article, ArticleCreationStep articleCreationStep) {
+
+        this.currentStep = articleCreationStep;
         this.articleApi = new ArticleApiConnection();
-        this.article = new Article();
+        this.article = article;
+        this.article.setOwner(userId);
+    }
+
+    public ArticleCreationHandler(Article article, ArticleCreationStep articleCreationStep) {
+
+        this.currentStep = articleCreationStep;
+        this.articleApi = new ArticleApiConnection();
+        this.article = article;
     }
 
     private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {
@@ -157,7 +159,6 @@ public class ArticleCreationHandler implements CommandsHandler {
                 break;
             case REQUEST_IMAGE:
                 article.setImage(message.getText());
-                article.setOwner(bot.usersLoginMap.getUserId(chatId));
                 createArticle(message, article, bot);
                 bot.resetUserHandlers(chatId);
 

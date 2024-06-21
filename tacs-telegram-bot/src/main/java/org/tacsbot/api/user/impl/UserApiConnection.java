@@ -27,7 +27,6 @@ public class UserApiConnection implements UserApi {
         User logInUser = new User(null, null, null, email, password);
         try{
             String json = userParser.parseUserToJSON(logInUser);
-            System.out.println(json);
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
@@ -47,7 +46,7 @@ public class UserApiConnection implements UserApi {
                 throw new IOException(String.format("[Error] Server error.\nStatus code = %d;\nBody = %s\nHeaders = %s\n",
                         response.statusCode(), response.body(), response.headers()));
         } catch (URISyntaxException | InterruptedException e) {
-            System.out.printf("[Error]\n%s\n", e.getMessage());
+            System.err.printf("[Error]\n%s\n", e.getMessage());
             throw new IOException(e.getMessage());
         }
     }
@@ -74,7 +73,7 @@ public class UserApiConnection implements UserApi {
                 throw new IOException(String.format("[Error] Server error.\nStatus code = %d;\nBody = %s\nHeaders = %s\n",
                         response.statusCode(), response.body(), response.headers()));
         } catch (URISyntaxException | InterruptedException e) {
-            System.out.printf("[Error]\n%s\n", e.getMessage());
+            System.err.printf("[Error]\n%s\n", e.getMessage());
             throw new IOException(e.getMessage());
         }
     }

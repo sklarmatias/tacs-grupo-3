@@ -44,7 +44,7 @@ public class RegisterHandler implements CommandsHandler {
             }
 
         } catch (IOException e) {
-            bot.sendInternalErrorMsg(message.getChatId(), e);
+            bot.sendInternalErrorMsg(message.getFrom(), e);
         }
     }
 
