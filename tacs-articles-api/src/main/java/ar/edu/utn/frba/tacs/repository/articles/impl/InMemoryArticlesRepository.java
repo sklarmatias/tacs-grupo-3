@@ -75,10 +75,6 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
         }
     }
 
-    @Override
-    public void delete(String id){
-        ARTICLES.clear();
-    }
 
     @Override
     public void updateAddAnnotation(String id, Annotation annotation) {

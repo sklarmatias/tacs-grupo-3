@@ -26,7 +26,7 @@ public class MongoUserMapper {
             user.setPostedArticles(new ArrayList<>());
             for (Document articleDoc : articleDocs) {
                 Article article = new Article();
-                MongoArticleMapper.convertDocumentToArticle(articleDoc);
+                article = MongoArticleMapper.convertDocumentToArticle(articleDoc);
                 user.getPostedArticles().add(article);
             }
         }
@@ -36,7 +36,7 @@ public class MongoUserMapper {
             user.setAnnotations(new ArrayList<>());
             for (Document annotationDoc : annotationDocs) {
                 Annotation annotation = new Annotation();
-                MongoAnnotationMapper.convertDocumentToAnnotation(annotationDoc);
+                annotation =MongoAnnotationMapper.convertDocumentToAnnotation(annotationDoc);
                 user.getAnnotations().add(annotation);
             }
         }

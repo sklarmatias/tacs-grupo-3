@@ -73,9 +73,5 @@ public class MongoUsersRepository implements UsersRepository {
         return dbConnector.insert("users", document);
     }
 
-    @Override
-    public void delete(String id) {
-        dbConnector.deleteById("users",id);
-    }
 
 }

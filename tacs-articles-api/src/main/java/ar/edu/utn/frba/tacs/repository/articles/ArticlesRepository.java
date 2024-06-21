@@ -16,7 +16,6 @@ public interface ArticlesRepository {
 
     void update(String id, Article article);
 
-    void delete(String id);
     void updateAddAnnotation(String id, Annotation annotation);
 
 

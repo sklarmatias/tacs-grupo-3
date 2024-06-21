@@ -53,10 +53,6 @@ public class InMemoryUsersRepository implements UsersRepository {
         return key.toString();
     }
 
-    @Override
-    public void delete(String id){
-        USERS.clear();
-    }
 
     @Override
     public void updateAddArticle(String id, Article article) {

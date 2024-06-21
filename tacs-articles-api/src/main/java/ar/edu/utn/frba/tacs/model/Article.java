@@ -87,8 +87,6 @@ public class Article {
     public Annotation signUpUser(User user){
             if (this.isClosed())
                 throw new IllegalArgumentException("Article is closed.");
-            if (this.isFull())
-                throw new IllegalArgumentException("Article is full.");
             if (Objects.equals(this.getOwner(), user.getId()))
                 throw new IllegalArgumentException("Article owner can't sign up to his own article.");
             if (isSignedUp(user))
@@ -101,10 +99,6 @@ public class Article {
                 close();
             }
             return annotation;
-    }
-
-    public boolean isFull(){
-        return this.annotationsCounter >= this.usersMax;
     }
 
     public boolean isClosed(){

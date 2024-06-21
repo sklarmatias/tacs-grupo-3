@@ -41,7 +41,12 @@ public class MongoArticlesRepository implements ArticlesRepository {
     @Override
     public Article find(String id) {
         Document doc = dbConnector.selectById("articles", id);
-        return doc != null ? MongoArticleMapper.convertDocumentToArticle(doc) : null;
+        if(doc != null){
+            return MongoArticleMapper.convertDocumentToArticle(doc);
+        }
+        else{
+            return null;
+        }
     }
 
     @Override
@@ -69,9 +74,5 @@ public class MongoArticlesRepository implements ArticlesRepository {
         dbConnector.updateInsertInArray("articles",id,"annotations", MongoAnnotationMapper.convertAnnotationToDocument(annotation));
     }
 
-    @Override
-    public void delete(String id) {
-        dbConnector.deleteById("articles",id);
-    }
 
 }
