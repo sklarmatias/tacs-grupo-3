@@ -10,11 +10,14 @@ It consists of 3 components:
 
 ### Tech Stack
 
-For the database, we chose MongoDB.
+For the API database, we chose MongoDB.
 
 For the API, we chose a Tomcat Java server.
 
 For the Telegram bot, we are using the Telegram API through Java, connecting the instance using the long polling strategy.
+
+For the Telegram bot cache, a Redis server, because a key-value pair database adjusts perfectly to the need of saving data for a particular telegram chat id.
+
 ## Enviroment variables
 
 To run this proyect, you'll have to configure your .env file with the following enviroment variables:
@@ -36,6 +39,8 @@ To run this proyect, you'll have to configure your .env file with the following 
 `NOTIFICATION_REFRESHING_TIME` time in seconds
 
 `RESOURCE_URL` this one should be the API root URL, without any final "/"
+
+`REDIS_CON_STRING` the redis cache connection string
 
 ## Deployment
 
