@@ -52,8 +52,31 @@ function ArticleList({ userFocus }) {
             .then(response => {
                 alert(`${t('articles.confirmSubscribing')}`);
             })
-            .catch(error => {
-                alert(`${t('articles.errorSubscribing')} ${error}`);
+            .catch(async error => {
+                if (error.response && error.response.status === 400) {
+                    const errorCode = await error.response.data;
+
+                    switch (errorCode) {
+                        case '1':
+                            alert(t('articles.closed'));
+                            break;
+                        case '2':
+                            alert(t('articles.ownerCannotSignUp'));
+                            break;
+                        case '3':
+                            alert(t('articles.alreadySignedUp'));
+                            break;
+                        case '4':
+                            alert(t('articles.articleNotFound'));
+                            break;
+                        default:
+                            alert(t('articles.errorSubscribing'));
+                    }
+                } else if (error.response.status === 403) {
+                    alert(t('articles.forbidden'));
+                } else {
+                    alert(`${t('articles.errorSubscribing')} ${error}`);
+                }
             });
     };
 
@@ -78,8 +101,22 @@ function ArticleList({ userFocus }) {
 
                 alert(t('articles.articleClosedSuccessfully'));
             })
-            .catch(error => {
-                calert(t('articles.articleClosedSuccessfully'));
+            .catch(async error => {
+                if (error.response && error.response.status === 400) {
+                    const errorCode = await error.response.data;
+
+                    switch (errorCode) {
+                        case '1':
+                            alert(t('articles.closed'));
+                            break;
+                        default:
+                            alert(t('articles.errorClosingArticle'));
+                    }
+                } else if (error.response.status === 403) {
+                    alert(t('articles.forbidden'));
+                } else {
+                    alert(`${t('articles.errorClosingArticle')} ${error}`);
+                }
             });
     };
 

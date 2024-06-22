@@ -27,7 +27,13 @@
     "errorSubscribing": "Error subscribing:",
     "articleClosedSuccessfully": "Article closed successfully",
     "errorClosingArticle": "Error closing article:",
-    "confirmSubscribing": "Subscription successful"
+    "confirmSubscribing": "Subscription successful",
+    "closed": "Article is closed.",
+    "ownerCannotSignUp": "Article owner can't sign up to his own article.",
+    "alreadySignedUp": "User already signed up.",
+    "userNotFound": "User not found.",
+    "articleNotFound": "Article not found.",
+    "forbidden": "You don't have permission to do this action'."
   },
   "login": {
     "name": "Name",
@@ -41,7 +47,12 @@
     "invalidEmail": "Invalid email format.",
     "shortPass": "Password must be at least 6 characters long.",
     "register": "Register",
-    "login": "Login"
+    "login": "Login",
+    "badRequestLogin": "Wrong credentials.",
+    "badRequestRegister": "The user already exists.",
+    "errorLoggingIn": "Error logging in.",
+    "registrationSuccessful": "Registration successful.",
+    "errorRegistering": "Error registering."
   },
   "form": {
     "articleName": "Article Name",
