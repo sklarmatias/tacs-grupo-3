@@ -95,6 +95,7 @@ const ArticleForm = () => {
                     navigate('/myarticles');
                 } else {
                     alert(t('form.error'));
+                    console.error(response.body);
                 }
             })
             .catch((error) => {

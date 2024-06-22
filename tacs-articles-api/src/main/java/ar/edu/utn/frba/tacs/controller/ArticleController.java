@@ -73,28 +73,29 @@ public class ArticleController {
 		}
 		User user = userService.getUser(userId);
 		if(user == null){
-			return Response.status(Response.Status.BAD_REQUEST).entity("No existe el usuario").type( MediaType.TEXT_PLAIN).build();
+			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		Article completeNewArticle = new Article(
-				article.getName(),
-				article.getImage(),
-				article.getLink(),
-				article.getUserGets(),
-				userId,
-				article.getDeadline(),
-				article.getCost(),
-				article.getCostType(),
-				article.getUsersMin(),
-				article.getUsersMax()
-		);
-		String articleId = articleService.saveArticle(completeNewArticle);
-		completeNewArticle.setId(articleId);
-		userService.updateUserAddArticle(user.getId(),completeNewArticle);
-		// get Location URI
-//		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
-//		articleURIBuilder.path(articleId);
-//		return Response.created(articleURIBuilder.build()).build();
-		return Response.status(201).type(MediaType.APPLICATION_JSON).entity(completeNewArticle).build();
+		try{
+			Article completeNewArticle = new Article(
+					article.getName(),
+					article.getImage(),
+					article.getLink(),
+					article.getUserGets(),
+					userId,
+					article.getDeadline(),
+					article.getCost(),
+					article.getCostType(),
+					article.getUsersMin(),
+					article.getUsersMax()
+			);
+			String articleId = articleService.saveArticle(completeNewArticle);
+			completeNewArticle.setId(articleId);
+			userService.updateUserAddArticle(user.getId(),completeNewArticle);
+			return Response.status(201).type(MediaType.APPLICATION_JSON).entity(completeNewArticle).build();
+		}
+		catch (Exception ex){
+			return Response.status(400).type(MediaType.TEXT_PLAIN).entity(ex.getMessage()).build();
+		}
 	}
 
 	// 204 NoContent
@@ -111,13 +112,13 @@ public class ArticleController {
 		Article article = articleService.getArticle(articleId);
 		if (article == null){
 			System.out.println("Articulo no encontrado.");
-			return Response.status(Response.Status.BAD_REQUEST).entity("Articulo no encontrado.").type( MediaType.TEXT_PLAIN).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity("4").type( MediaType.TEXT_PLAIN).build();
 		}
 
 		User user = userService.getUser(userId);
 		if (user == null){
 			System.out.println("Usuario no encontrado.");
-			return Response.status(Response.Status.BAD_REQUEST).entity("Usuario no encontrado.").type( MediaType.TEXT_PLAIN).build();
+			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 
 		System.out.println("Se intenta suscribir al usuario...");
@@ -127,7 +128,7 @@ public class ArticleController {
 		}
 		catch (Exception ex){
 			System.out.println(ex.getMessage());
-			return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).type( MediaType.TEXT_PLAIN).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.ok().build();
 	}

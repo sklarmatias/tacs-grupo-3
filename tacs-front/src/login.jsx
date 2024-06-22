@@ -56,7 +56,6 @@ const LoginForm = ({ onLogin, isRegister }) => {
     const validatePasswordLength = (pass) => {
         return pass.length >= 6; // Example minimum length
     };
-
     const loginUser = (formData) => {
         fetch(`${import.meta.env.VITE_API_URL}/users/login`, {
             method: 'POST',
@@ -67,19 +66,19 @@ const LoginForm = ({ onLogin, isRegister }) => {
         })
             .then((response) => {
                 if (response.ok) {
-                    return response.json();
+                    localStorage.setItem('authToken', response.json().id);
+                    localStorage.setItem('emailUser', formData.email);
+                    onLogin(formData.email);
+                    navigate('/');
+                } else if (response.status === 400) {
+                    alert(t("login.badRequestLogin"));
+                } else {
+                    alert(t("login.errorLoggingIn"));
                 }
-                throw new Error('Login failed');
-            })
-            .then((data) => {
-                localStorage.setItem('authToken', data.id);
-                localStorage.setItem('emailUser', formData.email);
-                onLogin(formData.email);
-                navigate('/');
             })
             .catch((error) => {
                 console.error('Error:', error);
-                alert('Error logging in');
+                alert(t("login.errorLoggingIn"));
             });
     };
 
@@ -98,17 +97,20 @@ const LoginForm = ({ onLogin, isRegister }) => {
         })
             .then((response) => {
                 if (response.status === 201) {
-                    alert('Registration successful');
+                    alert(t("login.registrationSuccessful"));
                     navigate('/login');
+                } else if (response.status === 400) {
+                    alert(t("login.badRequestRegister"));
                 } else {
-                    alert('Error registering');
+                    alert(t("login.errorRegistering"));
                 }
             })
             .catch((error) => {
                 console.error('Error:', error);
-                alert('Error registering');
+                alert(t("login.errorRegistering"));
             });
     };
+    
 
     return (
         <Form onSubmit={handleSubmit}>

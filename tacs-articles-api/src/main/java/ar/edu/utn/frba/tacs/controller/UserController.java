@@ -66,8 +66,15 @@ public class UserController {
     @POST
     @Path("/login")
     @Consumes("application/json")
-    public User.UserDTO loginUser(User user) throws LoginException {
-        return userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
+    public Response loginUser(User user) {
+        try{
+            User.UserDTO userdto = userService.loginUser(user.getEmail(),user.getPass()).convertToDTO();
+            return Response.ok(userdto).build();
+        }
+        catch (LoginException ex){
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
     }
     public void delete(String id){
         userService.delete(id);

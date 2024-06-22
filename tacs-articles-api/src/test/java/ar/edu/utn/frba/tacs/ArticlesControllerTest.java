@@ -96,7 +96,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         Article article = new Article("article","image","","user get", user.getId(), testFunctions.getDate(2),2000.00, CostType.PER_USER,2,3);
         Response response = articleController.saveArticle("123456789012345678901234", article);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
     public void testControllerSignUpSuccess(){
@@ -105,14 +105,6 @@ public class ArticlesControllerTest {
         Article article = testFunctions.createTestArticle(user.getId());
         Response response = articleController.signUpUser(article.getId(), user2.getId());
         Assert.assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
-    }
-    @Test
-    public void testControllerSignUpArticleNotFound(){
-        User user = testFunctions.createTestUser();
-        User user2 = testFunctions.createTestUser();
-        Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser("123456789012345678901234", user2.getId());
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
     }
     @Test
     public void testControllerSignUpUserNull(){
@@ -129,16 +121,45 @@ public class ArticlesControllerTest {
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         Response response = articleController.signUpUser(article.getId(), "123456789012345678901234");
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
-    public void testControllerSignUpFailed(){
+    public void testControllerSignUpFailedAlreadyClosed(){
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         articleService.closeArticle(article);
         Response response = articleController.signUpUser(article.getId(), user2.getId());
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals("1",response.getEntity());
+    }
+    @Test
+    public void testControllerSignUpFailedOwner(){
+        User user = testFunctions.createTestUser();
+        Article article = testFunctions.createTestArticle(user.getId());
+        Response response = articleController.signUpUser(article.getId(), user.getId());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals("2",response.getEntity());
+    }
+    @Test
+    public void testControllerSignUpFailedAlreadySigned(){
+        User user = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
+        Article article = testFunctions.createTestArticle(user.getId());
+        Annotation annotation = articleService.signUpUser(article, user2);
+        userService.updateAddAnnotation(user2.getId(),annotation);
+        Response response = articleController.signUpUser(article.getId(), user2.getId());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals("3",response.getEntity());
+    }
+    @Test
+    public void testControllerSignUpFailedArticleNotFound(){
+        User user = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
+        Article article = testFunctions.createTestArticle(user.getId());
+        Response response = articleController.signUpUser("123456789012345678901234", user2.getId());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals("4",response.getEntity());
     }
     @Test
     public void testControllerCloseSuccess(){
@@ -169,6 +190,7 @@ public class ArticlesControllerTest {
         articleService.closeArticle(article);
         Response response = articleController.closeArticle(article.getId(),user.getId());
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
+        Assert.assertEquals("1",response.getEntity());
     }
     @Test
     public void testControllerGetSignedUpSuccess(){

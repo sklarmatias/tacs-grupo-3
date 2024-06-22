@@ -11,7 +11,12 @@
     "confirmPass": "Confirmar Contraseña",
     "confirmPassError": "Las contraseñas no coinciden.",
     "register": "Registrarse",
-    "login": "Iniciar sesión"
+    "login": "Iniciar sesión",
+    "badRequestLogin": "Credenciales incorrectas.",
+    "badRequestRegister": "El usuario ya existe.",
+    "errorLoggingIn": "Error al iniciar sesión.",
+    "registrationSuccessful": "Registro exitoso.",
+    "errorRegistering": "Error al registrar."
   },
   "navbar": {
     "home": "Inicio",
@@ -41,7 +46,12 @@
     "errorSubscribing": "Error al suscribirse:",
     "articleClosedSuccessfully": "Artículo cerrado exitosamente",
     "errorClosingArticle": "Error al cerrar artículo:",
-    "confirmSubscribing": "Se ha subscripto exitosamente"
+    "confirmSubscribing": "Se ha subscripto exitosamente",
+    "closed": "El artículo está cerrado.",
+    "ownerCannotSignUp": "El propietario del artículo no puede inscribirse en su propio artículo.",
+    "alreadySignedUp": "El usuario ya está inscrito.",
+    "articleNotFound": "Artículo no encontrado.",
+    "forbidden": "No tienes permiso para realizar esta acción."
   },
   "form": {
     "articleName": "Nombre del artículo",

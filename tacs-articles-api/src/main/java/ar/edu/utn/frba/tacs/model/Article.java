@@ -86,11 +86,11 @@ public class Article {
 
     public Annotation signUpUser(User user){
             if (this.isClosed())
-                throw new IllegalArgumentException("Article is closed.");
+                throw new IllegalArgumentException("1");
             if (Objects.equals(this.getOwner(), user.getId()))
-                throw new IllegalArgumentException("Article owner can't sign up to his own article.");
+                throw new IllegalArgumentException("2");
             if (isSignedUp(user))
-                throw new IllegalArgumentException("User already signed up.");
+                throw new IllegalArgumentException("3");
 
             Annotation annotation = new Annotation(user.convertToDTO());
             this.annotations.add(annotation);
@@ -111,7 +111,7 @@ public class Article {
 
     public void close(){
         if (isClosed())
-            throw new IllegalArgumentException("Article already closed.");
+            throw new IllegalArgumentException("1");
         // TODO notify users
         if (this.annotationsCounter >= this.usersMin)
             this.status = ArticleStatus.CLOSED_SUCCESS;
