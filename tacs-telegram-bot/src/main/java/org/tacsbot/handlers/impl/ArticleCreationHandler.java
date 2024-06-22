@@ -103,7 +103,11 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_COST:
                 // Step 4: Request the article's cost
                 try {
-                    article.setCost(Double.parseDouble(message.getText()));
+                    double number =Double.parseDouble(message.getText());
+                    if(number <=0){
+                        throw new NumberFormatException();
+                    }
+                    article.setCost(number);
                     currentStep = ArticleCreationStep.REQUEST_USERGETS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USER_GETS");
                 } catch (NumberFormatException e) {
@@ -125,7 +129,11 @@ public class ArticleCreationHandler implements CommandsHandler {
             case REQUEST_MAX_USERS:
                 // Paso 5: Solicitar la cantidad máxima de usuarios del artículo
                 try {
-                    article.setUsersMax(Integer.parseInt(message.getText()));
+                    int number =Integer.parseInt(message.getText());
+                    if(number <= 0){
+                        throw new NumberFormatException();
+                    }
+                    article.setUsersMax(number);
                     currentStep = ArticleCreationStep.REQUEST_MIN_USERS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MIN");
                 } catch (NumberFormatException e) {
@@ -158,9 +166,15 @@ public class ArticleCreationHandler implements CommandsHandler {
                 bot.sendInteraction(message.getFrom(), "ARTICLE_IMAGE");
                 break;
             case REQUEST_IMAGE:
-                article.setImage(message.getText());
-                createArticle(message, article, bot);
-                bot.resetUserHandlers(chatId);
+                if(message.getText() != null){
+                    article.setImage(message.getText());
+                    createArticle(message, article, bot);
+                    bot.resetUserHandlers(chatId);
+                }
+                else{
+                    bot.sendInteraction(message.getFrom(),"ARTICLE_IMAGE_INVALID");
+                }
+
 
         }
     }
