@@ -81,6 +81,8 @@ public class ArticlesControllerTest {
         Article article = new Article("article","image","","user get", user.getId(), testFunctions.getDate(2),2000.00, CostType.PER_USER,2,3);
         Response response = articleController.saveArticle(user.getId(), article);
         Assert.assertEquals(Response.Status.CREATED.getStatusCode(),response.getStatus());
+        Article articleResponse = (Article)response.getEntity();
+        Assert.assertEquals(article.getName(),articleResponse.getName());
     }
     @Test
     public void testControllerCreateArticleNoUser(){

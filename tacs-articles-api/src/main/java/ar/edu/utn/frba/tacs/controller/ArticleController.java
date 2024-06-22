@@ -94,7 +94,7 @@ public class ArticleController {
 //		UriBuilder articleURIBuilder = uriInfo.getAbsolutePathBuilder();
 //		articleURIBuilder.path(articleId);
 //		return Response.created(articleURIBuilder.build()).build();
-		return Response.status(201).build();
+		return Response.status(201).entity(completeNewArticle).build();
 	}
 
 	// 204 NoContent
