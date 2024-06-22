@@ -2,11 +2,12 @@
 Git repository of the group 3 TACS project.
 ## Documentation
 
-It consists of 3 components:
+It consists of 4 components:
 
 * A REST API that handles the core business logic and communication with the database.
-* A database that persists all entities.
+* An API database that persists all entities.
 * A Telegram bot that serves as an interface between the end user and the API, allowing the end user to make use of all the required use cases.
+* An cache database that persists all active interactions of the bot.
 
 ### Tech Stack
 
