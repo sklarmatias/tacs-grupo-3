@@ -253,42 +253,76 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void checkPendingNotifications() {
         try {
-            System.out.println("Intentando enviar notificaciones...");
+
             List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
-            for (NotificationDTO notification : notifications) {
-                Long chatId = cacheService.getChatIdOfUser(notification.getSubscriber());
-                if (chatId == null) {
-                    System.out.println("Chat ID is null for user: " + notification.getSubscriber());
-                    continue;  // Skip this notification
-                }
-                try {
-                    String message = generateMessage(notification);
-                    sendText(chatId, message);
-                    boolean marked = notificationApi.markAsNotified(notification.getId());
-                    if (!marked) {
-                        System.err.println("Failed to mark notification as notified: " + notification.getId());
+            if (notifications.isEmpty()){
+                System.out.println("No hay notificaciones pendientes de envio.");
+            }else{
+                System.out.println("Enviando notificaciones pendientes...");
+                for (NotificationDTO notification : notifications) {
+                    Long chatId = cacheService.getChatIdOfUser(notification.getSubscriber());
+                    if (chatId == null) {
+                        System.out.println("Chat ID is null for user: " + notification.getSubscriber());
+                        continue;  // Skip this notification
                     }
-                } catch (Exception e) {
-                    System.err.println("Error sending notification: " + e.getMessage());
+                    try {
+                        String message = generateMessage(notification);
+                        sendText(chatId, message);
+                        boolean marked = notificationApi.markAsNotified(notification.getId());
+                        if (!marked) {
+                            System.err.println("Failed to mark notification as notified: " + notification.getId());
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error sending notification: " + e.getMessage());
+                    }
                 }
             }
+
         } catch (Exception e) {
             System.err.println("Error fetching pending notifications: " + e.getMessage());
         }
     }
 
     private String generateMessage(NotificationDTO notification) {
-        return switch (notification.getType()) {
-            case "ClosedArticleNotification" ->
-                    "El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "OwnerClosedArticleNotification" ->
-                    "Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.";
-            case "SubscriptionNotification" -> "Te has suscrito al artículo \"" + notification.getArticleName() + "\".";
-            case "OwnerSubscriptionNotification" ->
-                    "Alguien se ha suscrito a tu artículo \"" + notification.getArticleName() + "\".";
-            default -> "Tienes una nueva notificación sobre el artículo \"" + notification.getArticleName() + "\".";
-        };
+        String baseMessage;
+        String subscriberInfo = "📊 Suscriptores actuales: " + notification.getCurrentSubscribers() + "\n" +
+                "🔹 Cantidad mínima de suscriptores: " + notification.getMinSubscribers() + "\n" +
+                "🔹 Cantidad máxima de suscriptores: " + notification.getMaxSubscribers() + ".";
+
+        switch (notification.getType()) {
+            case "ClosedArticleNotification":
+                baseMessage = "🔒 El artículo \"" + notification.getArticleName() + "\" ha sido cerrado.\n";
+                if (notification.getCurrentSubscribers() < notification.getMinSubscribers()) {
+                    return baseMessage + subscriberInfo + "\n❗ No se ha llegado a la cantidad mínima de suscriptores, por lo que se cancela la operacion";
+                }
+                return baseMessage + subscriberInfo + "\n ✅ Ya se puede realizar la operacion";
+            case "OwnerClosedArticleNotification":
+                baseMessage = "🔒 Tu artículo \"" + notification.getArticleName() + "\" ha sido cerrado.\n";
+                if (notification.getCurrentSubscribers() < notification.getMinSubscribers()) {
+                    return baseMessage + subscriberInfo + "\n❗ No se ha llegado a la cantidad mínima de suscriptores.";
+                }
+                return baseMessage + subscriberInfo + "\n ✅ Ya se puede realizar la operacion";
+            case "SubscriptionNotification":
+                baseMessage = "✅ Un nuevo usuario se ha suscripto al artículo \"" + notification.getArticleName() + "\".\n";
+                if (notification.getCurrentSubscribers() < notification.getMinSubscribers()) {
+                    return baseMessage + subscriberInfo + "\n❗ Falta/n suscribirse " +
+                            (notification.getMinSubscribers() - notification.getCurrentSubscribers()) + " usuario/s como mínimo.";
+                }
+                return baseMessage + subscriberInfo;
+            case "OwnerSubscriptionNotification":
+                baseMessage = "✅ Un usuario se ha suscripto a tu artículo \"" + notification.getArticleName() + "\".\n";
+                if (notification.getCurrentSubscribers() < notification.getMinSubscribers()) {
+                    return baseMessage + subscriberInfo + "\n❗ Falta/n suscribirse " +
+                            (notification.getMinSubscribers() - notification.getCurrentSubscribers()) + " usuario/s como mínimo.";
+                }
+                return baseMessage + subscriberInfo;
+            default:
+                return "📬 Has recibido una nueva notificación en tu publicación: " + notification.getArticleName();
+        }
     }
+
+
+
 
 
     public void resetUserHandlers(Long userId){

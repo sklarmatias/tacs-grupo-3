@@ -63,7 +63,12 @@ public class ArticleService {
         articlesRepository.update(article.getId(),article);
 
 
-        notificationService.generateSubscriptionNotification (articleName, articleOwner, currentSubscribers);
+        notificationService.generateSubscriptionNotification (articleName,
+                                                              articleOwner,
+                                                              currentSubscribers,
+                                                   currentSubscribers.size() + 1,
+                                                              article.getUsersMin(),
+                                                              article.getUsersMax() );
         return annotation;
     }
 
@@ -73,7 +78,12 @@ public class ArticleService {
         String articleOwner = article.getOwner();
         String articleName = article.getName();
         articlesRepository.update(article.getId(),article);
-        notificationService.generateClosedArticleNotification (articleName, articleOwner, currentSubscribers);
+        notificationService.generateClosedArticleNotification (articleName,
+                articleOwner,
+                currentSubscribers,
+                currentSubscribers.size(),
+                article.getUsersMin(),
+                article.getUsersMax() );
     }
 
 

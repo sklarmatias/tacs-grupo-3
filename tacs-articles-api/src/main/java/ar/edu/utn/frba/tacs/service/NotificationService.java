@@ -21,14 +21,17 @@ public class NotificationService {
         collection = mongoDBConnector.getCollection("notifications");
     }
 
-    public void generateClosedArticleNotification(String articleName, String articleOwner, List<String> currentSubscribers) {
+    public void generateClosedArticleNotification(String articleName, String articleOwner, List<String> currentSubscribers, int currentSubs, int minSubs, int maxSubs) {
         for (String subscriber : currentSubscribers) {
             Document notification = new Document()
                     .append("type", "ClosedArticleNotification")
                     .append("articleName", articleName)
                     .append("subscriber", subscriber)
                     .append("notified", false)
-                    .append("dateTime", new Date());
+                    .append("dateTime", new Date())
+                    .append("currentSubscribers", currentSubs)
+                    .append("minSubscribers", minSubs)
+                    .append("maxSubscribers", maxSubs);
 
             mongoDBConnector.insert("notifications", notification);
         }
@@ -38,19 +41,25 @@ public class NotificationService {
                 .append("articleName", articleName)
                 .append("subscriber", articleOwner)
                 .append("notified", false)
-                .append("dateTime", new Date());
+                .append("dateTime", new Date())
+                .append("currentSubscribers", currentSubs)
+                .append("minSubscribers", minSubs)
+                .append("maxSubscribers", maxSubs);
 
         mongoDBConnector.insert("notifications", ownerNotification);
     }
 
-    public void generateSubscriptionNotification(String articleName, String articleOwner, List<String> currentSubscribers) {
+    public void generateSubscriptionNotification(String articleName, String articleOwner, List<String> currentSubscribers, int currentSubs, int minSubs, int maxSubs) {
         for (String subscriber : currentSubscribers) {
             Document notification = new Document()
                     .append("type", "SubscriptionNotification")
                     .append("articleName", articleName)
                     .append("subscriber", subscriber)
                     .append("notified", false)
-                    .append("dateTime", new Date());
+                    .append("dateTime", new Date())
+                    .append("currentSubscribers", currentSubs)
+                    .append("minSubscribers", minSubs)
+                    .append("maxSubscribers", maxSubs);
 
             mongoDBConnector.insert("notifications", notification);
         }
@@ -60,7 +69,10 @@ public class NotificationService {
                 .append("articleName", articleName)
                 .append("subscriber", articleOwner)
                 .append("notified", false)
-                .append("dateTime", new Date());
+                .append("dateTime", new Date())
+                .append("currentSubscribers", currentSubs)
+                .append("minSubscribers", minSubs)
+                .append("maxSubscribers", maxSubs);
 
         mongoDBConnector.insert("notifications", ownerNotification);
     }
@@ -88,8 +100,11 @@ public class NotificationService {
         String subscriber = doc.getString("subscriber");
         boolean notified = doc.getBoolean("notified");
         Date date = doc.getDate("dateTime");
+        int currentSubscribers = doc.getInteger("currentSubscribers", 0);
+        int minSubscribers = doc.getInteger("minSubscribers", 0);
+        int maxSubscribers = doc.getInteger("maxSubscribers", 0);
 
-        return new Notification(id, type, articleName, subscriber, notified, date);
+        return new Notification(id, type, articleName, subscriber, notified, date, currentSubscribers, minSubscribers, maxSubscribers);
     }
 
     public boolean markAsNotified(String id) {

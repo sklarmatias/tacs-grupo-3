@@ -14,8 +14,9 @@ public class NotificationDTO {
     private String articleName;
     private String subscriber;
     private boolean notified;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date dateTime;  // Cambiado a Date con formato especificado
-
+    private Date dateTime;
+    private int currentSubscribers;
+    private int minSubscribers;
+    private int maxSubscribers;
 }
