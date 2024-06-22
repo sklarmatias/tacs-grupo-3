@@ -33,7 +33,7 @@ public class ArticleApiConnection implements ArticleApi {
             String JSONArticle = articleJSONParser.parseArticleToJSON(article);
             HttpResponse<String> response = articleHttpConnector.createArticleConnector(JSONArticle, article.getOwner());
             if (response.statusCode() == 201)
-                return response.headers().firstValue("Location").get();
+                return response.body();
             else {
                 System.err.printf("Response code %d creating the following Article:\n%s\nResponse body: %s",
                         response.statusCode(),

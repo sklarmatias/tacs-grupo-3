@@ -41,8 +41,7 @@ public class ArticleApiTest {
     public void createArticleSuccessTest() throws HttpException, IOException, URISyntaxException, InterruptedException {
         // mock HttpResponse object
         HttpResponse<String> httpResponse = mock(HttpResponse.class);
-        when(httpResponse.headers()).thenReturn(mock(HttpHeaders.class));
-        when(httpResponse.headers().firstValue("Location")).thenReturn(Optional.of("qwerty"));
+        when(httpResponse.body()).thenReturn("qwerty");
         when(httpResponse.statusCode()).thenReturn(201);
         // mock ArticleHttpConnector object
         ArticleHttpConnector articleHttpConnector = mock(ArticleHttpConnector.class);
