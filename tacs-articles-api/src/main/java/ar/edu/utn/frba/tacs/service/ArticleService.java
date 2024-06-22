@@ -2,10 +2,12 @@ package ar.edu.utn.frba.tacs.service;
 
 import ar.edu.utn.frba.tacs.model.Annotation;
 import ar.edu.utn.frba.tacs.model.Article;
+import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,14 +63,22 @@ public class ArticleService {
         articlesRepository.updateAddAnnotation(article.getId(),annotation);
         System.out.println("Cambiando Articulo...");
         articlesRepository.update(article.getId(),article);
-
-
-        notificationService.generateSubscriptionNotification (articleName,
-                                                              articleOwner,
-                                                              currentSubscribers,
-                                                   currentSubscribers.size() + 1,
-                                                              article.getUsersMin(),
-                                                              article.getUsersMax() );
+        for (String subscriber : currentSubscribers){
+            notificationService.generateSubscriptionNotificationSubscriber(new Notification("",
+                    articleName,subscriber,
+                    false,
+                    new Date(),
+                    currentSubscribers.size() +1,
+                    article.getUsersMin(),
+                    article.getUsersMax()));
+        }
+        notificationService.generateSubscriptionNotificationOwner(new Notification("",
+                articleName,articleOwner,
+                false,
+                new Date(),
+                currentSubscribers.size() +1,
+                article.getUsersMin(),
+                article.getUsersMax()));
         return annotation;
     }
 
@@ -78,12 +88,22 @@ public class ArticleService {
         String articleOwner = article.getOwner();
         String articleName = article.getName();
         articlesRepository.update(article.getId(),article);
-        notificationService.generateClosedArticleNotification (articleName,
-                articleOwner,
-                currentSubscribers,
+        for (String subscriber : currentSubscribers){
+            notificationService.generateClosedArticleNotificationSubscriber(new Notification("",
+                    articleName,subscriber,
+                    false,
+                    new Date(),
+                    currentSubscribers.size(),
+                    article.getUsersMin(),
+                    article.getUsersMax()));
+        }
+        notificationService.generateClosedArticleNotificationOwner(new Notification("",
+                articleName,articleOwner,
+                false,
+                new Date(),
                 currentSubscribers.size(),
                 article.getUsersMin(),
-                article.getUsersMax() );
+                article.getUsersMax()));
     }
 
 

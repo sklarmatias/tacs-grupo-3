@@ -31,11 +31,13 @@ public class NotificationController {
     @Path("/markAsNotified/{id}")
     @Consumes("application/json")
     public Response markAsNotified(@PathParam("id") String id) {
-        boolean updated = notificationService.markAsNotified(id);
-        if (updated) {
+        int updated = notificationService.markAsNotified(id);
+        if (updated == 0) {
             return Response.ok().build();
-        } else {
+        } else if (updated == 1) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
 }

@@ -2,6 +2,8 @@ package ar.edu.utn.frba.tacs.service;
 
 import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
+import ar.edu.utn.frba.tacs.repository.notifications.MongoNotificationsRepository;
+import ar.edu.utn.frba.tacs.repository.notifications.NotificationsRepository;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -13,117 +15,63 @@ import static com.mongodb.client.model.Updates.set;
 
 public class NotificationService {
 
-    private final MongoDBConnector mongoDBConnector;
-    private final MongoCollection<Document> collection;
+    private final NotificationsRepository notificationsRepository;
 
     public NotificationService(String url) {
-        mongoDBConnector = new MongoDBConnector(url);
-        collection = mongoDBConnector.getCollection("notifications");
+        notificationsRepository = new MongoNotificationsRepository(url);
     }
-
-    public void generateClosedArticleNotification(String articleName, String articleOwner, List<String> currentSubscribers, int currentSubs, int minSubs, int maxSubs) {
-        for (String subscriber : currentSubscribers) {
-            Document notification = new Document()
-                    .append("type", "ClosedArticleNotification")
-                    .append("articleName", articleName)
-                    .append("subscriber", subscriber)
-                    .append("notified", false)
-                    .append("dateTime", new Date())
-                    .append("currentSubscribers", currentSubs)
-                    .append("minSubscribers", minSubs)
-                    .append("maxSubscribers", maxSubs);
-
-            mongoDBConnector.insert("notifications", notification);
-        }
-
-        Document ownerNotification = new Document()
-                .append("type", "OwnerClosedArticleNotification")
-                .append("articleName", articleName)
-                .append("subscriber", articleOwner)
-                .append("notified", false)
-                .append("dateTime", new Date())
-                .append("currentSubscribers", currentSubs)
-                .append("minSubscribers", minSubs)
-                .append("maxSubscribers", maxSubs);
-
-        mongoDBConnector.insert("notifications", ownerNotification);
+    public void generateClosedArticleNotificationSubscriber(Notification notification){
+        notification.setType("ClosedArticleNotification");
+        notificationsRepository.save(notification);
     }
-
-    public void generateSubscriptionNotification(String articleName, String articleOwner, List<String> currentSubscribers, int currentSubs, int minSubs, int maxSubs) {
-        for (String subscriber : currentSubscribers) {
-            Document notification = new Document()
-                    .append("type", "SubscriptionNotification")
-                    .append("articleName", articleName)
-                    .append("subscriber", subscriber)
-                    .append("notified", false)
-                    .append("dateTime", new Date())
-                    .append("currentSubscribers", currentSubs)
-                    .append("minSubscribers", minSubs)
-                    .append("maxSubscribers", maxSubs);
-
-            mongoDBConnector.insert("notifications", notification);
-        }
-
-        Document ownerNotification = new Document()
-                .append("type", "OwnerSubscriptionNotification")
-                .append("articleName", articleName)
-                .append("subscriber", articleOwner)
-                .append("notified", false)
-                .append("dateTime", new Date())
-                .append("currentSubscribers", currentSubs)
-                .append("minSubscribers", minSubs)
-                .append("maxSubscribers", maxSubs);
-
-        mongoDBConnector.insert("notifications", ownerNotification);
+    public void generateClosedArticleNotificationOwner(Notification notification){
+        notification.setType("OwnerClosedArticleNotification");
+        notificationsRepository.save(notification);
+    }
+    public void generateSubscriptionNotificationSubscriber(Notification notification){
+        notification.setType("SubscriptionNotification");
+        notificationsRepository.save(notification);
+    }
+    public void generateSubscriptionNotificationOwner(Notification notification){
+        notification.setType("OwnerSubscriptionNotification");
+        notificationsRepository.save(notification);
     }
 
     public List<Notification> getPendingNotifications() {
-        List<Notification> pendingNotifications = new ArrayList<>();
-
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("notified", false);
 
-        List<Document> documents = mongoDBConnector.selectByCondition("notifications", conditions);
-
-        for (Document doc : documents) {
-            Notification notification = documentToNotification(doc);
-            pendingNotifications.add(notification);
-        }
-
-        return pendingNotifications;
+        return notificationsRepository.findAllCondition(conditions);
     }
 
-    private Notification documentToNotification(Document doc) {
-        String id = doc.getObjectId("_id").toString();
-        String type = doc.getString("type");
-        String articleName = doc.getString("articleName");
-        String subscriber = doc.getString("subscriber");
-        boolean notified = doc.getBoolean("notified");
-        Date date = doc.getDate("dateTime");
-        int currentSubscribers = doc.getInteger("currentSubscribers", 0);
-        int minSubscribers = doc.getInteger("minSubscribers", 0);
-        int maxSubscribers = doc.getInteger("maxSubscribers", 0);
 
-        return new Notification(id, type, articleName, subscriber, notified, date, currentSubscribers, minSubscribers, maxSubscribers);
-    }
 
-    public boolean markAsNotified(String id) {
+    public int markAsNotified(String id) {
+        Notification notification;
         try {
-            Document updatedDocument = collection.findOneAndUpdate(
-                    eq("_id", new ObjectId(id)),
-                    set("notified", true)
-            );
-            return updatedDocument != null;
-        } catch (IllegalArgumentException e) {
-            System.err.println("Invalid ID format: " + e.getMessage());
-            return false;
-        } catch (NullPointerException e) {
-            System.err.println("Collection is not initialized: " + e.getMessage());
-            return false;
+            notification = notificationsRepository.find(id);
         } catch (Exception e) {
             System.err.println("An error occurred while marking the notification as notified: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return 1;
         }
+        try{
+            if(notification.isNotified()){
+                throw new IllegalArgumentException("Already notified");
+            }
+            notification.setNotified(true);
+            notificationsRepository.update(notification.getId(),notification);
+        } catch (Exception e) {
+            System.err.println("An error occurred while marking the notification as notified: " + e.getMessage());
+            e.printStackTrace();
+            return 2;
+        }
+        return 0;
+    }
+    public void delete(String id){
+        notificationsRepository.delete(id);
+    }
+    public List<Notification> getAllNotifications(){
+        return notificationsRepository.findAll();
     }
 }

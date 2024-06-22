@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
+import ar.edu.utn.frba.tacs.service.NotificationService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import com.mongodb.ServerAddress;
 import de.flapdoodle.embed.mongo.distribution.Version;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ArticleTest {
     static ArticleService articleService;
     static UserService userService;
+    static NotificationService notificationService;
     static TestFunctions testFunctions;
     static TransitionWalker.ReachedState<RunningMongodProcess> running;
 
@@ -26,6 +28,7 @@ public class ArticleTest {
         articleService = new ArticleService("mongodb://" + serverAddress);
         userService = new UserService("mongodb://" + serverAddress);
         testFunctions = new TestFunctions(userService,articleService);
+        notificationService = new NotificationService("mongodb://" + serverAddress);
     }
     @Before
     public void cleanDB(){
@@ -36,6 +39,10 @@ public class ArticleTest {
         List<Article> articleList = articleService.listArticles();
         for(Article article : articleList){
             articleService.delete(article.getId());
+        }
+        List<Notification> notificationList = notificationService.getAllNotifications();
+        for(Notification notification : notificationList){
+            notificationService.delete(notification.getId());
         }
     }
     @AfterClass
@@ -97,6 +104,9 @@ public class ArticleTest {
         Assert.assertEquals(user2.getId(), article.getAnnotations().get(0).getUser().getId());
         List<Annotation> annotationList = articleService.getUsersSignedUp(article.getId());
         Assert.assertEquals(1, annotationList.size());
+        List<Notification> notifications = notificationService.getPendingNotifications();
+        Assert.assertEquals(1,notifications.size());
+        Assert.assertEquals(article.getName(),notifications.get(0).getArticleName());
     }
     @Test
     public void testMultipleSignUpUserSuccess(){

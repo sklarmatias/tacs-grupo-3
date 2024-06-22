@@ -25,10 +25,6 @@ public class MongoDBConnector {
         database = mongoClient.getDatabase(System.getenv("MONGO_DB") != null ? System.getenv("MONGO_DB") : "admin");
     }
 
-    public MongoCollection<Document> getCollection(String collectionName) {
-        return database.getCollection(collectionName);
-    }
-
     public String insert(String collectionName, Document doc){
         MongoCollection<Document> collection = database.getCollection(collectionName);
         ObjectId objectId = new ObjectId();

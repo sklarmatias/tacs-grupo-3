@@ -23,9 +23,8 @@ public class Notification {
     private int minSubscribers;
     private int maxSubscribers;
 
-    public Notification(String id, String type, String articleName, String subscriber, boolean notified, Date dateTime,
+    public Notification(String type, String articleName, String subscriber, boolean notified, Date dateTime,
                         int currentSubscribers, int minSubscribers, int maxSubscribers) {
-        this.id = id;
         this.type = type;
         this.articleName = articleName;
         this.subscriber = subscriber;
