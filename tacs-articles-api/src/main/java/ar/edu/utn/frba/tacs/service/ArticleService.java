@@ -7,10 +7,7 @@ import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ArticleService {
@@ -63,12 +60,31 @@ public class ArticleService {
         articlesRepository.updateAddAnnotation(article.getId(),annotation);
         System.out.println("Cambiando Articulo...");
         articlesRepository.update(article.getId(),article);
+
         for (String subscriber : currentSubscribers){
             notificationService.generateSubscriptionNotificationSubscriber(new Notification("",
                     articleName,subscriber,
                     false,
                     new Date(),
                     currentSubscribers.size() +1,
+                    article.getUsersMin(),
+                    article.getUsersMax()));
+            if(article.isClosed() && Objects.equals(article.getUsersMax(), article.getAnnotationsCounter())){
+                notificationService.generateClosedArticleNotificationSubscriber(new Notification("",
+                        articleName,subscriber,
+                        false,
+                        new Date(),
+                        currentSubscribers.size(),
+                        article.getUsersMin(),
+                        article.getUsersMax()));
+            }
+        }
+        if(article.isClosed() && Objects.equals(article.getUsersMax(), article.getAnnotationsCounter())){
+            notificationService.generateClosedArticleNotificationSubscriber(new Notification("",
+                    articleName,user.getId(),
+                    false,
+                    new Date(),
+                    currentSubscribers.size(),
                     article.getUsersMin(),
                     article.getUsersMax()));
         }
@@ -79,6 +95,15 @@ public class ArticleService {
                 currentSubscribers.size() +1,
                 article.getUsersMin(),
                 article.getUsersMax()));
+        if(article.isClosed() && Objects.equals(article.getUsersMax(), article.getAnnotationsCounter())){
+            notificationService.generateClosedArticleNotificationOwner(new Notification("",
+                    articleName,articleOwner,
+                    false,
+                    new Date(),
+                    currentSubscribers.size(),
+                    article.getUsersMin(),
+                    article.getUsersMax()));
+        }
         return annotation;
     }
 
@@ -97,13 +122,15 @@ public class ArticleService {
                     article.getUsersMin(),
                     article.getUsersMax()));
         }
-        notificationService.generateClosedArticleNotificationOwner(new Notification("",
-                articleName,articleOwner,
-                false,
-                new Date(),
-                currentSubscribers.size(),
-                article.getUsersMin(),
-                article.getUsersMax()));
+        if(article.isExpired()){
+            notificationService.generateClosedArticleNotificationOwner(new Notification("",
+                    articleName,articleOwner,
+                    false,
+                    new Date(),
+                    currentSubscribers.size(),
+                    article.getUsersMin(),
+                    article.getUsersMax()));
+        }
     }
 
 

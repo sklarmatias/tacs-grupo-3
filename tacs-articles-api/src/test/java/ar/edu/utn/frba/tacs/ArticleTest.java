@@ -89,6 +89,7 @@ public class ArticleTest {
         article = articleService.getArticle(article.getId());
         Assert.assertEquals(ArticleStatus.CLOSED_FAILED, article.getStatus());
         Assert.assertEquals(0,articleService.listOpenArticles().size());
+        Assert.assertEquals(2, notificationService.getPendingNotifications().size());
     }
 
     @Test
@@ -143,6 +144,30 @@ public class ArticleTest {
         articleService.signUpUser(article,user3);
         Assert.assertThrows(IllegalArgumentException.class, () -> articleService.signUpUser(article,user4));
 
+    }
+    @Test
+    public void testSignUpUserCloseUsersMax(){
+        User user1 = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
+        User user3 = testFunctions.createTestUser();
+        User owner = testFunctions.createTestUser();
+        Article article = testFunctions.createTestArticle(owner.getId());
+        articleService.signUpUser(article,user1);
+        Assert.assertEquals(1,notificationService.getPendingNotifications().size());
+        articleService.signUpUser(article,user2);
+        Assert.assertEquals(3,notificationService.getPendingNotifications().size());
+        articleService.signUpUser(article,user3);
+        Assert.assertEquals(10,notificationService.getPendingNotifications().size());
+    }
+    @Test
+    public void testCloseAfterDeadlineNotif(){
+        User owner = testFunctions.createTestUser();
+        User user1 = testFunctions.createTestUser();
+        Article article = testFunctions.createTestArticle(owner.getId());
+        articleService.signUpUser(article,user1);
+        article.setDeadline(testFunctions.getDate(-1));
+        articleService.closeArticle(article);
+        Assert.assertEquals(3,notificationService.getPendingNotifications().size());
     }
 
     @Test

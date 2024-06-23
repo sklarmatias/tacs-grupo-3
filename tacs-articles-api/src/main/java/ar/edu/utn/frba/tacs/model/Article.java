@@ -112,7 +112,6 @@ public class Article {
     public void close(){
         if (isClosed())
             throw new IllegalArgumentException("1");
-        // TODO notify users
         if (this.annotationsCounter >= this.usersMin)
             this.status = ArticleStatus.CLOSED_SUCCESS;
         else this.status = ArticleStatus.CLOSED_FAILED;

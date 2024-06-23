@@ -69,19 +69,21 @@ public class NotificationControllerTest {
         Assert.assertEquals(article.getName(),notifications.get(0).articleName);
         articleService.closeArticle(article);
         notifications= notificationController.getPendingNotifications();
-        Assert.assertEquals(3,notifications.size());
+        Assert.assertEquals(2,notifications.size());
     }
     @Test
     public void testControllerMarkNotifiedSuccess(){
         User user1 = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user1.getId());
+        articleService.signUpUser(article,user2);
         articleService.closeArticle(article);
         List<Notification> notifications = notificationService.getPendingNotifications();
-        Assert.assertEquals(1,notifications.size());
+        Assert.assertEquals(2,notifications.size());
         Response response = notificationController.markAsNotified(notifications.get(0).getId());
         Assert.assertEquals(200,response.getStatus());
         notifications = notificationService.getPendingNotifications();
-        Assert.assertEquals(0,notifications.size());
+        Assert.assertEquals(1,notifications.size());
     }
     @Test
     public void testControllerMarkNotifiedNotFound(){
@@ -91,7 +93,9 @@ public class NotificationControllerTest {
     @Test
     public void testControllerMarkNotifiedTwiceError(){
         User user1 = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user1.getId());
+        articleService.signUpUser(article,user2);
         articleService.closeArticle(article);
         List<Notification> notifications = notificationService.getPendingNotifications();
         Response response = notificationController.markAsNotified(notifications.get(0).getId());
