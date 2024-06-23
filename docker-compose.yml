@@ -30,6 +30,11 @@ services:
       MONGO_DB: ${MONGO_DB}
     env_file:
       - .env
+  api-crons:
+    build:
+      context: ./tacs-articles-api/cron
+    container_name: api-crons
+
 
   bot:
     build:

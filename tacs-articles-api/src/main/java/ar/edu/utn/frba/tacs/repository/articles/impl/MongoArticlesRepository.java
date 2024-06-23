@@ -5,14 +5,9 @@ import ar.edu.utn.frba.tacs.repository.MongoDBConnector;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.objectMappers.MongoAnnotationMapper;
 import ar.edu.utn.frba.tacs.repository.objectMappers.MongoArticleMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +40,7 @@ public class MongoArticlesRepository implements ArticlesRepository {
     public List<Article> findAllExpiredAndOpen() {
         List<Bson> conditions = new ArrayList<>();
         conditions.add(Filters.lt("deadline", yesterday()));
+        conditions.add(Filters.eq("status", "OPEN"));
         List<Document> documents = dbConnector.selectByCondition("articles",conditions);
         return documents.stream()
                 .map(MongoArticleMapper::convertDocumentToArticle)
