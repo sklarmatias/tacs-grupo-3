@@ -1,8 +1,10 @@
 package ar.edu.utn.frba.tests.parser;
 
 import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.Article;
@@ -11,6 +13,9 @@ import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class ArticleJSONParserTest {
 
@@ -116,6 +121,21 @@ public class ArticleJSONParserTest {
 
         Assert.assertEquals(tree2, tree1);
 
+    }
+    @Test
+    public void articleToJSONFail() throws IOException {
+        ArticleJSONParser articleJSONParser = new ArticleJSONParser();
+        ObjectWriter objectWriter = mock(ObjectWriter.class);
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        doReturn(objectMapper).when(objectMapper).setSerializationInclusion(any());
+        doReturn(objectMapper).when(objectMapper).setDateFormat(any());
+        doReturn(objectWriter).when(objectMapper).writer();
+        doReturn(objectWriter).when(objectWriter).withDefaultPrettyPrinter();
+        doThrow(JsonProcessingException.class).when(objectWriter).writeValueAsString(any());
+        articleJSONParser.setObjectMapper(objectMapper);
+        Article article = mock(Article.class);
+        doReturn("test").when(article).getDetailedString();
+        Assert.assertThrows(IOException.class, () -> articleJSONParser.parseArticleToJSON(article));
     }
 
     @Test
