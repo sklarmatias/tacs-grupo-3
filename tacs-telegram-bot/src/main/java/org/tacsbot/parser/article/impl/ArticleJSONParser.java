@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.Setter;
 import org.tacsbot.model.Article;
 import org.tacsbot.parser.article.ArticleParser;
 
@@ -14,15 +15,16 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class ArticleJSONParser implements ArticleParser {
-
+    @Setter
+    ObjectMapper objectMapper = new ObjectMapper();
     public String parseArticleToJSON(Article article) throws IOException {
-        ObjectWriter objectMapper = new ObjectMapper()
+        ObjectWriter objectWriter = objectMapper
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
                 .writer()
                 .withDefaultPrettyPrinter();
         try {
-            return objectMapper.writeValueAsString(article);
+            return objectWriter.writeValueAsString(article);
         } catch (JsonProcessingException e) {
             System.err.printf("[Error] Cannot parse article:\n%s\n%s\n", article.getDetailedString(), e.getMessage());
             throw new IOException();
@@ -32,10 +34,9 @@ public class ArticleJSONParser implements ArticleParser {
     public Article parseJSONToArticle(String json){
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         df.setTimeZone(TimeZone.getDefault());
-        ObjectMapper mapper = new ObjectMapper()
-                .setDateFormat(df);
+        objectMapper.setDateFormat(df);
             try {
-            return mapper.readValue(json, Article.class);
+            return objectMapper.readValue(json, Article.class);
         } catch (JsonProcessingException e) {
             System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
                     json,
@@ -46,9 +47,8 @@ public class ArticleJSONParser implements ArticleParser {
     }
 
     public List<Article> parseJSONToArticleList(String json){
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(json, new TypeReference<>() {
+            return objectMapper.readValue(json, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
             System.err.printf("[Error] Cannot process JSON:\n%s\nException msg:\n%s\n",
