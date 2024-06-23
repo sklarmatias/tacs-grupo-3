@@ -39,7 +39,36 @@ public class RegisterValidatorHelper {
     }
 
     public static String validatePassword(String text) {
-        //todo validar password
+        if (text.length() < 8) {
+            return "ERROR_PASSWORD_INVALID";
+        }
+
+        boolean hasDigit = false;
+        for (char c : text.toCharArray()) {
+            if (Character.isDigit(c)) {
+                hasDigit = true;
+                break;
+            }
+        }
+        if (!hasDigit) {
+            return "ERROR_PASSWORD_INVALID";
+        }
+
+        boolean hasLowerCase = false;
+        boolean hasUpperCase = false;
+        for (char c : text.toCharArray()) {
+            if (Character.isLowerCase(c)) {
+                hasLowerCase = true;
+            }
+            if (Character.isUpperCase(c)) {
+                hasUpperCase = true;
+            }
+        }
+        if (!hasLowerCase || !hasUpperCase) {
+            return "ERROR_PASSWORD_INVALID";
+        }
+
         return null;
     }
+
 }
