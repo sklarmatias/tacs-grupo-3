@@ -42,7 +42,7 @@ public class MongoNotificationsRepository implements NotificationsRepository{
     }
     @Override
     public List<Notification> findAllCondition(Map<String, Object> conditions) {
-        List<Document> documents = dbConnector.selectByCondition("notifications",conditions);
+        List<Document> documents = dbConnector.selectByEqCondition("notifications",conditions);
         return documents.stream()
                 .map(MongoNotificationMapper::convertDocumentToNotification)
                 .collect(Collectors.toList());

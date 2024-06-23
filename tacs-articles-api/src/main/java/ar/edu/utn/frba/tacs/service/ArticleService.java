@@ -6,9 +6,7 @@ import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
 import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ArticleService {
 
@@ -131,6 +129,21 @@ public class ArticleService {
                     article.getUsersMin(),
                     article.getUsersMax()));
         }
+    }
+
+    public List<Article> closeExpiredArticles(){
+        List<Article> expiredArticles = articlesRepository.findAllExpiredAndOpen();
+        List<Article> closedArticles = new ArrayList<>();
+        for (Article article: expiredArticles){
+            try{
+                closeArticle(article);
+                System.out.printf("[CRON] Article %s closed: %s\n", article.getId(), article.getStatus());
+                closedArticles.add(article);
+            } catch (IllegalArgumentException e){
+                System.err.printf("[CRON] Couldn't close article %s: %s\n", article.getId(), e.getMessage());
+            }
+        }
+        return closedArticles;
     }
 
 

@@ -40,7 +40,7 @@ public class MongoUsersRepository implements UsersRepository {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("email", email);
         conditions.put("pass", pass);
-        Document document = dbConnector.selectByCondition("users", conditions).get(0);
+        Document document = dbConnector.selectByEqCondition("users", conditions).get(0);
         return MongoUserMapper.convertDocumentToUser(document);
     }
 
@@ -67,7 +67,7 @@ public class MongoUsersRepository implements UsersRepository {
     public boolean userExists(String email) {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("email", email);
-        return !dbConnector.selectByCondition("users", conditions).isEmpty();
+        return !dbConnector.selectByEqCondition("users", conditions).isEmpty();
     }
 
     @Override

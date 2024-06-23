@@ -8,10 +8,12 @@ import ar.edu.utn.frba.tacs.repository.objectMappers.MongoArticleMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.bson.conversions.Bson;
+
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MongoArticlesRepository implements ArticlesRepository {
@@ -29,6 +31,20 @@ public class MongoArticlesRepository implements ArticlesRepository {
     }
     @Override
     public List<Article> findAllCondition(Map<String, Object> conditions) {
+        List<Document> documents = dbConnector.selectByEqCondition("articles",conditions);
+        return documents.stream()
+                .map(MongoArticleMapper::convertDocumentToArticle)
+                .collect(Collectors.toList());
+    }
+
+    private Date yesterday(){
+        return new Date(new Date().getTime() - 86400);
+    }
+
+    @Override
+    public List<Article> findAllExpiredAndOpen() {
+        List<Bson> conditions = new ArrayList<>();
+        conditions.add(Filters.lt("deadline", yesterday()));
         List<Document> documents = dbConnector.selectByCondition("articles",conditions);
         return documents.stream()
                 .map(MongoArticleMapper::convertDocumentToArticle)
@@ -50,7 +66,7 @@ public class MongoArticlesRepository implements ArticlesRepository {
     public List<Article> filter(String userid) {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("owner", userid);
-        List<Document> documents = dbConnector.selectByCondition("articles", conditions);
+        List<Document> documents = dbConnector.selectByEqCondition("articles", conditions);
         return documents.stream()
                 .map(MongoArticleMapper::convertDocumentToArticle)
                 .collect(Collectors.toList());

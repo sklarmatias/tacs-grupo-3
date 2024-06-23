@@ -10,6 +10,8 @@ public interface ArticlesRepository {
 
     List<Article> findAll();
     List<Article> findAllCondition(Map<String, Object> conditions);
+    List<Article> findAllExpiredAndOpen();
+
     Article find(String id);
     List<Article> filter(String userid);
     String save(Article article);

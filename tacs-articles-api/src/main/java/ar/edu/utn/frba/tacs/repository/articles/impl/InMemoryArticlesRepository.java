@@ -24,6 +24,11 @@ public class InMemoryArticlesRepository implements ArticlesRepository {
     }
 
     @Override
+    public List<Article> findAllExpiredAndOpen() {
+        return null;
+    }
+
+    @Override
     public Article find(String id) {
         return ARTICLES.stream().filter(art -> art.getId().equals(id)).findFirst().get();
     }

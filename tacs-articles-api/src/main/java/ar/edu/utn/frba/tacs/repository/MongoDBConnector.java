@@ -43,9 +43,14 @@ public class MongoDBConnector {
         return collection.find().into(new ArrayList<Document>());
     }
 
-    public List<Document> selectByCondition(String collectionName, Map<String,Object> conditions){
+    public List<Document> selectByEqCondition(String collectionName, Map<String,Object> conditions){
         MongoCollection<Document> collection = database.getCollection(collectionName);
-        return collection.find(Filters.and(createFilters(conditions))).into(new ArrayList<Document>());
+        return collection.find(Filters.and(createEqFilters(conditions))).into(new ArrayList<Document>());
+    }
+
+    public List<Document> selectByCondition(String collectionName, List<Bson> conditions){
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        return collection.find(Filters.and(conditions)).into(new ArrayList<>());
     }
 
     public void deleteById(String collectionName, String id){
@@ -68,7 +73,7 @@ public class MongoDBConnector {
     }
 
 
-    private Iterable<Bson> createFilters(Map<String,Object> conditions){
+    private Iterable<Bson> createEqFilters(Map<String,Object> conditions){
         List<Bson> list = new ArrayList<>();
         for (String key : conditions.keySet()){
             list.add(Filters.eq(key, conditions.get(key)));
