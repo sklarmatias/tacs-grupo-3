@@ -78,7 +78,6 @@ public class UserTest {
     }
     @Test
     public void testLoginWrong(){
-        User user = testFunctions.createTestUser();
         Assert.assertThrows(LoginException.class,()->userService.loginUser("wrong@gmail.com","1234"));
     }
     @Test

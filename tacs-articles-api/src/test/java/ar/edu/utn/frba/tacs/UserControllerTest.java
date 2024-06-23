@@ -83,6 +83,15 @@ public class UserControllerTest {
         Assert.assertEquals(user.getId(),userDTO.getId());
         Assert.assertEquals(user.getName(),userDTO.getName());
     }
+
+    @Test
+    public void testControllerLoginFail() throws LoginException {
+        User userLogin = new User();
+        userLogin.setEmail("email");
+        userLogin.setPass("pass");
+        Response response =userController.loginUser(userLogin);
+        Assert.assertEquals(400,response.getStatus());
+    }
     @Test
     public void testControllerSaveUserDuplicatedEmail(){
         User user1 = new User("pedro","perez","a@b.com","123456");

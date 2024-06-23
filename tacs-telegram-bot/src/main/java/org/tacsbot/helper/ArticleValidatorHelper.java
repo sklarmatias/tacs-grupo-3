@@ -1,28 +1,27 @@
 package org.tacsbot.helper;
 
 public class ArticleValidatorHelper {
-    public static String validateArticleName(String articleName){
+    public static String validateArticleName(String articleName) {
         if (articleName.isEmpty() || articleName.isBlank()) {
-            return "El nombre del artículo no puede estar vacío.";
+            return "EMPTY";
         }
         if (articleName.length() > 60) {
-            return "El nombre del artículo no puede tener más de 60 caracteres.";
+            return "ARTICLE_NAME_TOO_LONG";
         }
         if (articleName.length() < 10){
-            return "El nombre del articulo debe tener mas de 10 caracteres";
+            return "ARTICLE_NAME_TOO_SHORT";
         }
         if (!articleName.matches("[a-zA-Z0-9ÁáÉéÍíÓóÚúÜü][a-zA-Z0-9ÁáÉéÍíÓóÚúÜü'&()¡¿?!\"° ñ-]*")) {
-            return "contiene caracteres no permitidos";
+            return "INVALID_CHARACTERS";
         }
-
         return null;
     }
     public static String validateUserGets(String text){
         if (text.isEmpty() || text.isBlank()) {
-            return "El texto no puede estar vacío.";
+            return "EMPTY";
         }
         if (!text.matches("[a-zA-Z0-9ÁáÉéÍíÓóÚúÜü][a-zA-Z0-9ÁáÉéÍíÓóÚúÜü'&()¡¿?!\"° ñ-]*")) {
-            return "contiene caracteres no permitidos";
+            return "INVALID_CHARACTERS";
         }
 
         return null;

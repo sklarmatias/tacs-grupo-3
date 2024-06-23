@@ -1,6 +1,7 @@
 package org.tacsbot.handlers.impl;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
@@ -17,11 +18,13 @@ import java.util.Date;
 
 public class ArticleCreationHandler implements CommandsHandler {
     @Getter
+    @Setter
     public ArticleCreationStep currentStep;
 
     @Getter
     private final Article article;
 
+    @Setter
     private ArticleApi articleApi;
 
     public ArticleCreationHandler(String userId) {
@@ -66,7 +69,8 @@ public class ArticleCreationHandler implements CommandsHandler {
                 currentStep = ArticleCreationStep.REQUEST_DEADLINE;
                 bot.sendInteraction(message.getFrom(), "ARTICLE_DEADLINE");
                 }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese un nombre nuevamente...");
+                    bot.sendInteraction(message.getFrom(), errorMessage);
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_NAME");
                 }
                 break;
             case REQUEST_DEADLINE:
@@ -122,7 +126,8 @@ public class ArticleCreationHandler implements CommandsHandler {
                     currentStep = ArticleCreationStep.REQUEST_MAX_USERS;
                     bot.sendInteraction(message.getFrom(), "ARTICLE_USERS_MAX");
                 }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese un texto nuevamente...");
+                    bot.sendInteraction(message.getFrom(), errorMessage);
+                    bot.sendInteraction(message.getFrom(), "ARTICLE_USER_GETS");
                 }
                 break;
                 // TO DO ingresar link
