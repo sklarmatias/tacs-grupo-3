@@ -71,5 +71,6 @@
   "SUCC_ARTICLES_COUNT_REPORT": "Total number of articles that reached the minimum subscriptions = %d.",
   "ARTICLES_COUNT_REPORT": "Total number of articles = %d.",
   "ENGAGED_USERS_COUNT_REPORT": "Total number of users who interacted with the application = %d.",
-  "USERS_COUNT_REPORT": "Total number of users = %d."
+  "USERS_COUNT_REPORT": "Total number of users = %d.",
+  "ERROR_EMAIL_INVALID": "The email format is invalid."
 }

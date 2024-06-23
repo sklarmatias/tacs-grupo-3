@@ -1,5 +1,8 @@
 package org.tacsbot.helper;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class RegisterValidatorHelper {
     public static String validateArticleName(String articleName){
         if (articleName.isEmpty() || articleName.isBlank()) {
@@ -44,8 +47,19 @@ public class RegisterValidatorHelper {
         return null;
     }
 
-    public static String validateEmail(String text) {
-        //todo validar mail
+    public static String validateEmail(String email) {
+        String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        if (email == null || email.isEmpty() || email.isBlank()) {
+            return "ERROR_EMAIL_EMPTY";
+        }
+
+        Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(email);
+
+        if (!matcher.matches()) {
+            return "ERROR_EMAIL_INVALID";
+        }
+
         return null;
     }
 
