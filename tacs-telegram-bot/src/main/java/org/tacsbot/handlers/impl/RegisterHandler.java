@@ -1,5 +1,8 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.tacsbot.api.user.UserApi;
 import org.tacsbot.api.user.impl.UserApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
@@ -11,12 +14,13 @@ import java.io.IOException;
 
 public class RegisterHandler implements CommandsHandler {
     private final Long chatId;
-
+    @Getter
     private final User user;
-
+    @Setter
     private RegistrationStep currentStep;
 
-    private UserApiConnection userApiConnection;
+    @Setter
+    private UserApi userApiConnection;
 
     public RegisterHandler(Long chatId) {
         this.user = new User();
@@ -26,7 +30,7 @@ public class RegisterHandler implements CommandsHandler {
     }
 
 
-    private enum RegistrationStep {
+    public enum RegistrationStep {
         REQUEST_USER_NAME,
         REQUEST_USER_SURNAME,
         REQUEST_EMAIL,
@@ -45,6 +49,7 @@ public class RegisterHandler implements CommandsHandler {
 
         } catch (IOException e) {
             bot.sendInternalErrorMsg(message.getFrom(), e);
+            bot.sendInteraction(message.getFrom(), "REGISTER_INVALID");
         }
     }
 
@@ -54,29 +59,25 @@ public class RegisterHandler implements CommandsHandler {
         switch (currentStep) {
 
             case REQUEST_USER_NAME:
-                errorMessage = RegisterValidatorHelper.validateUserName(message.getText());
-                if (errorMessage == null){
+                if (message.getText() != null && !message.getText().isEmpty()){
                     user.setName(message.getText());
 
                     this.currentStep = RegistrationStep.REQUEST_USER_SURNAME;
                     bot.sendInteraction(message.getFrom(), "REGISTER_SURNAME");
                 }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese un nombre nuevamente...");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_NAME_EMPTY");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_NAME");
                 }
                 break;
             case REQUEST_USER_SURNAME:
-                errorMessage = RegisterValidatorHelper.validateUserSurname(message.getText());
-                if (errorMessage == null){
+                if (message.getText() != null && !message.getText().isEmpty()){
                     user.setSurname(message.getText());
                     this.currentStep = RegistrationStep.REQUEST_EMAIL;
                     bot.sendInteraction(message.getFrom(), "REGISTER_EMAIL");
                 }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese un apellido nuevamente...");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_SURNAME_EMPTY");
+                    bot.sendInteraction(message.getFrom(), "REGISTER_SURNAME");
                 }
-
-
-
-
                 break;
             case REQUEST_EMAIL:
                 errorMessage = RegisterValidatorHelper.validateEmail(message.getText());
@@ -85,7 +86,8 @@ public class RegisterHandler implements CommandsHandler {
                     this.currentStep = RegistrationStep.REQUEST_PASSWORD;
                     bot.sendInteraction(message.getFrom(),"REGISTER_PASS");
                 }else {
-                    bot.sendText(chatId, errorMessage + "Ingrese un mail nuevamente...");
+                    bot.sendInteraction(message.getFrom(), errorMessage);
+                    bot.sendInteraction(message.getFrom(), "REGISTER_EMAIL");
                 }
 
 
@@ -94,8 +96,6 @@ public class RegisterHandler implements CommandsHandler {
                 user.setPass(message.getText());
                 register(message, bot);
                 break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + currentStep);
         }
 
 

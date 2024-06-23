@@ -1,5 +1,6 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.apache.http.HttpException;
@@ -12,15 +13,18 @@ import org.tacsbot.model.Article;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.List;
 
-@Setter
+
 public class ArticleHandler implements CommandsHandler {
     private final Long chatId;
+
     private CurrentStep currentStep;
     private String articleId;
+    @Setter
     private ArticleType articleType;
     private Integer selectedArticleIndex;
     private List<Article> articleList;
     private String user;
+    @Setter
     private ArticleApi articleApiConnector;
 
     public ArticleHandler(Long userId) {
@@ -40,9 +44,14 @@ public class ArticleHandler implements CommandsHandler {
     private void closeArticle(Message message, String userId, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
-        Article closedArticle = articleApiConnector.closeArticle(article, userId);
-        bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
-        bot.sendArticle(message.getFrom(), closedArticle);
+        try{
+            Article closedArticle = articleApiConnector.closeArticle(article, userId);
+            bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
+            bot.sendArticle(message.getFrom(), closedArticle);
+        }
+        catch(Exception ex){
+            bot.sendInteraction(message.getFrom(), "ARTICLE_NOT_CLOSED");
+        }
     }
 
     private void getArticles(Message message, List<Article> articles, MyTelegramBot bot) {
@@ -79,7 +88,7 @@ public class ArticleHandler implements CommandsHandler {
             else
                 bot.sendAnnotationList(message.getFrom(), subscriptions);
         } catch (IllegalArgumentException e){
-            bot.sendInternalErrorMsg(message.getFrom(), e);
+            bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
         }
     }
 
@@ -115,8 +124,15 @@ public class ArticleHandler implements CommandsHandler {
                         return;
                 }
             case CHOOSE_ARTICLE:
-
-                int selectedIndex = Integer.parseInt(message.getText()) - 1;
+                int selectedIndex;
+                try{
+                    selectedIndex = Integer.parseInt(message.getText()) - 1;
+                }
+                catch (NumberFormatException ex){
+                    bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                    currentStep = CurrentStep.CHOOSE_ARTICLE;
+                    return;
+                }
                 if (!validateSelectedIndex(selectedIndex)) {
                     bot.sendInteraction(message.getFrom(), "ARTICLE_INVALID_INDEX");
                     currentStep = CurrentStep.CHOOSE_ARTICLE;
@@ -133,6 +149,7 @@ public class ArticleHandler implements CommandsHandler {
             case CHOOSE_ACTION:
                 String action = message.getText().toUpperCase();
                 if (articleType == ArticleType.TODOS){
+                    //SUBSCRIBE
                     if (action.equals("A")){
                         user = bot.getCacheService().getUser(chatId).getId();
                         subscribe(message, user, bot);
@@ -144,16 +161,18 @@ public class ArticleHandler implements CommandsHandler {
                 } else if (articleType == ArticleType.PROPIOS) {
                     user = bot.getCacheService().getUser(chatId).getId();
                     switch (action) {
+                        //GET SUBSCRIPTIONS
                         case "A":
                             getSubscriptions(message, articleId, bot);
                             break;
+                        //CLOSE
                         case "B":
                             closeArticle(message, user, bot);
                             break;
+                        default:
+                            bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
+                            break;
                     }
-                }
-                else {
-                    throw new IllegalStateException("Wrong articleType!");
                 }
                 break;
         }

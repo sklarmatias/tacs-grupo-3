@@ -26,40 +26,5 @@ public class ArticleValidatorHelper {
 
         return null;
     }
-    public static String validateCostType(String costType){
-        if (costType.toUpperCase().equals("TOTAL") || costType.toUpperCase().equals("PER_USER")){
-            return null;
-        }
-            return "Tipo de Costo ingresado no valido";
-    }
 
-    public static String validateMinNumUsers(Integer minNumUsers, Integer MaxNumUsers){
-        if (minNumUsers < 0){
-            return "La cantidad minima de usuarios no puede ser 0";
-        }
-        if (minNumUsers > MaxNumUsers){
-            return "La cantidad minima de usuarios no puede ser superior a la cantidad maxima de usuarios indicada";
-        }
-        return null;
-    }
-
-    public static String validateUserName(String text) {
-        //todo validar nombre de usuario
-        return null;
-    }
-
-    public static String validateUserSurname(String text) {
-        //todo validar apellido de usuario
-        return null;
-    }
-
-    public static String validateEmail(String text) {
-        //todo validar mail
-        return null;
-    }
-
-    public static String validatePassword(String text) {
-        //todo validar password
-        return null;
-    }
 }
