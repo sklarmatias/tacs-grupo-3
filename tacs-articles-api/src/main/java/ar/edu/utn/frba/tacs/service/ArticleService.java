@@ -82,7 +82,7 @@ public class ArticleService {
                     articleName,user.getId(),
                     false,
                     new Date(),
-                    currentSubscribers.size(),
+                    currentSubscribers.size() + 1,
                     article.getUsersMin(),
                     article.getUsersMax()));
         }
@@ -98,7 +98,7 @@ public class ArticleService {
                     articleName,articleOwner,
                     false,
                     new Date(),
-                    currentSubscribers.size(),
+                    currentSubscribers.size() + 1,
                     article.getUsersMin(),
                     article.getUsersMax()));
         }

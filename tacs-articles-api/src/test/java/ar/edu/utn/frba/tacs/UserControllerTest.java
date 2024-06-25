@@ -90,7 +90,7 @@ public class UserControllerTest {
         userLogin.setEmail("email");
         userLogin.setPass("pass");
         Response response =userController.loginUser(userLogin);
-        Assert.assertEquals(400,response.getStatus());
+        Assert.assertEquals(401,response.getStatus());
     }
     @Test
     public void testControllerSaveUserDuplicatedEmail(){

@@ -57,16 +57,16 @@ function ArticleList({ userFocus }) {
                     const errorCode = await error.response.data;
 
                     switch (errorCode) {
-                        case '1':
+                        case 1:
                             alert(t('articles.closed'));
                             break;
-                        case '2':
+                        case 2:
                             alert(t('articles.ownerCannotSignUp'));
                             break;
-                        case '3':
+                        case 3:
                             alert(t('articles.alreadySignedUp'));
                             break;
-                        case '4':
+                        case 4:
                             alert(t('articles.articleNotFound'));
                             break;
                         default:
@@ -106,7 +106,7 @@ function ArticleList({ userFocus }) {
                     const errorCode = await error.response.data;
 
                     switch (errorCode) {
-                        case '1':
+                        case 1:
                             alert(t('articles.closed'));
                             break;
                         default:

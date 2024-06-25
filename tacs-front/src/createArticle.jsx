@@ -94,7 +94,7 @@ const ArticleForm = () => {
                     alert(t('form.success'));
                     navigate('/myarticles');
                 } else {
-                    alert(t('form.error'));
+                    alert(t('form.error'), response.body);
                     console.error(response.body);
                 }
             })

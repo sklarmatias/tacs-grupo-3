@@ -147,7 +147,7 @@ public class ArticleController {
 		else{
 			try {
 				articleService.closeArticle(articleService.getArticle(articleId));
-				return Response.ok().build();
+				return Response.ok(articleService.getArticle(articleId)).build();
 			}
 			catch(Exception exception){
 				return Response.status(Response.Status.BAD_REQUEST).entity(exception.getMessage()).type( MediaType.TEXT_PLAIN).build();
