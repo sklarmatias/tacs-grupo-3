@@ -42,10 +42,6 @@ To run this proyect, you'll have to configure your .env file with the following 
 
 `NOTIFICATION_REFRESHING_TIME` time in seconds
 
-`RESOURCE_URL` this one should be the API root URL, without any final "/"
-
-`REDIS_CON_STRING` the redis cache connection string
-
 ## Deployment
 
 To deploy this project, configure all necessary enviroment variables and then run
