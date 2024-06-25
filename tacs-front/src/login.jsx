@@ -66,20 +66,25 @@ const LoginForm = ({ onLogin, isRegister }) => {
         })
             .then((response) => {
                 if (response.ok) {
-                    localStorage.setItem('authToken', response.json().id);
-                    localStorage.setItem('emailUser', formData.email);
-                    onLogin(formData.email);
-                    navigate('/');
-                } else if (response.status === 400) {
-                    alert(t("login.badRequestLogin"));
+                    return response.json(); // Return the parsed JSON promise
+                } else if (response.status === 401) {
+                    throw new Error(t("login.badRequestLogin"));
                 } else {
-                    alert(t("login.errorLoggingIn"));
+                    throw new Error(t("login.errorLoggingIn"));
                 }
+            })
+            .then((data) => {
+                // Now we have the parsed JSON data
+                localStorage.setItem('authToken', data.id);
+                localStorage.setItem('emailUser', formData.email);
+                onLogin(formData.email);
+                navigate('/');
             })
             .catch((error) => {
                 console.error('Error:', error);
-                alert(t("login.errorLoggingIn"));
+                alert(error.message);
             });
+            
     };
 
     const registerUser = (formData) => {
