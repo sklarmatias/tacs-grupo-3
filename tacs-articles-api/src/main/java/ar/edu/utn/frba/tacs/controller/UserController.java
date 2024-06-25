@@ -72,7 +72,7 @@ public class UserController {
             return Response.ok(userdto).build();
         }
         catch (LoginException ex){
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
     }

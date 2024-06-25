@@ -18,7 +18,7 @@ public class UserApiConnection implements UserApi {
 
     private UserParser userParser;
     @Setter
-    private UserHttpConnector userHttpConnector;
+    private UserHttpConnector userHttpConnector = new UserHttpConnector();
 
     public UserApiConnection(){
         userParser = new UserJSONParser();
