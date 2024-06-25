@@ -82,7 +82,7 @@ public class RegisterHandler implements CommandsHandler {
             case REQUEST_EMAIL:
                 errorMessage = RegisterValidatorHelper.validateEmail(message.getText());
                 if (errorMessage == null){
-                    user.setEmail(message.getText().toLowerCase());
+                    user.setEmail(message.getText());
                     this.currentStep = RegistrationStep.REQUEST_PASSWORD;
                     bot.sendInteraction(message.getFrom(),"REGISTER_PASS");
                 }else {
