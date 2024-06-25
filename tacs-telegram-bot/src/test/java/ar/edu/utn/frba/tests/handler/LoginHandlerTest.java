@@ -6,15 +6,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tacsbot.api.user.UserApi;
 import org.tacsbot.api.user.impl.UserApiConnection;
+import org.tacsbot.api.user.impl.UserHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.impl.LoginHandler;
 import org.tacsbot.model.Article;
+import org.tacsbot.parser.user.impl.UserJSONParser;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import javax.naming.AuthenticationException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,15 +28,19 @@ public class LoginHandlerTest {
     private Message message;
     private LoginHandler loginHandler;
     private MyTelegramBot bot;
-    private UserApi api;
+    private UserApiConnection api;
+    private UserHttpConnector connector;
+    private UserJSONParser parser;
     @Before
     public void mockMessageApiAndBot() throws IOException {
         // message
         message = new Message();
         message.setFrom(new User());
         message.setChat(new Chat(123L,"type"));
-
-        api = mock(UserApiConnection.class);
+        parser = new UserJSONParser();
+        api = new UserApiConnection();
+        connector = mock(UserHttpConnector.class);
+        api.setUserHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).logInUser(any(),any());
@@ -55,20 +63,25 @@ public class LoginHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("LOGIN_EMAIL"));
     }
     @Test
-    public void testLoginOk() throws IOException, AuthenticationException {
+    public void testLoginOk() throws IOException, AuthenticationException, URISyntaxException, InterruptedException {
         org.tacsbot.model.User returnUser = new org.tacsbot.model.User();
         returnUser.setName("name");
-        doReturn(returnUser).when(api).logIn(any(),any());
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(200).when(response).statusCode();
+        doReturn(parser.parseUserToJSON(returnUser)).when(response).body();
+        doReturn(response).when(connector).loginUserConnector(any());
         message.setText("abc@abc.com");
         loginHandler.processResponse(message,bot);
         message.setText("123456");
         loginHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("WELCOME_LOGGED_IN"),eq("name"));
-        verify(api).logIn(eq(loginHandler.getUser().getEmail()),eq(loginHandler.getUser().getPass()));
+        verify(connector).loginUserConnector(any(org.tacsbot.model.User.class));
     }
     @Test
-    public void testLoginFail() throws IOException, AuthenticationException {
-        doThrow(AuthenticationException.class).when(api).logIn(any(),any());
+    public void testLoginFail() throws IOException, AuthenticationException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(401).when(response).statusCode();
+        doReturn(response).when(connector).loginUserConnector(any());
         message.setText("abc@abc.com");
         loginHandler.processResponse(message,bot);
         message.setText("123456");

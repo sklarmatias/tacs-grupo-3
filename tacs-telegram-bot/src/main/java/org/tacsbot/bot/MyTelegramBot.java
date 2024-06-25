@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
-import org.tacsbot.api.report.impl.ReportApiImpl;
+import org.tacsbot.api.report.impl.ReportApiConnection;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.handlers.impl.*;
@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class MyTelegramBot extends TelegramLongPollingBot {
 
     @Setter
+    @Getter
     private MessageDictionary messageDictionary;
 
     private final Map<String, CommandAction> commandActions = new HashMap<>();
@@ -115,7 +116,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     private void reportCommand(Message message, String commandText){
         Long chatId = message.getChatId();
 
-        addNewCommandHandler(chatId, new ReportHandler(new ReportApiImpl()));
+        addNewCommandHandler(chatId, new ReportHandler(new ReportApiConnection()));
 
         sendInteraction(message.getFrom(), "SELECT_REPORT");
 
@@ -283,7 +284,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private String generateMessage(NotificationDTO notification) {
+    public String generateMessage(NotificationDTO notification) {
         String baseMessage;
         String subscriberInfo = "📊 Suscriptores actuales: " + notification.getCurrentSubscribers() + "\n" +
                 "🔹 Cantidad mínima de suscriptores: " + notification.getMinSubscribers() + "\n" +

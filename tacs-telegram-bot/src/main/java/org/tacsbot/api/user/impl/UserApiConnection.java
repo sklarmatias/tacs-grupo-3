@@ -17,6 +17,8 @@ import java.net.http.HttpResponse;
 public class UserApiConnection implements UserApi {
 
     private UserParser userParser;
+    @Setter
+    private UserHttpConnector userHttpConnector;
 
     public UserApiConnection(){
         userParser = new UserJSONParser();
@@ -26,15 +28,7 @@ public class UserApiConnection implements UserApi {
 
         User logInUser = new User(null, null, null, email, password);
         try{
-            String json = userParser.parseUserToJSON(logInUser);
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("RESOURCE_URL") + "/users/login"))
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .header("Content-Type","application/json")
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            client.close();
+            HttpResponse<String> response = userHttpConnector.loginUserConnector(logInUser);
             // all ok
             if (response.statusCode() == 200)
                 return userParser.parseJSONToUser(response.body());
@@ -53,16 +47,8 @@ public class UserApiConnection implements UserApi {
 
         public void register(String name, String surname, String email, String password) throws IOException, IllegalArgumentException {
         User user = new User(null, name, surname, email, password);
-        String json = userParser.parseUserToJSON(user);
         try {
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(System.getenv("RESOURCE_URL") + "/users/register"))
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .header("Content-Type","application/json")
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            client.close();
+            HttpResponse<String> response = userHttpConnector.registerConnector(user);
             // all ok
             if (response.statusCode() == 201){
                 return;

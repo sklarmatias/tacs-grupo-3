@@ -5,15 +5,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.tacsbot.api.user.UserApi;
 import org.tacsbot.api.user.impl.UserApiConnection;
+import org.tacsbot.api.user.impl.UserHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.handlers.impl.LoginHandler;
 import org.tacsbot.handlers.impl.RegisterHandler;
+import org.tacsbot.parser.user.impl.UserJSONParser;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,15 +28,19 @@ public class RegisterHandlerTest {
     private Message message;
     private RegisterHandler registerHandler;
     private MyTelegramBot bot;
-    private UserApi api;
+    private UserApiConnection api;
+    private UserHttpConnector connector;
+    private UserJSONParser parser;
     @Before
     public void mockMessageApiAndBot() throws IOException {
         // message
         message = new Message();
         message.setFrom(new User());
         message.setChat(new Chat(123L,"type"));
-
-        api = mock(UserApiConnection.class);
+        parser = new UserJSONParser();
+        api = new UserApiConnection();
+        connector = mock(UserHttpConnector.class);
+        api.setUserHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).logInUser(any(),any());
@@ -87,8 +95,10 @@ public class RegisterHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("REGISTER_EMAIL"));
     }
     @Test
-    public void testRegisterOk() throws IOException {
-        doNothing().when(api).register(any(),any(),any(),any());
+    public void testRegisterOk() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(201).when(response).statusCode();
+        doReturn(response).when(connector).registerConnector(any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");
@@ -98,11 +108,17 @@ public class RegisterHandlerTest {
         message.setText("123456");
         registerHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("REGISTER_COMPLETED"));
-        verify(api).register(eq(registerHandler.getUser().getName()),eq(registerHandler.getUser().getSurname()),eq(registerHandler.getUser().getEmail()),eq(registerHandler.getUser().getPass()));
+        verify(connector).registerConnector(any(org.tacsbot.model.User.class));
     }
     @Test
-    public void testRegisterFail() throws IOException {
-        doThrow(IllegalArgumentException.class).when(api).register(any(),any(),any(),any());
+    public void testRegisterFailEmail() throws IOException, URISyntaxException, InterruptedException {
+        org.tacsbot.model.User returnUser = new org.tacsbot.model.User();
+        returnUser.setEmail("email");
+        String body = String.format("Error! Email %s already in use", returnUser.getEmail());
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(body).when(response).body();
+        doReturn(response).when(connector).registerConnector(any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");
@@ -114,8 +130,10 @@ public class RegisterHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("REGISTER_INVALID"));
     }
     @Test
-    public void testRegisterFailIo() throws IOException {
-        doThrow(IOException.class).when(api).register(any(),any(),any(),any());
+    public void testRegisterFailIo() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(401).when(response).statusCode();
+        doReturn(response).when(connector).registerConnector(any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");

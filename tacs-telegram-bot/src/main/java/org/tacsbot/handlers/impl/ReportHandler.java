@@ -1,6 +1,7 @@
 package org.tacsbot.handlers.impl;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.tacsbot.api.report.ReportApi;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.CommandsHandler;
@@ -11,7 +12,6 @@ public class ReportHandler implements CommandsHandler {
 
     @Getter
     private ReportCommand reportService;
-
     private ReportApi reportApi;
 
     public ReportHandler(ReportApi reportApi){

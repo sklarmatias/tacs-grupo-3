@@ -3,23 +3,24 @@ package ar.edu.utn.frba.tests.handler;
 import org.apache.http.HttpException;
 import org.junit.Before;
 import org.junit.Test;
-import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
-import org.tacsbot.api.user.UserApi;
-import org.tacsbot.api.user.impl.UserApiConnection;
+import org.tacsbot.api.article.impl.ArticleHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.cache.CacheService;
 import org.tacsbot.cache.impl.RedisService;
 import org.tacsbot.handlers.impl.ArticleHandler;
 import org.tacsbot.handlers.impl.ArticleType;
-import org.tacsbot.handlers.impl.RegisterHandler;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
+import org.tacsbot.parser.annotation.impl.AnnotationJSONParser;
+import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,17 +32,22 @@ public class ArticleHandlerTest {
     private Message message;
     private ArticleHandler articleHandler;
     private MyTelegramBot bot;
-    private ArticleApi api;
+    private ArticleApiConnection api;
     List<Article> articleList;
     List<Annotation> annotationList;
+    private ArticleHttpConnector connector;
+    private ArticleJSONParser articleJSONParser = new ArticleJSONParser();
+    private AnnotationJSONParser annotationJSONParser = new AnnotationJSONParser();
     @Before
-    public void mockMessageApiAndBot() throws IOException, HttpException {
+    public void mockMessageApiAndBot() throws IOException, HttpException, URISyntaxException, InterruptedException {
         // message
         message = new Message();
         message.setFrom(new User());
         message.setChat(new Chat(123L,"type"));
 
-        api = mock(ArticleApiConnection.class);
+        api = new ArticleApiConnection();
+        connector = mock(ArticleHttpConnector.class);
+        api.setArticleHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).logInUser(any(),any());
@@ -63,28 +69,47 @@ public class ArticleHandlerTest {
         Article article = new Article();
         article.setId("articleid");
         articleList.add(article);
-        doReturn(articleList).when(api).getAllArticles();
-        doReturn(articleList).when(api).getArticlesOf(any());
+        HttpResponse response1 =  mock(HttpResponse.class);
+        doReturn(200).when(response1).statusCode();
+        doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
+        doReturn(response1).when(connector).getArticles(any());
 
         annotationList = new ArrayList<>();
         annotationList.add(new Annotation());
-        doReturn(annotationList).when(api).viewArticleSubscriptions(any());
-        doReturn(true).when(api).suscribeToArticle(any(),anyString());
-        doReturn(article).when(api).closeArticle(any(),anyString());
+        HttpResponse response2 =  mock(HttpResponse.class);
+        doReturn(200).when(response2).statusCode();
+        doReturn(annotationJSONParser.parseAnnotationsToJSON(annotationList)).when(response2).body();
+        doReturn(response2).when(connector).getSubscriptions(any());
+
+        HttpResponse response3 =  mock(HttpResponse.class);
+        doReturn(200).when(response3).statusCode();
+        doReturn(articleJSONParser.parseArticleToJSON(article)).when(response3).body();
+        doReturn(response3).when(connector).closeArticle(any(),any());
+
+        HttpResponse response4 =  mock(HttpResponse.class);
+        doReturn(200).when(response4).statusCode();
+        doReturn(response4).when(connector).suscribeToArticle(any(),any());
+
 
     }
     @Test
-    public void testArticleTypeAEmpty() throws HttpException {
+    public void testArticleTypeAEmpty() throws HttpException, IOException, URISyntaxException, InterruptedException {
         List<Article> articleList = new ArrayList<>();
-        doReturn(articleList).when(api).getAllArticles();
+        HttpResponse response1 =  mock(HttpResponse.class);
+        doReturn(200).when(response1).statusCode();
+        doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
+        doReturn(response1).when(connector).getArticles(any());
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("NO_ARTICLES"));
     }
     @Test
-    public void testArticleTypeBEmpty() throws HttpException {
+    public void testArticleTypeBEmpty() throws HttpException, IOException, URISyntaxException, InterruptedException {
         List<Article> articleList = new ArrayList<>();
-        doReturn(articleList).when(api).getArticlesOf(any());
+        HttpResponse response1 =  mock(HttpResponse.class);
+        doReturn(200).when(response1).statusCode();
+        doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
+        doReturn(response1).when(connector).getArticles(any());
         message.setText("B");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("NO_ARTICLES"));
@@ -144,8 +169,10 @@ public class ArticleHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
     }
     @Test
-    public void testArticleSubscribeFail() throws HttpException {
-        doReturn(false).when(api).suscribeToArticle(any(),anyString());
+    public void testArticleSubscribeFail() throws HttpException, URISyntaxException, IOException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).suscribeToArticle(any(),any());
         message.setText("A");
         articleHandler.processResponse(message,bot);
         message.setText("1");
@@ -153,14 +180,16 @@ public class ArticleHandlerTest {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_CONFIRMATION"));
         verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_FAIL"));
     }
     @Test
-    public void testArticleCloseFail() throws HttpException {
-        doThrow(IllegalArgumentException.class).when(api).closeArticle(any(),anyString());
+    public void testArticleCloseFail() throws HttpException, URISyntaxException, IOException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).closeArticle(any(),any());
         message.setText("B");
         articleHandler.processResponse(message,bot);
         message.setText("1");
@@ -168,14 +197,17 @@ public class ArticleHandlerTest {
         message.setText("B");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NOT_CLOSED"));
     }
     @Test
-    public void testArticleViewSubscriptorsNoSubscriptions() throws HttpException {
-        doReturn(new ArrayList<>()).when(api).viewArticleSubscriptions(any());
+    public void testArticleViewSubscriptorsNoSubscriptions() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(200).when(response).statusCode();
+        doReturn(annotationJSONParser.parseAnnotationsToJSON(new ArrayList<Annotation>())).when(response).body();
+        doReturn(response).when(connector).getSubscriptions(any());
         message.setText("B");
         articleHandler.processResponse(message,bot);
         message.setText("1");
@@ -183,15 +215,17 @@ public class ArticleHandlerTest {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
         verify(bot).sendInteraction(any(User.class), eq("NO_SUBSCRIPTIONS"));
     }
 
     @Test
-    public void testArticleViewSubscriptorsWrong() throws HttpException {
-        doThrow(IllegalArgumentException.class).when(api).viewArticleSubscriptions(any());
+    public void testArticleViewSubscriptorsWrong() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).getSubscriptions(any());
         message.setText("B");
         articleHandler.processResponse(message,bot);
         message.setText("1");
@@ -199,7 +233,7 @@ public class ArticleHandlerTest {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
         verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
@@ -213,7 +247,7 @@ public class ArticleHandlerTest {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_CONFIRMATION"));
         verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_SUCCESS"));
@@ -227,7 +261,7 @@ public class ArticleHandlerTest {
         message.setText("B");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_CLOSED"));
@@ -241,16 +275,16 @@ public class ArticleHandlerTest {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
         verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
         verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendAnnotationList(any(User.class), eq(annotationList));
+        verify(bot).sendAnnotationList(any(User.class), any(List.class));
     }
     @Test
     public void testShowArticlesWithoutLogin() throws HttpException {
         articleHandler.setArticleType(ArticleType.TODOS);
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), eq(articleList));
+        verify(bot).sendArticleList(any(User.class), any(List.class));
     }
 }

@@ -11,6 +11,7 @@ import org.tacsbot.parser.article.ArticleParser;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -29,6 +30,19 @@ public class ArticleJSONParser implements ArticleParser {
             System.err.printf("[Error] Cannot parse article:\n%s\n%s\n", article.getDetailedString(), e.getMessage());
             throw new IOException();
         }
+    }
+    public String parseArticleListToJSON(List<Article> articles) throws IOException {
+        List<String> jsonArticles = new ArrayList<>();
+        for (Article article : articles) {
+            try {
+                String jsonArticle = parseArticleToJSON(article);
+                jsonArticles.add(jsonArticle);
+            } catch (IOException e) {
+                System.err.printf("[Error] Cannot parse article to JSON: %s\n", article.getDetailedString());
+                // Optionally, handle the exception or rethrow it
+            }
+        }
+        return "[" + String.join(",", jsonArticles) + "]";
     }
 
     public Article parseJSONToArticle(String json){

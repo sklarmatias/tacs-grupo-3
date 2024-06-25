@@ -4,20 +4,19 @@ import org.apache.http.HttpException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
-import org.tacsbot.api.report.impl.ReportApiImpl;
+import org.tacsbot.api.article.impl.ArticleHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
-import org.tacsbot.helper.ArticleValidatorHelper;
-import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -29,8 +28,8 @@ public class ArticleCreationHandlerTest {
     private Message message;
     private ArticleCreationHandler articleCreationHandler;
     private MyTelegramBot bot;
-    private ArticleApi api;
-
+    private ArticleApiConnection api;
+    private ArticleHttpConnector connector;
     @Before
     public void mockMessageApiAndBot() throws HttpException, IOException {
         // message
@@ -38,7 +37,9 @@ public class ArticleCreationHandlerTest {
         message.setFrom(new User());
         message.setChat(new Chat(123L,"type"));
 
-        api = mock(ArticleApiConnection.class);
+        api = new ArticleApiConnection();
+        connector = mock(ArticleHttpConnector.class);
+        api.setArticleHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).sendInteraction(any(), anyString());
@@ -228,18 +229,22 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_IMAGE_INVALID"));
     }
     @Test
-    public void testCreateArticleOk() throws HttpException, IOException {
-        doReturn("abc").when(api).createArticle(any());
+    public void testCreateArticleOk() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(201).when(response).statusCode();
+        doReturn(response).when(connector).createArticleConnector(any(),any());
         createTestArticle();
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_CREATED"));
-        verify(api).createArticle(any(Article.class));
+        verify(connector).createArticleConnector(any(),any());
     }
     @Test
-    public void testCreateArticleFail() throws HttpException, IOException {
-        doThrow(IllegalArgumentException.class).when(api).createArticle(any());
+    public void testCreateArticleFail() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        HttpResponse response =  mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).createArticleConnector(any(),any());
         createTestArticle();
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NOT_CREATED"));
-        verify(api).createArticle(any(Article.class));
+        verify(connector).createArticleConnector(any(),any());
     }
     private void createTestArticle() throws HttpException, IOException {
         message.setText("articulo prueba");

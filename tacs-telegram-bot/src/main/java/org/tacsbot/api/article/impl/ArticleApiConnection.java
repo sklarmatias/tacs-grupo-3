@@ -1,5 +1,6 @@
 package org.tacsbot.api.article.impl;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
@@ -14,9 +15,9 @@ import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-@Setter
 public class ArticleApiConnection implements ArticleApi {
 
+    @Setter
     private ArticleHttpConnector articleHttpConnector;
     private ArticleParser articleJSONParser;
     private AnnotationParser annotationParser;
