@@ -38,10 +38,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public final Map<Long, CommandsHandler> commandsHandlerMap = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final NotificationApi notificationApi = new NotificationApiConnection();
+    @Setter
+    private NotificationApi notificationApi = new NotificationApiConnection();
 
     @Getter
-    private final CacheService cacheService;
+    @Setter
+    private CacheService cacheService;
 
     public MyTelegramBot(CacheService cacheService) {
         super(System.getenv("BOT_TOKEN"));
@@ -128,7 +130,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
 
-    private void createArticle(Message message, String commandText) {
+    public void createArticle(Message message, String commandText) {
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
@@ -143,7 +145,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
 
-    private void searchArticles(Message message, String commandText) {
+    public void searchArticles(Message message, String commandText) {
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
@@ -164,7 +166,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void register(Message message, String commandText) {
+    public void register(Message message, String commandText) {
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
@@ -179,7 +181,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
 
     }
-    private void login(Message message, String commandText){
+    public void login(Message message, String commandText){
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
@@ -192,7 +194,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendInteraction(message.getFrom(), "LOGIN_EMAIL");
         }
     }
-    private void logout(Message message, String commandText){
+    public void logout(Message message, String commandText){
         Long chatId = message.getChatId();
         User user = cacheService.getUser(chatId);
         if(user != null) {
@@ -222,7 +224,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 messageDictionary.articleListToString(articleList, telegramUser.getLanguageCode()));
     }
 
-    private String getTranslatedMessage(org.telegram.telegrambots.meta.api.objects.User telegramUser, String interaction){
+    public String getTranslatedMessage(org.telegram.telegrambots.meta.api.objects.User telegramUser, String interaction){
         return messageDictionary.getMessage(interaction, telegramUser.getLanguageCode());
     }
 

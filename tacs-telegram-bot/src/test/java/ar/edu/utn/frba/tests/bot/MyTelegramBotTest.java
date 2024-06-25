@@ -1,11 +1,15 @@
 package ar.edu.utn.frba.tests.bot;
 
 import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.tacsbot.api.notification.impl.NotificationApiConnection;
+import org.tacsbot.api.notification.impl.NotificationHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.cache.impl.RedisService;
 import org.tacsbot.dictionary.MessageDictionary;
@@ -15,16 +19,28 @@ import org.tacsbot.model.NotificationDTO;
 import org.tacsbot.model.User;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
+import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class MyTelegramBotTest {
     @InjectMocks
-    private static MyTelegramBot myTelegramBot;
+    private MyTelegramBot myTelegramBot;
 
     @Mock
     private CommandsHandler mockCommandsHandler;
@@ -43,6 +59,11 @@ public class MyTelegramBotTest {
 
     private Long chatId = 1234546789L;
 
+    ObjectMapper objectMapper = new ObjectMapper();
+    NotificationApiConnection api = new NotificationApiConnection();
+    NotificationHttpConnector connector;
+    static RedisService redisService;
+
     private void assertLogIn(Long chatId, User user){
         Assert.assertEquals(chatId, myTelegramBot.getCacheService().getChatIdOfUser(user.getId()));
 
@@ -54,19 +75,25 @@ public class MyTelegramBotTest {
         embeddedRedis = new RedisServer(6379);
         embeddedRedis.start();
         JedisPool jedisPool = new JedisPool(new JedisPoolConfig(), "redis://localhost:6379");
-        RedisService redisService = new RedisService(jedisPool, new ArticleJSONParser(), new UserJSONParser(), 20L);
-        myTelegramBot = new MyTelegramBot(redisService);
+        redisService = new RedisService(jedisPool, new ArticleJSONParser(), new UserJSONParser(), 20L);
+
     }
 
     @AfterClass
     public static void stopEmbeddedRedisAndCloseConnections() throws IOException {
-        myTelegramBot.getCacheService().closeConnection();
         embeddedRedis.stop();
+    }
+    @Before
+    public void startBot(){
+        myTelegramBot = spy(new MyTelegramBot(redisService));
+        doNothing().when(myTelegramBot).sendText(any(),any());
+        doNothing().when(myTelegramBot).sendInteraction(any(),any());
     }
 
     @After
     public void cleanCacheAfterEachTest(){
-
+        myTelegramBot.logOutUser(chatId,user);
+//        myTelegramBot.getCacheService().closeConnection();
     }
 
     @Test
@@ -203,4 +230,156 @@ public class MyTelegramBotTest {
         // Optionally, verify that any necessary cleanup or other logic is executed
         // verify(mockCommandsHandler, times(1)).cleanup(); // Example if handler has cleanup logic
     }
+    public void initializeNotif() throws IOException, URISyntaxException, InterruptedException {
+        connector = mock(NotificationHttpConnector.class);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        List<NotificationDTO> notificationDTOList = getNotificationDTOS();
+        doReturn(objectMapper.writeValueAsString(notificationDTOList)).when(response).body();
+        doReturn(200).when(response).statusCode();
+        doReturn(response).when(connector).getPendingNotificationsConnector();
+        myTelegramBot.logInUser(chatId, user);
+        HttpResponse<String> response2 = mock(HttpResponse.class);
+        doReturn(200).when(response2).statusCode();
+        doReturn(response2).when(connector).markAsNotifiedConnector(any());
+        api.setNotificationHttpConnector(connector);
+        myTelegramBot.setNotificationApi(api);
+    }
+    @Test
+    public void testCheckNotificationOk() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+        verify(connector).markAsNotifiedConnector(eq("id1"));
+        verify(connector).markAsNotifiedConnector(eq("id2"));
+        verify(connector).markAsNotifiedConnector(eq("id3"));
+        verify(connector).markAsNotifiedConnector(eq("id4"));
+    }
+    @Test
+    public void testCheckNotificationNoNotif() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        HttpResponse<String> response = mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(objectMapper.writeValueAsString(new ArrayList<NotificationDTO>())).when(response).body();
+        doReturn(response).when(connector).getPendingNotificationsConnector();
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+        verify(connector,never()).markAsNotifiedConnector(any());
+    }
+    @Test
+    public void testCheckNotificationErrorFetch() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        HttpResponse<String> response = mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).getPendingNotificationsConnector();
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+        verify(connector,never()).markAsNotifiedConnector(any());
+    }
+    @Test
+    public void testCheckNotificationErrorNoChat() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        List<NotificationDTO> notificationDTOList = new ArrayList<>();
+        NotificationDTO notificationDTOSubscribe = new NotificationDTO("id1", "SubscriptionNotification", "article", "abc", false, new Date(), 1, 1, 4);
+        notificationDTOList.add(notificationDTOSubscribe);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        doReturn(200).when(response).statusCode();
+        doReturn(objectMapper.writeValueAsString(notificationDTOList)).when(response).body();
+        doReturn(response).when(connector).getPendingNotificationsConnector();
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+        verify(connector,never()).markAsNotifiedConnector(any());
+    }
+    @Test
+    public void testCheckNotificationErrorMark() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        HttpResponse<String> response = mock(HttpResponse.class);
+        doReturn(400).when(response).statusCode();
+        doReturn(response).when(connector).markAsNotifiedConnector(any());
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+    }
+    @Test
+    public void testCheckNotificationErrorMarkException() throws IOException, URISyntaxException, InterruptedException {
+        initializeNotif();
+        doThrow(URISyntaxException.class).when(connector).markAsNotifiedConnector(any());
+        myTelegramBot.checkPendingNotifications();
+        verify(connector).getPendingNotificationsConnector();
+    }
+
+    private static List<NotificationDTO> getNotificationDTOS() {
+        List<NotificationDTO> notificationDTOList = new ArrayList<>();
+        NotificationDTO notificationDTOSubscribe = new NotificationDTO("id1", "SubscriptionNotification", "article", "abcdefghi", false, new Date(), 1, 1, 4);
+        NotificationDTO notificationDTOClose = new NotificationDTO("id2", "ClosedArticleNotification", "article", "abcdefghi", false, new Date(), 1, 1, 4);
+        NotificationDTO notificationDTOOwnerSubscribe = new NotificationDTO("id3", "SubscriptionNotification", "article", "abcdefghi", false, new Date(), 1, 1, 4);
+        NotificationDTO notificationDTOOwnerClose = new NotificationDTO("id4", "ClosedArticleNotification", "article", "abcdefghi", false, new Date(), 1, 1, 4);
+        notificationDTOList.add(notificationDTOSubscribe);
+        notificationDTOList.add(notificationDTOOwnerSubscribe);
+        notificationDTOList.add(notificationDTOClose);
+        notificationDTOList.add(notificationDTOOwnerClose);
+        return notificationDTOList;
+    }
+    @Test
+    public void testCreateArticle() throws IOException {
+        myTelegramBot.logInUser(chatId, user);
+        Message message = new Message();
+        message.setText("/crear_articulo");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.createArticle(message,message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("ARTICLE_NAME"));
+    }
+    @Test
+    public void testSearchArticlesLogged() throws IOException {
+        myTelegramBot.logInUser(chatId, user);
+        Message message = new Message();
+        message.setText("/obtener_articulos");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.searchArticles(message,message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("CHOOSE_ARTICLE_SEARCH"));
+    }
+    @Test
+    public void testRegister() throws IOException {
+        Message message = new Message();
+        message.setText("/obtener_articulos");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.register(message,message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("REGISTER_NAME"));
+    }
+    @Test
+    public void testLogin() throws IOException {
+        Message message = new Message();
+        message.setText("/obtener_articulos");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.login(message,message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("LOGIN_EMAIL"));
+    }
+    @Test
+    public void testLogout() throws IOException {
+        myTelegramBot.logInUser(chatId, user);
+        Message message = new Message();
+        message.setText("/obtener_articulos");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.logout(message,message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("LOG_OUT"));
+    }
+
 }

@@ -1,6 +1,7 @@
 package org.tacsbot.api.notification.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.model.NotificationDTO;
@@ -11,8 +12,8 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 public class NotificationApiConnection implements NotificationApi {
-
-    private final NotificationHttpConnector notificationHttpConnector = new NotificationHttpConnector();
+    @Setter
+    private NotificationHttpConnector notificationHttpConnector = new NotificationHttpConnector();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override

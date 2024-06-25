@@ -19,4 +19,18 @@ public class NotificationDTO {
     private int currentSubscribers;
     private int minSubscribers;
     private int maxSubscribers;
+    public NotificationDTO(){
+
+    }
+    public NotificationDTO(String id, String type, String articleName, String subscriber, boolean notified, Date dateTime, int currentSubscribers, int minSubscribers, int maxSubscribers) {
+        this.id = id;
+        this.type = type;
+        this.articleName = articleName;
+        this.subscriber = subscriber;
+        this.notified = notified;
+        this.dateTime = dateTime;
+        this.currentSubscribers = currentSubscribers;
+        this.minSubscribers = minSubscribers;
+        this.maxSubscribers = maxSubscribers;
+    }
 }
