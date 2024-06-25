@@ -35,7 +35,7 @@ public class LoginHandler implements CommandsHandler {
                 }
                 break;
             case REQUEST_PASSWORD:
-                user.setPass(message.getText().toLowerCase());
+                user.setPass(message.getText());
                 try{
                     User savedUser = userApiConnection.logIn(user.getEmail(), user.getPass());
                     bot.logInUser(chatId, savedUser);
