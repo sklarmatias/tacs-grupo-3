@@ -4,6 +4,7 @@ import ar.edu.utn.frba.tacs.TestFunctions;
 import ar.edu.utn.frba.tacs.controller.UserController;
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
+import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.repository.user.impl.InMemoryUsersRepository;
 import com.mongodb.ServerAddress;
@@ -65,7 +66,7 @@ public class UserServiceTest {
         originalUser.setId(userService.saveUser(originalUser));
 
         User savedUser = userService.getUser(originalUser.getId());
-        User logedUser = userService.loginUser(email, nonHashedPassword);
+        User logedUser = userService.loginUser(email, nonHashedPassword, Client.WEB);
         Assert.assertEquals(savedUser.getId(), logedUser.getId());
     }
 

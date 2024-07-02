@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs;
 import ar.edu.utn.frba.tacs.controller.UserController;
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.Annotation;
+import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -78,7 +79,7 @@ public class UserTest {
     }
     @Test
     public void testLoginWrong(){
-        Assert.assertThrows(LoginException.class,()->userService.loginUser("wrong@gmail.com","1234"));
+        Assert.assertThrows(LoginException.class,()->userService.loginUser("wrong@gmail.com","1234", Client.WEB));
     }
     @Test
     public void testUpdateUser(){

@@ -3,10 +3,8 @@ package ar.edu.utn.frba.tacs.controller;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import ar.edu.utn.frba.tacs.model.Annotation;
-import ar.edu.utn.frba.tacs.model.Article;
-import ar.edu.utn.frba.tacs.model.ArticleStatus;
-import ar.edu.utn.frba.tacs.model.User;
+
+import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import jakarta.ws.rs.*;
@@ -29,7 +27,8 @@ public class ArticleController {
 
 	@GET
 	@Produces("application/json")
-	public List<Article.ArticleDTO> listArticles(@HeaderParam("user") String userId) {
+	public List<Article.ArticleDTO> listArticles(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
+		String userId = userService.getLoggedUserId(sessionId,client);
 		if(userId == null){
 			return articleService.listOpenArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
 		}
@@ -49,7 +48,8 @@ public class ArticleController {
 	@PATCH
 	@Path("/{id}")
 	@Consumes("application/json")
-	public Response updateArticle(@HeaderParam("user") String userId, @PathParam("id") String id, Article article) {
+	public Response updateArticle(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client, @PathParam("id") String id, Article article) {
+		String userId = userService.getLoggedUserId(sessionId,client);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -67,7 +67,8 @@ public class ArticleController {
 	// Location header -> get URL
 	@POST
 	@Consumes("application/json")
-	public Response saveArticle(@HeaderParam("user") String userId, Article article){
+	public Response saveArticle(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client, Article article){
+		String userId = userService.getLoggedUserId(sessionId,client);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -103,8 +104,8 @@ public class ArticleController {
 	@Path("/{articleId}/users/")
 	@Consumes("application/json")
 	public Response signUpUser(@PathParam("articleId") String articleId,
-						   @HeaderParam("user") String userId) {
-
+							   @HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
+		String userId = userService.getLoggedUserId(sessionId,client);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -137,7 +138,8 @@ public class ArticleController {
 	@PATCH
 	@Path("/{articleId}/close")
 	@Produces("application/json")
-	public Response closeArticle(@PathParam("articleId") String articleId,@HeaderParam("user") String userId) {
+	public Response closeArticle(@PathParam("articleId") String articleId,@HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
+		String userId = userService.getLoggedUserId(sessionId,client);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}

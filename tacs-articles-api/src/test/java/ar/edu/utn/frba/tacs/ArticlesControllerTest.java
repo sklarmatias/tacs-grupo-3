@@ -1,10 +1,7 @@
 package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.controller.ArticleController;
-import ar.edu.utn.frba.tacs.model.Annotation;
-import ar.edu.utn.frba.tacs.model.Article;
-import ar.edu.utn.frba.tacs.model.CostType;
-import ar.edu.utn.frba.tacs.model.User;
+import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 import com.mongodb.ServerAddress;
@@ -52,21 +49,21 @@ public class ArticlesControllerTest {
     @Test
     public void testControllerListArticlesWithoutUser(){
         User user = testFunctions.createTestUser();
-        Assert.assertEquals(0,articleController.listArticles(null).size());
+        Assert.assertEquals(0,articleController.listArticles(null, Client.WEB).size());
         Article article = testFunctions.createTestArticle(user.getId());
-        Assert.assertEquals(1,articleController.listArticles(null).size());
+        Assert.assertEquals(1,articleController.listArticles(null, Client.WEB).size());
         articleService.closeArticle(article);
-        Assert.assertEquals(0,articleController.listArticles(null).size());
+        Assert.assertEquals(0,articleController.listArticles(null, Client.WEB).size());
     }
     @Test
     public void testControllerListArticlesWithUser(){
         User user = testFunctions.createTestUser();
-        Assert.assertEquals(0,articleController.listArticles(user.getId()).size());
+        Assert.assertEquals(0,articleController.listArticles(user.getId(), Client.WEB).size());
         Article article = testFunctions.createTestArticle(user.getId());
-        Assert.assertEquals(1,articleController.listArticles(user.getId()).size());
+        Assert.assertEquals(1,articleController.listArticles(user.getId(), Client.WEB).size());
         articleService.closeArticle(article);
-        Assert.assertEquals(0,articleController.listArticles(null).size());
-        Assert.assertEquals(1,articleController.listArticles(user.getId()).size());
+        Assert.assertEquals(0,articleController.listArticles(null, Client.WEB).size());
+        Assert.assertEquals(1,articleController.listArticles(user.getId(), Client.WEB).size());
     }
 
     @Test
@@ -79,7 +76,7 @@ public class ArticlesControllerTest {
     public void testControllerCreateArticleSuccess(){
         User user = testFunctions.createTestUser();
         Article article = new Article("article","image","","user get", user.getId(), testFunctions.getDate(2),2000.00, CostType.PER_USER,2,3);
-        Response response = articleController.saveArticle(user.getId(), article);
+        Response response = articleController.saveArticle(user.getId(), Client.BOT, article);
         Assert.assertEquals(Response.Status.CREATED.getStatusCode(),response.getStatus());
         Article articleResponse = (Article)response.getEntity();
         Assert.assertEquals(article.getName(),articleResponse.getName());
@@ -88,14 +85,14 @@ public class ArticlesControllerTest {
     public void testControllerCreateArticleNoUser(){
         User user = testFunctions.createTestUser();
         Article article = new Article("article","image","","user get", user.getId(), testFunctions.getDate(2),2000.00, CostType.PER_USER,2,3);
-        Response response = articleController.saveArticle(null, article);
+        Response response = articleController.saveArticle(null, Client.WEB, article);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
     public void testControllerCreateArticleWrongUser(){
         User user = testFunctions.createTestUser();
         Article article = new Article("article","image","","user get", user.getId(), testFunctions.getDate(2),2000.00, CostType.PER_USER,2,3);
-        Response response = articleController.saveArticle("123456789012345678901234", article);
+        Response response = articleController.saveArticle("123456789012345678901234", Client.WEB, article);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
@@ -103,7 +100,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser(article.getId(), user2.getId());
+        Response response = articleController.signUpUser(article.getId(), user2.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
     }
     @Test
@@ -111,7 +108,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser(article.getId(), null);
+        Response response = articleController.signUpUser(article.getId(), null, Client.WEB);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
 
@@ -120,7 +117,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser(article.getId(), "123456789012345678901234");
+        Response response = articleController.signUpUser(article.getId(), "123456789012345678901234", Client.WEB);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
@@ -129,7 +126,7 @@ public class ArticlesControllerTest {
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         articleService.closeArticle(article);
-        Response response = articleController.signUpUser(article.getId(), user2.getId());
+        Response response = articleController.signUpUser(article.getId(), user2.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
         Assert.assertEquals("1",response.getEntity());
     }
@@ -137,7 +134,7 @@ public class ArticlesControllerTest {
     public void testControllerSignUpFailedOwner(){
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser(article.getId(), user.getId());
+        Response response = articleController.signUpUser(article.getId(), user.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
         Assert.assertEquals("2",response.getEntity());
     }
@@ -148,7 +145,7 @@ public class ArticlesControllerTest {
         Article article = testFunctions.createTestArticle(user.getId());
         Annotation annotation = articleService.signUpUser(article, user2);
         userService.updateAddAnnotation(user2.getId(),annotation);
-        Response response = articleController.signUpUser(article.getId(), user2.getId());
+        Response response = articleController.signUpUser(article.getId(), user2.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
         Assert.assertEquals("3",response.getEntity());
     }
@@ -157,7 +154,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.signUpUser("123456789012345678901234", user2.getId());
+        Response response = articleController.signUpUser("123456789012345678901234", user2.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
         Assert.assertEquals("4",response.getEntity());
     }
@@ -165,14 +162,14 @@ public class ArticlesControllerTest {
     public void testControllerCloseSuccess(){
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.closeArticle(article.getId(),user.getId());
+        Response response = articleController.closeArticle(article.getId(),user.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
     }
     @Test
     public void testControllerCloseUserNull(){
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.closeArticle(article.getId(),null);
+        Response response = articleController.closeArticle(article.getId(),null, Client.WEB);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
@@ -180,7 +177,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
-        Response response = articleController.closeArticle(article.getId(),user2.getId());
+        Response response = articleController.closeArticle(article.getId(),user2.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
@@ -188,7 +185,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         articleService.closeArticle(article);
-        Response response = articleController.closeArticle(article.getId(),user.getId());
+        Response response = articleController.closeArticle(article.getId(),user.getId(), Client.WEB);
         Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),response.getStatus());
         Assert.assertEquals("1",response.getEntity());
     }
@@ -216,7 +213,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         article.setName("new name");
-        Response response = articleController.updateArticle(user.getId(), article.getId(), article);
+        Response response = articleController.updateArticle(user.getId(), Client.WEB, article.getId(), article);
         Assert.assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
     }
     @Test
@@ -224,7 +221,7 @@ public class ArticlesControllerTest {
         User user = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         article.setName("new name");
-        Response response = articleController.updateArticle(null, article.getId(), article);
+        Response response = articleController.updateArticle(null, Client.WEB, article.getId(), article);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
     @Test
@@ -233,7 +230,7 @@ public class ArticlesControllerTest {
         User user2 = testFunctions.createTestUser();
         Article article = testFunctions.createTestArticle(user.getId());
         article.setName("new name");
-        Response response = articleController.updateArticle(user2.getId(), article.getId(), article);
+        Response response = articleController.updateArticle(user2.getId(), Client.WEB, article.getId(), article);
         Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
     }
 }

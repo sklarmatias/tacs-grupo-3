@@ -3,15 +3,11 @@ package ar.edu.utn.frba.tacs.service;
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
 import ar.edu.utn.frba.tacs.helpers.hash.HashingHelper;
-import ar.edu.utn.frba.tacs.model.Annotation;
-import ar.edu.utn.frba.tacs.model.Article;
-import ar.edu.utn.frba.tacs.model.User;
-import ar.edu.utn.frba.tacs.repository.articles.ArticlesRepository;
-import ar.edu.utn.frba.tacs.repository.articles.impl.MongoArticlesRepository;
+import ar.edu.utn.frba.tacs.model.*;
+import ar.edu.utn.frba.tacs.repository.login.LoggedUserMemoryRepository;
+import ar.edu.utn.frba.tacs.repository.login.LoggedUserRepository;
 import ar.edu.utn.frba.tacs.repository.user.UsersRepository;
 import ar.edu.utn.frba.tacs.repository.user.impl.MongoUsersRepository;
-import jakarta.ws.rs.core.Response;
-import lombok.Setter;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
@@ -20,6 +16,7 @@ public class UserService {
 
     private final UsersRepository usersRepository;
     private final HashingHelper hashingHelper = new GuavaHashingHelper();
+    private final LoggedUserRepository loggedUserRepository = LoggedUserMemoryRepository.getInstance();
 
     public UserService(String url){
         usersRepository = new MongoUsersRepository(url);
@@ -32,10 +29,13 @@ public class UserService {
         return usersRepository.userExists(email);
     }
 
-    public User loginUser(String email, String pass) throws LoginException {
+    public User loginUser(String email, String pass, Client client) throws LoginException {
         try{
             String hashedPass = hashingHelper.hash(pass);
-            return usersRepository.find(email, hashedPass);
+            User user = usersRepository.find(email, hashedPass);
+            String sessionId = loggedUserRepository.logUser(user.getId(), client);
+            user.setId(sessionId);
+            return user;
         } catch(IndexOutOfBoundsException e){
             throw new LoginException("Wrong username or password.");
         }
@@ -65,5 +65,17 @@ public class UserService {
     }
     public void delete(String id){
         usersRepository.delete(id);
+    }
+    public List<LoggedUser> listUserSessions(String id, Client client){
+        return loggedUserRepository.listOpenSessions(loggedUserRepository.getLoggedUserId(id,client));
+    }
+    public void closeUserSession(String id,Client client){
+        loggedUserRepository.closeSession(id,client);
+    }
+    public void closeAllUserSessions(String id){
+        loggedUserRepository.closeAllSessions(id);
+    }
+    public String getLoggedUserId(String id,Client client){
+        return loggedUserRepository.getLoggedUserId(id,client);
     }
 }

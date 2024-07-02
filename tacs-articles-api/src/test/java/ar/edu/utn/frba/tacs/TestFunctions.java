@@ -2,11 +2,13 @@ package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.Article;
+import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.CostType;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
 
+import javax.security.auth.login.LoginException;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,9 +23,17 @@ public class TestFunctions {
         this.userService = userService;
     }
 
-    public User createTestUser() throws DuplicatedEmailException {
-        User user = new User("juan","perez",random() + "@gmail.com","123456");
+    public User createTestUser() {
+        String email =random() + "@gmail.com";
+        String pass ="123456";
+        User user = new User("juan","perez",email,pass);
         user.setId(userService.saveUser(user));
+
+        try {
+            user = userService.loginUser(email, pass, Client.WEB);
+        } catch (LoginException e) {
+            return null;
+        }
         return user;
     }
     public String random() {
