@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.controller.UserController;
 import ar.edu.utn.frba.tacs.model.Client;
+import ar.edu.utn.frba.tacs.model.LoggedUser;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -80,9 +81,9 @@ public class UserControllerTest {
         userLogin.setEmail(user.getEmail());
         userLogin.setPass("123456");
         Response response =userController.loginUser(userLogin, Client.WEB);
-        User.UserDTO userDTO = (User.UserDTO)response.getEntity();
-        Assert.assertEquals(user.getName(),userDTO.getName());
-        Assert.assertEquals(2,userService.listUserSessions(user.getId(),Client.WEB).size());
+        LoggedUser loggedUser = (LoggedUser)response.getEntity();
+        Assert.assertEquals(user.getName(),loggedUser.getName());
+        Assert.assertEquals(1,userService.listUserSessions(loggedUser.getSessionId(),Client.WEB).size());
     }
 
     @Test

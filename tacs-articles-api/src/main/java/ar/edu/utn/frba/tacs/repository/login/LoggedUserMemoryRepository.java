@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.repository.login;
 import ar.edu.utn.frba.tacs.helpers.hash.impl.GuavaHashingHelper;
 import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.LoggedUser;
+import ar.edu.utn.frba.tacs.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,25 +29,26 @@ public class LoggedUserMemoryRepository implements LoggedUserRepository {
 
     @Override
     public String getLoggedUserId(String id, Client client) {
-        return loggedUserList.stream().filter(a-> Objects.equals(a.getId(), id) && a.getClient() == client).findFirst().get().getUserId();
+        return loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id) && a.getClient() == client).findFirst().get().getUserId();
     }
 
     @Override
-    public String logUser(String userId, Client client) {
+    public LoggedUser logUser(User user, Client client) {
         String id = hashingHelper.hash(String.valueOf(userCounter));
         userCounter++;
-        loggedUserList.add(new LoggedUser(id,userId,client));
-        return id;
+        LoggedUser loggedUser = new LoggedUser(id,user.getId(),client,user.getName(),user.getSurname(),user.getEmail());
+        loggedUserList.add(loggedUser);
+        return loggedUser;
     }
 
     @Override
     public void closeSession(String id, Client client) {
-        loggedUserList.removeAll(loggedUserList.stream().filter(a-> Objects.equals(a.getId(), id) && a.getClient() == client).toList());
+        loggedUserList.removeAll(loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id) && a.getClient() == client).toList());
     }
 
     @Override
     public void closeAllSessions(String id) {
-        String userId = loggedUserList.stream().filter(a-> Objects.equals(a.getId(), id)).findFirst().get().getUserId();
+        String userId = loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id)).findFirst().get().getUserId();
         loggedUserList.removeAll(listOpenSessions(id));
     }
 

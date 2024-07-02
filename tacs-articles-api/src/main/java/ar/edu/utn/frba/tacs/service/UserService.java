@@ -29,13 +29,11 @@ public class UserService {
         return usersRepository.userExists(email);
     }
 
-    public User loginUser(String email, String pass, Client client) throws LoginException {
+    public LoggedUser loginUser(String email, String pass, Client client) throws LoginException {
         try{
             String hashedPass = hashingHelper.hash(pass);
             User user = usersRepository.find(email, hashedPass);
-            String sessionId = loggedUserRepository.logUser(user.getId(), client);
-            user.setId(sessionId);
-            return user;
+            return loggedUserRepository.logUser(user, client);
         } catch(IndexOutOfBoundsException e){
             throw new LoginException("Wrong username or password.");
         }

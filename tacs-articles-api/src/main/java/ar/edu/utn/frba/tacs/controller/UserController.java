@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.Client;
+import ar.edu.utn.frba.tacs.model.LoggedUser;
 import ar.edu.utn.frba.tacs.model.User;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -69,8 +70,9 @@ public class UserController {
     @Consumes("application/json")
     public Response loginUser(User user,@HeaderParam("client") Client client) {
         try{
-            User.UserDTO userdto = userService.loginUser(user.getEmail(),user.getPass(),client).convertToDTO();
-            return Response.ok(userdto).build();
+            LoggedUser loggedUser = userService.loginUser(user.getEmail(),user.getPass(),client);
+            loggedUser.setUserId(null);
+            return Response.ok(loggedUser).build();
         }
         catch (LoginException ex){
             return Response.status(Response.Status.UNAUTHORIZED).build();
