@@ -83,7 +83,7 @@ public class UserControllerTest {
         Response response =userController.loginUser(userLogin, Client.WEB);
         LoggedUser loggedUser = (LoggedUser)response.getEntity();
         Assert.assertEquals(user.getName(),loggedUser.getName());
-        Assert.assertEquals(1,userService.listUserSessions(loggedUser.getSessionId(),Client.WEB).size());
+        Assert.assertEquals(1,userService.listUserSessions(loggedUser.getSessionId()).size());
     }
 
     @Test

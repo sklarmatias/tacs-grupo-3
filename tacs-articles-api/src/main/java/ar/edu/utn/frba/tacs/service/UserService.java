@@ -64,16 +64,16 @@ public class UserService {
     public void delete(String id){
         usersRepository.delete(id);
     }
-    public List<LoggedUser> listUserSessions(String id, Client client){
-        return loggedUserRepository.listOpenSessions(loggedUserRepository.getLoggedUserId(id,client));
+    public List<LoggedUser> listUserSessions(String id){
+        return loggedUserRepository.listOpenSessions(loggedUserRepository.getLoggedUserId(id));
     }
-    public void closeUserSession(String id,Client client){
-        loggedUserRepository.closeSession(id,client);
+    public void closeUserSession(String id){
+        loggedUserRepository.closeSession(id);
     }
     public void closeAllUserSessions(String id){
         loggedUserRepository.closeAllSessions(id);
     }
-    public String getLoggedUserId(String id,Client client){
-        return loggedUserRepository.getLoggedUserId(id,client);
+    public String getLoggedUserId(String id){
+        return loggedUserRepository.getLoggedUserId(id);
     }
 }

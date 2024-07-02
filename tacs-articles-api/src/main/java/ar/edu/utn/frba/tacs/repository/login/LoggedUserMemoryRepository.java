@@ -6,16 +6,17 @@ import ar.edu.utn.frba.tacs.model.LoggedUser;
 import ar.edu.utn.frba.tacs.model.User;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 public class LoggedUserMemoryRepository implements LoggedUserRepository {
     private static LoggedUserMemoryRepository instance;
-    private List<LoggedUser> loggedUserList = new ArrayList<>();
+    private HashMap<String,LoggedUser> loggedUserList = new HashMap<>();
     private GuavaHashingHelper hashingHelper;
     private int userCounter;
     private LoggedUserMemoryRepository() {
-        loggedUserList = new ArrayList<>();
+        loggedUserList = new HashMap<>();
         hashingHelper = new GuavaHashingHelper();
         userCounter = 0;
     }
@@ -28,8 +29,8 @@ public class LoggedUserMemoryRepository implements LoggedUserRepository {
     }
 
     @Override
-    public String getLoggedUserId(String id, Client client) {
-        return loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id) && a.getClient() == client).findFirst().get().getUserId();
+    public String getLoggedUserId(String id) {
+        return loggedUserList.get(id).getUserId();
     }
 
     @Override
@@ -37,23 +38,22 @@ public class LoggedUserMemoryRepository implements LoggedUserRepository {
         String id = hashingHelper.hash(String.valueOf(userCounter));
         userCounter++;
         LoggedUser loggedUser = new LoggedUser(id,user.getId(),client,user.getName(),user.getSurname(),user.getEmail());
-        loggedUserList.add(loggedUser);
+        loggedUserList.put(loggedUser.getSessionId(),loggedUser);
         return loggedUser;
     }
 
     @Override
-    public void closeSession(String id, Client client) {
-        loggedUserList.removeAll(loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id) && a.getClient() == client).toList());
+    public void closeSession(String id) {
+        loggedUserList.remove(id);
     }
 
     @Override
     public void closeAllSessions(String id) {
-        String userId = loggedUserList.stream().filter(a-> Objects.equals(a.getSessionId(), id)).findFirst().get().getUserId();
-        loggedUserList.removeAll(listOpenSessions(id));
+        listOpenSessions(getLoggedUserId(id)).forEach(a->closeSession(a.getSessionId()));
     }
 
     @Override
     public List<LoggedUser> listOpenSessions(String userId) {
-        return loggedUserList.stream().filter(a-> Objects.equals(a.getUserId(), userId)).toList();
+        return loggedUserList.values().stream().filter(a-> Objects.equals(a.getUserId(), userId)).toList();
     }
 }

@@ -27,8 +27,8 @@ public class ArticleController {
 
 	@GET
 	@Produces("application/json")
-	public List<Article.ArticleDTO> listArticles(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
-		String userId = userService.getLoggedUserId(sessionId,client);
+	public List<Article.ArticleDTO> listArticles(@HeaderParam("session") String sessionId) {
+		String userId = userService.getLoggedUserId(sessionId);
 		if(userId == null){
 			return articleService.listOpenArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
 		}
@@ -48,8 +48,8 @@ public class ArticleController {
 	@PATCH
 	@Path("/{id}")
 	@Consumes("application/json")
-	public Response updateArticle(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client, @PathParam("id") String id, Article article) {
-		String userId = userService.getLoggedUserId(sessionId,client);
+	public Response updateArticle(@HeaderParam("session") String sessionId, @PathParam("id") String id, Article article) {
+		String userId = userService.getLoggedUserId(sessionId);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -67,8 +67,8 @@ public class ArticleController {
 	// Location header -> get URL
 	@POST
 	@Consumes("application/json")
-	public Response saveArticle(@HeaderParam("session") String sessionId,@HeaderParam("client") Client client, Article article){
-		String userId = userService.getLoggedUserId(sessionId,client);
+	public Response saveArticle(@HeaderParam("session") String sessionId, Article article){
+		String userId = userService.getLoggedUserId(sessionId);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -104,8 +104,8 @@ public class ArticleController {
 	@Path("/{articleId}/users/")
 	@Consumes("application/json")
 	public Response signUpUser(@PathParam("articleId") String articleId,
-							   @HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
-		String userId = userService.getLoggedUserId(sessionId,client);
+							   @HeaderParam("session") String sessionId) {
+		String userId = userService.getLoggedUserId(sessionId);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
@@ -138,8 +138,8 @@ public class ArticleController {
 	@PATCH
 	@Path("/{articleId}/close")
 	@Produces("application/json")
-	public Response closeArticle(@PathParam("articleId") String articleId,@HeaderParam("session") String sessionId,@HeaderParam("client") Client client) {
-		String userId = userService.getLoggedUserId(sessionId,client);
+	public Response closeArticle(@PathParam("articleId") String articleId,@HeaderParam("session") String sessionId) {
+		String userId = userService.getLoggedUserId(sessionId);
 		if(userId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
