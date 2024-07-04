@@ -8,7 +8,8 @@
     "reports": "Reports",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "sessions": "Sessions"
   },
   "articles": {
     "image": "Image",
@@ -100,5 +101,18 @@
     "email": "Email",
     "subscriptionDate": "Subscription Date",
     "back": "Back"
+  },
+  "loggedout": "User has been logged out.",
+  "sessions": {
+      "title": "Open Sessions",
+      "client": "Client",
+      "name": "Name",
+      "surname": "Surname",
+      "email": "Email",
+      "actions": "Actions",
+      "close": "Close",
+    "closeAll": "Close All",
+    "error": "There's been an error",
+    "success": "The session(s) have been closed."
   }
 }

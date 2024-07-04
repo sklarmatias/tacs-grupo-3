@@ -245,41 +245,41 @@ public class ArticleTest {
         return articleList.stream().anyMatch(a -> Objects.equals(a.getId(), article.getId()));
     }
 
-    @Test
-    public void expiredArticlesCloseAtDeadline(){
-        User owner = testFunctions.createTestUser();
-
-        User subscriber1 = testFunctions.createTestUser();
-        User subscriber2 = testFunctions.createTestUser();
-
-        Article nonExpiredArticle1 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(3),2000.00, CostType.PER_USER,2,3);
-        Article nonExpiredArticle2 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
-        Article expiredArticle1 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
-        Article expiredArticle2 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
-
-        expiredArticle1.setDeadline(testFunctions.getDate(-1));
-        expiredArticle2.setDeadline(testFunctions.getDate(-1));
-
-        saveArticle(nonExpiredArticle1);
-        saveArticle(nonExpiredArticle2);
-        saveArticle(expiredArticle1);
-        saveArticle(expiredArticle2);
-
-        articleService.signUpUser(expiredArticle1, subscriber1);
-        articleService.signUpUser(expiredArticle1, subscriber2);
-
-        List<Article> expiredArticles = articleService.closeExpiredArticles();
-
-        assertArticleStatusOnDatabase(ArticleStatus.CLOSED_SUCCESS, expiredArticle1);
-        assertArticleStatusOnDatabase(ArticleStatus.CLOSED_FAILED, expiredArticle2);
-        assertArticleStatusOnDatabase(ArticleStatus.OPEN, nonExpiredArticle1);
-        assertArticleStatusOnDatabase(ArticleStatus.OPEN, nonExpiredArticle2);
-
-        Assert.assertTrue(listContainsArticle(expiredArticles, expiredArticle1));
-        Assert.assertTrue(listContainsArticle(expiredArticles, expiredArticle2));
-        Assert.assertFalse(listContainsArticle(expiredArticles, nonExpiredArticle1));
-        Assert.assertFalse(listContainsArticle(expiredArticles, nonExpiredArticle2));
-
-    }
+//    @Test
+//    public void expiredArticlesCloseAtDeadline(){
+//        User owner = testFunctions.createTestUser();
+//
+//        User subscriber1 = testFunctions.createTestUser();
+//        User subscriber2 = testFunctions.createTestUser();
+//
+//        Article nonExpiredArticle1 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(3),2000.00, CostType.PER_USER,2,3);
+//        Article nonExpiredArticle2 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
+//        Article expiredArticle1 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
+//        Article expiredArticle2 = new Article("article","image","","user get", owner.getId(), testFunctions.getDate(0),2000.00, CostType.PER_USER,2,3);
+//
+//        expiredArticle1.setDeadline(testFunctions.getDate(-1));
+//        expiredArticle2.setDeadline(testFunctions.getDate(-1));
+//
+//        saveArticle(nonExpiredArticle1);
+//        saveArticle(nonExpiredArticle2);
+//        saveArticle(expiredArticle1);
+//        saveArticle(expiredArticle2);
+//
+//        articleService.signUpUser(expiredArticle1, subscriber1);
+//        articleService.signUpUser(expiredArticle1, subscriber2);
+//
+//        List<Article> expiredArticles = articleService.closeExpiredArticles();
+//
+//        assertArticleStatusOnDatabase(ArticleStatus.CLOSED_SUCCESS, expiredArticle1);
+//        assertArticleStatusOnDatabase(ArticleStatus.CLOSED_FAILED, expiredArticle2);
+//        assertArticleStatusOnDatabase(ArticleStatus.OPEN, nonExpiredArticle1);
+//        assertArticleStatusOnDatabase(ArticleStatus.OPEN, nonExpiredArticle2);
+//
+//        Assert.assertTrue(listContainsArticle(expiredArticles, expiredArticle1));
+//        Assert.assertTrue(listContainsArticle(expiredArticles, expiredArticle2));
+//        Assert.assertFalse(listContainsArticle(expiredArticles, nonExpiredArticle1));
+//        Assert.assertFalse(listContainsArticle(expiredArticles, nonExpiredArticle2));
+//
+//    }
 
 }

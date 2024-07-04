@@ -27,7 +27,8 @@
     "reports": "Reportes",
     "login": "Iniciar sesión",
     "register": "Registrar",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "sessions": "Sesiones"
   },
   "articles": {
     "image": "Imagen",
@@ -99,5 +100,18 @@
     "email": "Email",
     "subscriptionDate": "Fecha de suscripción",
     "back": "Volver"
+  },
+  "loggedout": "El usuario ha sido deslogueado.",
+  "sessions": {
+    "title": "Sesiones Abiertas",
+    "client": "Cliente",
+    "name": "Nombre",
+    "surname": "Apellido",
+    "email": "Correo Electrónico",
+    "actions": "Acciones",
+    "close": "Cerrar",
+    "closeAll": "Cerrar Todas",
+    "error": "Ha habido un error",
+    "success": "La(s) sesión(es) han sido cerradas."
   }
 }

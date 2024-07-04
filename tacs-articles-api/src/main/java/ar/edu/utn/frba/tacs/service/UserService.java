@@ -29,11 +29,11 @@ public class UserService {
         return usersRepository.userExists(email);
     }
 
-    public LoggedUser loginUser(String email, String pass, Client client) throws LoginException {
+    public LoggedUser.LoggedUserDTO loginUser(String email, String pass, Client client) throws LoginException {
         try{
             String hashedPass = hashingHelper.hash(pass);
             User user = usersRepository.find(email, hashedPass);
-            return loggedUserRepository.logUser(user, client);
+            return loggedUserRepository.logUser(user, client).convertToDTO();
         } catch(IndexOutOfBoundsException e){
             throw new LoginException("Wrong username or password.");
         }
@@ -64,8 +64,8 @@ public class UserService {
     public void delete(String id){
         usersRepository.delete(id);
     }
-    public List<LoggedUser> listUserSessions(String id){
-        return loggedUserRepository.listOpenSessions(loggedUserRepository.getLoggedUserId(id));
+    public List<LoggedUser.LoggedUserDTO> listUserSessions(String id){
+        return loggedUserRepository.listOpenSessions(loggedUserRepository.getLoggedUserId(id)).stream().map(LoggedUser::convertToDTO).toList();
     }
     public void closeUserSession(String id){
         loggedUserRepository.closeSession(id);

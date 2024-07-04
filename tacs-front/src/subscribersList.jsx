@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Table, Button } from 'react-bootstrap';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
-const SubscribersList = () => {
+const SubscribersList = ({ onLogout }) => {
     const { articleId } = useParams();
     const { t } = useTranslation();
     const [subscribers, setSubscribers] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchSubscribers();
@@ -16,11 +17,27 @@ const SubscribersList = () => {
     const fetchSubscribers = () => {
         axios.get(`${import.meta.env.VITE_API_URL}/articles/${articleId}/users`, {
             headers: {
-                user: `${localStorage.getItem('authToken')}`
+                session: `${localStorage.getItem('authToken')}`
             }
         })
             .then(response => setSubscribers(response.data))
-            .catch(error => alert(`${t('subscribersList.errorFetchingSubscribers')} ${error}`));
+            .catch(async error => {
+                if (error.response && error.response.status === 401) {
+                    alert(t('loggedout'));
+                    handleLogout();
+                }
+                else {
+                    alert(`${t('subscribersList.errorFetchingSubscribers')} ${error}`);
+                }
+            });
+
+                
+    };
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('emailUser');
+        onLogout();
+        navigate('/'); // Redirect to home after logout
     };
 
     return (

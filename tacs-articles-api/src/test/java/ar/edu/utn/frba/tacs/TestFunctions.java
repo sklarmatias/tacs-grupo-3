@@ -26,11 +26,11 @@ public class TestFunctions {
         user.setId(userService.saveUser(user));
         return user;
     }
-    public LoggedUser createLoggedUser(){
+    public LoggedUser.LoggedUserDTO createLoggedUser(){
         String email =random() + "@gmail.com";
         String pass ="123456";
         User user = createTestUser();
-        LoggedUser loggedUser;
+        LoggedUser.LoggedUserDTO loggedUser;
         try {
             loggedUser = userService.loginUser(email, pass, Client.WEB);
             return loggedUser;

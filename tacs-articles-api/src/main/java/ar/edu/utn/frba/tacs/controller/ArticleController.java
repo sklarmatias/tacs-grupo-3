@@ -27,13 +27,19 @@ public class ArticleController {
 
 	@GET
 	@Produces("application/json")
-	public List<Article.ArticleDTO> listArticles(@HeaderParam("session") String sessionId) {
-		String userId = userService.getLoggedUserId(sessionId);
-		if(userId == null){
-			return articleService.listOpenArticles().stream().map(Article::convertToDTO).collect(Collectors.toList());
+	public Response listArticles(@HeaderParam("session") String sessionId) {
+		if(sessionId == null){
+			return Response.ok(articleService.listOpenArticles().stream().map(Article::convertToDTO).collect(Collectors.toList())).build();
 		}
 		else {
-			return articleService.listUserArticles(userId).stream().map(Article::convertToDTO).collect(Collectors.toList());
+			String userId;
+			try {
+				userId = userService.getLoggedUserId(sessionId);
+			}
+			catch(Exception ex){
+				return Response.status(401).build();
+			}
+			return Response.ok(articleService.listUserArticles(userId).stream().map(Article::convertToDTO).collect(Collectors.toList())).build();
 		}
 
 	}
@@ -49,17 +55,24 @@ public class ArticleController {
 	@Path("/{id}")
 	@Consumes("application/json")
 	public Response updateArticle(@HeaderParam("session") String sessionId, @PathParam("id") String id, Article article) {
-		String userId = userService.getLoggedUserId(sessionId);
-		if(userId == null){
+		if(sessionId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
+		String userId;
+		try {
+			userId = userService.getLoggedUserId(sessionId);
+		}
+		catch(Exception ex){
+			return Response.status(401).build();
+		}
 		if(!Objects.equals(articleService.getArticle(id).getOwner(), userId)){
-			return Response.status(Response.Status.FORBIDDEN).build();
+				return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		else{
 			articleService.updateArticle(id,article);
 			return Response.ok().build();
 		}
+
 	}
 
 
@@ -68,15 +81,21 @@ public class ArticleController {
 	@POST
 	@Consumes("application/json")
 	public Response saveArticle(@HeaderParam("session") String sessionId, Article article){
-		String userId = userService.getLoggedUserId(sessionId);
-		if(userId == null){
+		if(sessionId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		User user = userService.getUser(userId);
-		if(user == null){
-			return Response.status(Response.Status.FORBIDDEN).build();
+		String userId;
+		try {
+			userId = userService.getLoggedUserId(sessionId);
+		}
+		catch(Exception ex){
+			return Response.status(401).build();
 		}
 		try{
+			User user = userService.getUser(userId);
+			if(user == null){
+				return Response.status(Response.Status.FORBIDDEN).build();
+			}
 			Article completeNewArticle = new Article(
 					article.getName(),
 					article.getImage(),
@@ -97,6 +116,7 @@ public class ArticleController {
 		catch (Exception ex){
 			return Response.status(400).type(MediaType.TEXT_PLAIN).entity(ex.getMessage()).build();
 		}
+
 	}
 
 	// 204 NoContent
@@ -105,10 +125,17 @@ public class ArticleController {
 	@Consumes("application/json")
 	public Response signUpUser(@PathParam("articleId") String articleId,
 							   @HeaderParam("session") String sessionId) {
-		String userId = userService.getLoggedUserId(sessionId);
-		if(userId == null){
+		if(sessionId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
+		String userId;
+		try {
+			userId = userService.getLoggedUserId(sessionId);
+		}
+		catch(Exception ex){
+			return Response.status(401).build();
+		}
+
 		System.out.println("Se recibio una solicitud de suscripcion: IdUsuario: " + userId + "\n IdArticulo: " + articleId);
 		Article article = articleService.getArticle(articleId);
 		if (article == null){
@@ -139,10 +166,17 @@ public class ArticleController {
 	@Path("/{articleId}/close")
 	@Produces("application/json")
 	public Response closeArticle(@PathParam("articleId") String articleId,@HeaderParam("session") String sessionId) {
-		String userId = userService.getLoggedUserId(sessionId);
-		if(userId == null){
+		if(sessionId == null){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
+		String userId;
+		try {
+			userId = userService.getLoggedUserId(sessionId);
+		}
+		catch(Exception ex){
+			return Response.status(401).build();
+		}
+
 		if(!Objects.equals(articleService.getArticle(articleId).getOwner(), userId)){
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}

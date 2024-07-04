@@ -61,6 +61,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'client': 'WEB'
             },
             body: JSON.stringify({ email: formData.email, pass: formData.pass }),
         })
@@ -75,7 +76,7 @@ const LoginForm = ({ onLogin, isRegister }) => {
             })
             .then((data) => {
                 // Now we have the parsed JSON data
-                localStorage.setItem('authToken', data.id);
+                localStorage.setItem('authToken', data.sessionId);
                 localStorage.setItem('emailUser', formData.email);
                 onLogin(formData.email);
                 navigate('/');

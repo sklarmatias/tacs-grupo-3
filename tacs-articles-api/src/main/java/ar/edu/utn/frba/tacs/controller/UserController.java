@@ -56,10 +56,6 @@ public class UserController {
     public Response saveUser(User user) {
         try{
             String userId = userService.saveUser(user);
-            // URI
-//            UriBuilder userURIBuilder = uriInfo.getBaseUriBuilder().path("/users");
-//            userURIBuilder.path(userId);
-//            return Response.created(userURIBuilder.build()).build();
             return Response.status(201).build();
         } catch (DuplicatedEmailException e){
             return Response.status(400).entity(e.getMessage()).build();
@@ -70,14 +66,62 @@ public class UserController {
     @Consumes("application/json")
     public Response loginUser(User user,@HeaderParam("client") Client client) {
         try{
-            LoggedUser loggedUser = userService.loginUser(user.getEmail(),user.getPass(),client);
-            loggedUser.setUserId(null);
+            LoggedUser.LoggedUserDTO loggedUser = userService.loginUser(user.getEmail(),user.getPass(),client);
+
             return Response.ok(loggedUser).build();
         }
         catch (LoginException ex){
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+    }
+    @GET
+    @Path("/session")
+    public Response getSessions(@HeaderParam("session") String sessionId){
+        if(sessionId != null){
+            try{
+                return Response.ok(userService.listUserSessions(sessionId)).build();
+            }
+            catch(Exception ex){
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+        }
+        else{
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+    }
+    @DELETE
+    @Path("/sessions")
+    public Response closeAllSessions(@HeaderParam("session") String sessionId){
+        if(sessionId != null){
+            try{
+                userService.closeAllUserSessions(sessionId);
+                return Response.ok().build();
+            }
+            catch(Exception ex){
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+        }
+        else{
+            return  Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+    }
+    @DELETE
+    @Path("/session")
+    public Response closeSession(@HeaderParam("session") String sessionId){
+        if(sessionId != null){
+            try{
+                userService.closeUserSession(sessionId);
+                return Response.ok().build();
+            }
+            catch(Exception ex){
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+
+        }
+        else{
+            return  Response.status(Response.Status.UNAUTHORIZED).build();
+        }
     }
 }
 

@@ -67,8 +67,8 @@ public class UserServiceTest {
         originalUser.setId(userService.saveUser(originalUser));
 
         User savedUser = userService.getUser(originalUser.getId());
-        LoggedUser logedUser = userService.loginUser(email, nonHashedPassword, Client.WEB);
-        Assert.assertEquals(savedUser.getId(), logedUser.getUserId());
+        LoggedUser.LoggedUserDTO loggedUser = userService.loginUser(email, nonHashedPassword, Client.WEB);
+        Assert.assertEquals(savedUser.getId(), userService.getLoggedUserId(loggedUser.getSessionId()));
     }
 
     @Test

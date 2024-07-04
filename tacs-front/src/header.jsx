@@ -26,6 +26,7 @@ const Header = ({ isLoggedIn, email, onLogout }) => {
                             <NavDropdown.Item as={Link} to="/myarticles">{t('navbar.myArticles')}</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/create">{t('navbar.publishArticles')}</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/reports">{t('navbar.reports')}</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/sessions">{t('navbar.sessions')}</NavDropdown.Item>
                         </>
                     )}
                 </NavDropdown>

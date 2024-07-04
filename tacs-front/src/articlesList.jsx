@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Stack, Table, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
-function ArticleList({ userFocus }) {
+function ArticleList({ userFocus, onLogout }) {
     const { t } = useTranslation();
     const [articles, setArticles] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
@@ -15,13 +15,20 @@ function ArticleList({ userFocus }) {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         const fetchArticles = () => {
-            const headers = userFocus === 'true' ? { 'user': token } : {};
+            const headers = userFocus === 'true' ? { 'session': token } : {};
             axios.get(`${import.meta.env.VITE_API_URL}/articles`, { headers })
                 .then(response => {
                     setArticles(response.data);
                 })
-                .catch(error => {
-                    alert(`${t('articles.errorFetchingArticles')} ${error}`);
+                .catch(async error => {
+                    if (error.response && error.response.status === 401) {
+                        alert(t('loggedout'));
+                        handleLogout();
+                    }
+                    else {
+                        alert(`${t('articles.errorFetchingArticles')} ${error}`);
+                    }
+                    
                 });
 
             setIsUserFocus(userFocus === 'true');
@@ -45,7 +52,7 @@ function ArticleList({ userFocus }) {
     const subscribe = (id) => {
         axios.post(`${import.meta.env.VITE_API_URL}/articles/${id}/users/`, '', {
             headers: {
-                'user': `${localStorage.getItem('authToken')}`,
+                'session': `${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             }
         })
@@ -74,6 +81,9 @@ function ArticleList({ userFocus }) {
                     }
                 } else if (error.response.status === 403) {
                     alert(t('articles.forbidden'));
+                } else if (error.response.status === 401) {
+                    alert(t('loggedout'));
+                    handleLogout();
                 } else {
                     alert(`${t('articles.errorSubscribing')} ${error}`);
                 }
@@ -83,7 +93,7 @@ function ArticleList({ userFocus }) {
     const close = (id) => {
         axios.patch(`${import.meta.env.VITE_API_URL}/articles/${id}/close`, null, {
             headers: {
-                user: `${localStorage.getItem('authToken')}` 
+                session: `${localStorage.getItem('authToken')}` 
             }
         })
             .then(response => {
@@ -114,12 +124,20 @@ function ArticleList({ userFocus }) {
                     }
                 } else if (error.response.status === 403) {
                     alert(t('articles.forbidden'));
+                } else if (error.response.status === 401) {
+                    alert(t('loggedout'));
+                    handleLogout();
                 } else {
                     alert(`${t('articles.errorClosingArticle')} ${error}`);
                 }
             });
     };
-
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('emailUser');
+        onLogout();
+        navigate('/'); // Redirect to home after logout
+    };
     const handleLoginRedirect = () => {
         navigate('/login');
     };

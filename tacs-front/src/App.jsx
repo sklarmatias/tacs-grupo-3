@@ -12,6 +12,7 @@ import Header from './header.jsx';
 import SubscribersList from './subscribersList.jsx';
 import PrivateRoute from './privateroute.jsx';
 import Reports from './reports.jsx';
+import SessionsList from './sessionsList.jsx'
 import './i18n.jsx';
 
 
@@ -67,7 +68,7 @@ function App() {
                     children: [
                         {
                             path: '',
-                            element: <ArticleForm />,
+                            element: <ArticleForm onLogout={handleLogout} />,
                         },
                     ],
                 },
@@ -81,7 +82,7 @@ function App() {
                     children: [
                         {
                             path: '',
-                            element: <ArticleList userFocus="true" />,
+                            element: <ArticleList userFocus="true" onLogout={handleLogout} />,
                         },
                     ],
                 },
@@ -95,7 +96,7 @@ function App() {
                     children: [
                         {
                             path: '',
-                            element: <SubscribersList />,
+                            element: <SubscribersList onLogout={handleLogout} />,
                         },
                     ],
                 },
@@ -106,6 +107,16 @@ function App() {
                         {
                             path: '',
                             element: <Reports />,
+                        },
+                    ],
+                },
+                {
+                    path: 'sessions',
+                    element: <PrivateRoute />,
+                    children: [
+                        {
+                            path: '',
+                            element: <SessionsList onLogout={handleLogout} />,
                         },
                     ],
                 },

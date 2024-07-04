@@ -3,7 +3,7 @@ import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const ArticleForm = () => {
+const ArticleForm = ({ onLogout }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: '',
@@ -85,7 +85,7 @@ const ArticleForm = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'user': `${localStorage.getItem('authToken')}`
+                'session': `${localStorage.getItem('authToken')}`
             },
             body: JSON.stringify(formData)
         })
@@ -93,7 +93,11 @@ const ArticleForm = () => {
                 if (response.status === 201) {
                     alert(t('form.success'));
                     navigate('/myarticles');
-                } else {
+                } else if (error.response.status === 401) {
+                    alert(t('loggedout'));
+                    handleLogout();
+                }
+                else {
                     alert(t('form.error'), response.body);
                     console.error(response.body);
                 }
@@ -103,7 +107,12 @@ const ArticleForm = () => {
                 alert(t('form.error'));
             });
     };
-
+    const handleLogout = () => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('emailUser');
+        onLogout();
+        navigate('/'); // Redirect to home after logout
+    };
     return (
         <Form onSubmit={handleSubmit}>
             <Form.Group controlId="name">

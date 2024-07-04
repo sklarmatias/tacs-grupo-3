@@ -81,7 +81,7 @@ public class UserControllerTest {
         userLogin.setEmail(user.getEmail());
         userLogin.setPass("123456");
         Response response =userController.loginUser(userLogin, Client.WEB);
-        LoggedUser loggedUser = (LoggedUser)response.getEntity();
+        LoggedUser.LoggedUserDTO loggedUser = (LoggedUser.LoggedUserDTO)response.getEntity();
         Assert.assertEquals(user.getName(),loggedUser.getName());
         Assert.assertEquals(1,userService.listUserSessions(loggedUser.getSessionId()).size());
     }
