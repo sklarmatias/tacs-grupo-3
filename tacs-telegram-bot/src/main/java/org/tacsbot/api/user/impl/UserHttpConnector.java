@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Deprecated(since = "1.2.0")
 public class UserHttpConnector {
     UserParser userParser = new UserJSONParser();
     public HttpResponse<String> loginUserConnector(User logInUser) throws URISyntaxException, IOException, InterruptedException {

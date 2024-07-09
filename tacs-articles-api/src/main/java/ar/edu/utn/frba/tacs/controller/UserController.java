@@ -2,7 +2,6 @@ package ar.edu.utn.frba.tacs.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import ar.edu.utn.frba.tacs.exception.DuplicatedEmailException;
 import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.LoggedUser;

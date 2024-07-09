@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Deprecated(since = "1.2.0")
 public class ArticleHttpConnector {
 
     public HttpResponse<String> createArticleConnector(String json, String ownerId) throws IOException, InterruptedException, URISyntaxException {

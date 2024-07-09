@@ -5,31 +5,32 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
-import org.tacsbot.api.article.impl.ArticleHttpConnector;
+import org.tacsbot.api.utils.ApiHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.model.CostType;
+import org.tacsbot.model.UserSession;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class ArticleCreationHandlerTest {
     private Message message;
+    private UserSession userSession;
     private ArticleCreationHandler articleCreationHandler;
     private MyTelegramBot bot;
     private ArticleApiConnection api;
-    private ArticleHttpConnector connector;
+    private ApiHttpConnector connector;
     @Before
     public void mockMessageApiAndBot() throws HttpException, IOException {
         // message
@@ -38,30 +39,31 @@ public class ArticleCreationHandlerTest {
         message.setChat(new Chat(123L,"type"));
 
         api = new ArticleApiConnection();
-        connector = mock(ArticleHttpConnector.class);
-        api.setArticleHttpConnector(connector);
+        connector = mock(ApiHttpConnector.class);
+        api.setApiHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).sendInteraction(any(), anyString());
-        articleCreationHandler = new ArticleCreationHandler("user");
+        userSession = new UserSession("ABCDE","","","");
+        articleCreationHandler = new ArticleCreationHandler(userSession);
         articleCreationHandler.setArticleApi(api);
     }
     @Test
-    public void testNameOk() throws HttpException, IOException {
+    public void testNameOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("articulo prueba");
         articleCreationHandler.processResponse(message, bot);
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_DEADLINE"));
         Assert.assertEquals("articulo prueba",articleCreationHandler.getArticle().getName());
     }
     @Test
-    public void testNameShort() throws HttpException, IOException {
+    public void testNameShort() throws HttpException, IOException, UnauthorizedException {
         message.setText("articulo");
         articleCreationHandler.processResponse(message, bot);
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NAME_TOO_SHORT"));
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NAME"));
     }
     @Test
-    public void testDeadlineOk() throws HttpException, IOException, ParseException {
+    public void testDeadlineOk() throws HttpException, IOException, ParseException, UnauthorizedException {
         message.setText("2026-01-01");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_DEADLINE);
         articleCreationHandler.processResponse(message, bot);
@@ -69,14 +71,14 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2026-01-01"),articleCreationHandler.getArticle().getDeadline());
     }
     @Test
-    public void testDeadlineBefore() throws HttpException, IOException {
+    public void testDeadlineBefore() throws HttpException, IOException, UnauthorizedException {
         message.setText("2023-01-01");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_DEADLINE);
         articleCreationHandler.processResponse(message, bot);
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_INVALID_DEADLINE"));
     }
     @Test
-    public void testDeadlineInvalid() throws HttpException, IOException {
+    public void testDeadlineInvalid() throws HttpException, IOException, UnauthorizedException {
         message.setText("abc");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_DEADLINE);
         articleCreationHandler.processResponse(message, bot);
@@ -84,7 +86,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_DEADLINE"));
     }
     @Test
-    public void testCostTypeA() throws HttpException, IOException {
+    public void testCostTypeA() throws HttpException, IOException, UnauthorizedException {
         message.setText("A");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST_TYPE);
         articleCreationHandler.processResponse(message, bot);
@@ -92,7 +94,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(CostType.TOTAL,articleCreationHandler.getArticle().getCostType());
     }
     @Test
-    public void testCostTypeB() throws HttpException, IOException {
+    public void testCostTypeB() throws HttpException, IOException, UnauthorizedException {
         message.setText("B");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST_TYPE);
         articleCreationHandler.processResponse(message, bot);
@@ -100,7 +102,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(CostType.PER_USER,articleCreationHandler.getArticle().getCostType());
     }
     @Test
-    public void testCostTypeWrong() throws HttpException, IOException {
+    public void testCostTypeWrong() throws HttpException, IOException, UnauthorizedException {
         message.setText("C");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST_TYPE);
         articleCreationHandler.processResponse(message, bot);
@@ -108,7 +110,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_COST_TYPE"));
     }
     @Test
-    public void testCostOk() throws HttpException, IOException {
+    public void testCostOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("10");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST);
         articleCreationHandler.processResponse(message, bot);
@@ -117,7 +119,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(num,articleCreationHandler.getArticle().getCost());
     }
     @Test
-    public void testCostWrong() throws HttpException, IOException {
+    public void testCostWrong() throws HttpException, IOException, UnauthorizedException {
         message.setText("A");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST);
         articleCreationHandler.processResponse(message, bot);
@@ -125,7 +127,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_COST"));
     }
     @Test
-    public void testCostNegative() throws HttpException, IOException {
+    public void testCostNegative() throws HttpException, IOException, UnauthorizedException {
         message.setText("-10");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_COST);
         articleCreationHandler.processResponse(message, bot);
@@ -133,7 +135,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_COST"));
     }
     @Test
-    public void testGetsOk() throws HttpException, IOException {
+    public void testGetsOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("test");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_USERGETS);
         articleCreationHandler.processResponse(message, bot);
@@ -141,7 +143,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals("test",articleCreationHandler.getArticle().getUserGets());
     }
     @Test
-    public void testGetsWrong() throws HttpException, IOException {
+    public void testGetsWrong() throws HttpException, IOException, UnauthorizedException {
         message.setText("");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_USERGETS);
         articleCreationHandler.processResponse(message, bot);
@@ -149,7 +151,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_USER_GETS"));
     }
     @Test
-    public void testMaxUsersOk() throws HttpException, IOException {
+    public void testMaxUsersOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("10");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -158,7 +160,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(num,articleCreationHandler.getArticle().getUsersMax());
     }
     @Test
-    public void testMaxUsersWrong() throws HttpException, IOException {
+    public void testMaxUsersWrong() throws HttpException, IOException, UnauthorizedException {
         message.setText("A");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -166,7 +168,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_USERS_MAX"));
     }
     @Test
-    public void testMaxUsersNegative() throws HttpException, IOException {
+    public void testMaxUsersNegative() throws HttpException, IOException, UnauthorizedException {
         message.setText("-10");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -174,7 +176,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_USERS_MAX"));
     }
     @Test
-    public void testMinUsersOk() throws HttpException, IOException {
+    public void testMinUsersOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("100");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -186,7 +188,7 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals(num,articleCreationHandler.getArticle().getUsersMin());
     }
     @Test
-    public void testMinUsersWrong() throws HttpException, IOException {
+    public void testMinUsersWrong() throws HttpException, IOException, UnauthorizedException {
         message.setText("A");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MIN_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -194,7 +196,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_USERS_MIN"));
     }
     @Test
-    public void testMinUsersNegative() throws HttpException, IOException {
+    public void testMinUsersNegative() throws HttpException, IOException, UnauthorizedException {
         message.setText("1");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -205,7 +207,7 @@ public class ArticleCreationHandlerTest {
     }
 
     @Test
-    public void testMinUsersBigger() throws HttpException, IOException {
+    public void testMinUsersBigger() throws HttpException, IOException, UnauthorizedException {
         message.setText("1");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_MAX_USERS);
         articleCreationHandler.processResponse(message, bot);
@@ -214,7 +216,7 @@ public class ArticleCreationHandlerTest {
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_INVALID_USERS_MIN"),eq(articleCreationHandler.getArticle().getUsersMax()));
     }
     @Test
-    public void testLinkOk() throws HttpException, IOException {
+    public void testLinkOk() throws HttpException, IOException, UnauthorizedException {
         message.setText("aaa");
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_LINK);
         articleCreationHandler.processResponse(message, bot);
@@ -222,31 +224,30 @@ public class ArticleCreationHandlerTest {
         Assert.assertEquals("aaa",articleCreationHandler.getArticle().getLink());
     }
     @Test
-    public void testImageEmpty() throws HttpException, IOException {
+    public void testImageEmpty() throws HttpException, IOException, UnauthorizedException {
         message.setText(null);
         articleCreationHandler.setCurrentStep(ArticleCreationStep.REQUEST_IMAGE);
         articleCreationHandler.processResponse(message, bot);
         verify(bot).sendInteraction(any(User.class), eq("ARTICLE_IMAGE_INVALID"));
     }
     @Test
-    public void testCreateArticleOk() throws HttpException, IOException, URISyntaxException, InterruptedException {
+    public void testCreateArticleOk() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(201).when(response).statusCode();
-        doReturn(response).when(connector).createArticleConnector(any(),any());
+        doReturn(response).when(connector).post(eq("/articles"), any(), eq(userSession.getSessionId()));
         createTestArticle();
-        verify(bot).sendInteraction(any(User.class), eq("ARTICLE_CREATED"));
-        verify(connector).createArticleConnector(any(),any());
+        verify(bot, times(1)).sendInteraction(any(User.class), eq("ARTICLE_CREATED"));
     }
+
     @Test
-    public void testCreateArticleFail() throws HttpException, IOException, URISyntaxException, InterruptedException {
+    public void testCreateArticleFail() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(400).when(response).statusCode();
-        doReturn(response).when(connector).createArticleConnector(any(),any());
+        doReturn(response).when(connector).post(eq("/articles"),any(), eq(userSession.getSessionId()));
         createTestArticle();
-        verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NOT_CREATED"));
-        verify(connector).createArticleConnector(any(),any());
+        verify(bot, times(1)).sendInteraction(any(User.class), eq("ARTICLE_NOT_CREATED"));
     }
-    private void createTestArticle() throws HttpException, IOException {
+    private void createTestArticle() throws HttpException, IOException, UnauthorizedException {
         message.setText("articulo prueba");
         articleCreationHandler.processResponse(message, bot);
         message.setText("2027-01-04");

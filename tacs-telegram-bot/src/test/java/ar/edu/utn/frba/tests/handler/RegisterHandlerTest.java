@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.tacsbot.api.user.UserApi;
 import org.tacsbot.api.user.impl.UserApiConnection;
 import org.tacsbot.api.user.impl.UserHttpConnector;
+import org.tacsbot.api.utils.ApiHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.handlers.impl.LoginHandler;
@@ -29,7 +30,7 @@ public class RegisterHandlerTest {
     private RegisterHandler registerHandler;
     private MyTelegramBot bot;
     private UserApiConnection api;
-    private UserHttpConnector connector;
+    private ApiHttpConnector connector;
     private UserJSONParser parser;
     @Before
     public void mockMessageApiAndBot() throws IOException {
@@ -39,8 +40,8 @@ public class RegisterHandlerTest {
         message.setChat(new Chat(123L,"type"));
         parser = new UserJSONParser();
         api = new UserApiConnection();
-        connector = mock(UserHttpConnector.class);
-        api.setUserHttpConnector(connector);
+        connector = mock(ApiHttpConnector.class);
+        api.setApiHttpConnector(connector);
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).logInUser(any(),any());
@@ -98,7 +99,7 @@ public class RegisterHandlerTest {
     public void testRegisterOk() throws IOException, URISyntaxException, InterruptedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(201).when(response).statusCode();
-        doReturn(response).when(connector).registerConnector(any());
+        doReturn(response).when(connector).post(any(), any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");
@@ -108,7 +109,7 @@ public class RegisterHandlerTest {
         message.setText("123456");
         registerHandler.processResponse(message,bot);
         verify(bot).sendInteraction(any(User.class), eq("REGISTER_COMPLETED"));
-        verify(connector).registerConnector(any(org.tacsbot.model.User.class));
+        verify(connector).post(any(), any());
     }
     @Test
     public void testRegisterFailEmail() throws IOException, URISyntaxException, InterruptedException {
@@ -118,7 +119,7 @@ public class RegisterHandlerTest {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(400).when(response).statusCode();
         doReturn(body).when(response).body();
-        doReturn(response).when(connector).registerConnector(any());
+        doReturn(response).when(connector).post(any(), any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");
@@ -133,7 +134,7 @@ public class RegisterHandlerTest {
     public void testRegisterFailIo() throws IOException, URISyntaxException, InterruptedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(401).when(response).statusCode();
-        doReturn(response).when(connector).registerConnector(any());
+        doReturn(response).when(connector).post(any(), any());
         message.setText("juan");
         registerHandler.processResponse(message,bot);
         message.setText("perez");

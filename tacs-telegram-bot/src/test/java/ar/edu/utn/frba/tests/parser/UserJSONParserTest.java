@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
 import java.io.IOException;
@@ -108,6 +109,47 @@ public class UserJSONParserTest {
         doThrow(JsonProcessingException.class).when(objectWriter).writeValueAsString(any());
         userJSONParser.setObjectMapper(objectMapper);
         Assert.assertThrows(IOException.class, () -> userJSONParser.parseUserToJSON(new User()));
+    }
+
+    private boolean equals(UserSession u1, UserSession u2){
+        return u1.getSessionId().equals(u2.getSessionId()) &&
+                u2.getName().equals(u1.getName()) &&
+                u1.getSurname().equals(u2.getSurname()) &&
+                u1.getEmail().equals(u2.getEmail());
+    }
+
+    @Test
+    public void userSessionParserTest(){
+
+        String userSessionJSON = """
+                {
+                  "sessionId" : "123456",
+                  "name" : "thiago",
+                  "surname" : "cabrera",
+                  "email" : "thiago@tacs.com"
+                }""";
+        UserSession userSession1 = new UserSession("123456","thiago", "cabrera", "thiago@tacs.com");
+
+        UserJSONParser userJSONParser = new UserJSONParser();
+
+        Assert.assertEquals(userSession1, userJSONParser.parseJSONToUserSession(userSessionJSON));
+    }
+
+    @Test
+    public void userSessionNotEqualsParserTest(){
+
+        String userSessionJSON = """
+                {
+                  "sessionId" : "1234567",
+                  "name" : "thiago",
+                  "surname" : "cabrera",
+                  "email" : "thiago@tacs.com"
+                }""";
+        UserSession userSession1 = new UserSession("123456","thiago", "cabrera", "thiago@tacs.com");
+
+        UserJSONParser userJSONParser = new UserJSONParser();
+
+        Assert.assertNotEquals(userSession1, userJSONParser.parseJSONToUserSession(userSessionJSON));
     }
 
 }

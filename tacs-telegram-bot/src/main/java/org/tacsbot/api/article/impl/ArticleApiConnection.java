@@ -1,11 +1,13 @@
 package org.tacsbot.api.article.impl;
 
-import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
+import org.tacsbot.api.utils.ApiHttpConnector;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
+import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.annotation.AnnotationParser;
 import org.tacsbot.parser.annotation.impl.AnnotationJSONParser;
 import org.tacsbot.parser.article.ArticleParser;
@@ -18,21 +20,21 @@ import java.util.List;
 public class ArticleApiConnection implements ArticleApi {
 
     @Setter
-    private ArticleHttpConnector articleHttpConnector;
+    private ApiHttpConnector apiHttpConnector;
     private ArticleParser articleJSONParser;
     private AnnotationParser annotationParser;
 
     public ArticleApiConnection(){
-        articleHttpConnector = new ArticleHttpConnector();
+        apiHttpConnector = new ApiHttpConnector();
         articleJSONParser = new ArticleJSONParser();
         annotationParser = new AnnotationJSONParser();
     }
 
     @Override
-    public String createArticle(Article article) throws IllegalArgumentException, HttpException {
+    public String createArticle(Article article, UserSession userSession) throws IllegalArgumentException, HttpException, UnauthorizedException {
         try {
             String JSONArticle = articleJSONParser.parseArticleToJSON(article);
-            HttpResponse<String> response = articleHttpConnector.createArticleConnector(JSONArticle, article.getOwner());
+            HttpResponse<String> response = apiHttpConnector.post("/articles", JSONArticle, userSession.getSessionId());
             if (response.statusCode() == 201)
                 return response.body();
             else {
@@ -49,45 +51,60 @@ public class ArticleApiConnection implements ArticleApi {
     }
 
     @Override
-    public List<Article> getAllArticles() throws HttpException {
-        return getArticlesOf(null);
+    public List<Article> getAllArticles() throws HttpException, UnauthorizedException {
+        try {
+            HttpResponse<String> response = apiHttpConnector.get("/articles");
+            if (response.statusCode() == 200)
+                return articleJSONParser.parseJSONToArticleList(response.body());
+            else{
+                System.err.printf("Status code %d requesting all articles.\nResponse body:\n%s\n",
+                        response.statusCode(),
+                        response.body());
+                throw new IllegalArgumentException(response.body());
+            }
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            System.err.println("Exception getting all articles");
+            throw new HttpException(String.format("[Error] Exception getting all articles\n%s\n", e.getMessage()));
+        }
     }
 
     @Override
-    public List<Article> getArticlesOf(String ownerId) throws IllegalArgumentException, HttpException {
+    public List<Article> getArticlesOf(UserSession userSession) throws IllegalArgumentException, HttpException, UnauthorizedException {
         try {
-            HttpResponse<String> response = articleHttpConnector.getArticles(ownerId);
+            HttpResponse<String> response = apiHttpConnector.get("/articles", userSession.getSessionId());
             if (response.statusCode() == 200)
                 return articleJSONParser.parseJSONToArticleList(response.body());
             else{
                 System.err.printf("Status code %d requesting all articles of %s.\nResponse body:\n%s\n",
                         response.statusCode(),
-                        ownerId,
+                        userSession.getSessionId(),
                         response.body());
                 throw new IllegalArgumentException(response.body());
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            System.err.printf("Exception getting all articles\nownerId = %s\n", ownerId);
+            System.err.printf("Exception getting all articles\nownerId = %s\n", userSession.getSessionId());
             throw new HttpException(String.format("[Error] Exception getting all articles\nownerId = %s\n%s\n",
-                    ownerId, e.getMessage()));
+                    userSession.getSessionId(), e.getMessage()));
         }
     }
 
     @Override
-    public boolean suscribeToArticle(Article article, String userId) throws HttpException, IllegalArgumentException {
+    public boolean suscribeToArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException {
         try{
-            HttpResponse<String> response = articleHttpConnector.suscribeToArticle(article.getId(), userId);
+            String path = String.format("%s/articles/%s/users/", System.getenv("RESOURCE_URL"), article.getId());
+            HttpResponse<String> response = apiHttpConnector.post(path, userSession.getSessionId());
             return response.statusCode() == 200;
         } catch (URISyntaxException | InterruptedException | IOException e) {
             throw new HttpException(String.format("[Error] Exception subscribing userId %s to articleId %s.\n%s\n",
-                    userId, article.getId(), e.getMessage()));
+                    userSession.getSessionId(), article.getId(), e.getMessage()));
         }
     }
 
     @Override
-    public Article closeArticle(Article article, String userId) throws HttpException, IllegalArgumentException {
+    public Article closeArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException, UnauthorizedException {
         try{
-            HttpResponse<String> response = articleHttpConnector.closeArticle(article.getId(), userId);
+            String path = String.format("%s/articles/%s/close", System.getenv("RESOURCE_URL"), article.getId());
+            HttpResponse<String> response = apiHttpConnector.patch(path, "", userSession.getSessionId());
             if (response.statusCode() == 200){
                 return articleJSONParser.parseJSONToArticle(response.body());
             } else{
@@ -95,14 +112,15 @@ public class ArticleApiConnection implements ArticleApi {
             }
         } catch (URISyntaxException | InterruptedException | IOException e) {
             throw new HttpException(String.format("[Error] Exception subscribing userId %s to articleId %s.\n%s\n",
-                    userId, article.getId(), e.getMessage()));
+                    userSession.getSessionId(), article.getId(), e.getMessage()));
         }
     }
 
     @Override
     public List<Annotation> viewArticleSubscriptions(Article article) throws HttpException {
         try{
-            HttpResponse<String> response = articleHttpConnector.getSubscriptions(article.getId());
+            String path = String.format("%s/articles/%s/users", System.getenv("RESOURCE_URL"), article.getId());
+            HttpResponse<String> response = apiHttpConnector.get(path);
             if (response.statusCode() == 200){
                 return annotationParser.parseJSONToAnnotation(response.body());
             } else{

@@ -14,26 +14,23 @@ import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.cache.impl.RedisService;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.model.NotificationDTO;
-import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.embedded.RedisServer;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -49,12 +46,11 @@ public class MyTelegramBotTest {
 
     private static RedisServer embeddedRedis;
 
-    private User user = new User(
+    private UserSession userSession = new UserSession(
             "abcdefghi",
             "Thiago",
             "Cabrera",
-            "thiago@tacs.com",
-            null
+            "thiago@tacs.com"
     );
 
     private Long chatId = 1234546789L;
@@ -64,10 +60,10 @@ public class MyTelegramBotTest {
     NotificationHttpConnector connector;
     static RedisService redisService;
 
-    private void assertLogIn(Long chatId, User user){
-        Assert.assertEquals(chatId, myTelegramBot.getCacheService().getChatIdOfUser(user.getId()));
+    private void assertLogIn(Long chatId, UserSession userSession){
+        Assert.assertEquals(chatId, myTelegramBot.getCacheService().getChatIdOfSession(userSession));
 
-        ModelEqualsHelper.assertEquals(user,myTelegramBot.getCacheService().getUser(chatId));
+        Assert.assertEquals(userSession,myTelegramBot.getCacheService().getSession(chatId));
     }
 
     @BeforeClass
@@ -92,33 +88,33 @@ public class MyTelegramBotTest {
 
     @After
     public void cleanCacheAfterEachTest(){
-        myTelegramBot.logOutUser(chatId,user);
+        myTelegramBot.logOutUser(chatId,userSession);
 //        myTelegramBot.getCacheService().closeConnection();
     }
 
     @Test
     public void loginSavesDoubleMapping() throws IOException {
 
-        myTelegramBot.logInUser(chatId, user);
+        myTelegramBot.logInUser(chatId, userSession);
 
-        Assert.assertEquals(chatId, myTelegramBot.getCacheService().getChatIdOfUser(user.getId()));
+        Assert.assertEquals(chatId, myTelegramBot.getCacheService().getChatIdOfSession(userSession));
 
-        ModelEqualsHelper.assertEquals(user,myTelegramBot.getCacheService().getUser(chatId));
+        Assert.assertEquals(userSession,myTelegramBot.getCacheService().getSession(chatId));
 
     }
 
     @Test
     public void logoutDeletesDoubleMapping() throws IOException {
 
-        myTelegramBot.logInUser(chatId, user);
+        myTelegramBot.logInUser(chatId, userSession);
 
-        assertLogIn(chatId, user);
+        assertLogIn(chatId, userSession);
 
-        myTelegramBot.logOutUser(chatId, user);
+        myTelegramBot.logOutUser(chatId, userSession);
 
-        Assert.assertNull(myTelegramBot.getCacheService().getChatIdOfUser(user.getId()));
+        Assert.assertNull(myTelegramBot.getCacheService().getChatIdOfSession(userSession));
 
-        Assert.assertNull(myTelegramBot.getCacheService().getUser(chatId));
+        Assert.assertNull(myTelegramBot.getCacheService().getSession(chatId));
 
     }
     @Test
@@ -237,7 +233,7 @@ public class MyTelegramBotTest {
         doReturn(objectMapper.writeValueAsString(notificationDTOList)).when(response).body();
         doReturn(200).when(response).statusCode();
         doReturn(response).when(connector).getPendingNotificationsConnector();
-        myTelegramBot.logInUser(chatId, user);
+        myTelegramBot.logInUser(chatId, userSession);
         HttpResponse<String> response2 = mock(HttpResponse.class);
         doReturn(200).when(response2).statusCode();
         doReturn(response2).when(connector).markAsNotifiedConnector(any());
@@ -320,7 +316,7 @@ public class MyTelegramBotTest {
     }
     @Test
     public void testCreateArticle() throws IOException {
-        myTelegramBot.logInUser(chatId, user);
+        myTelegramBot.logInUser(chatId, userSession);
         Message message = new Message();
         message.setText("/crear_articulo");
         message.setChat(new Chat(chatId,"type"));
@@ -332,8 +328,8 @@ public class MyTelegramBotTest {
         verify(myTelegramBot).sendInteraction(any(),eq("ARTICLE_NAME"));
     }
     @Test
-    public void testSearchArticlesLogged() throws IOException {
-        myTelegramBot.logInUser(chatId, user);
+    public void testSearchArticlesLogged() throws IOException, UnauthorizedException {
+        myTelegramBot.logInUser(chatId, userSession);
         Message message = new Message();
         message.setText("/obtener_articulos");
         message.setChat(new Chat(chatId,"type"));
@@ -370,7 +366,7 @@ public class MyTelegramBotTest {
     }
     @Test
     public void testLogout() throws IOException {
-        myTelegramBot.logInUser(chatId, user);
+        myTelegramBot.logInUser(chatId, userSession);
         Message message = new Message();
         message.setText("/obtener_articulos");
         message.setChat(new Chat(chatId,"type"));

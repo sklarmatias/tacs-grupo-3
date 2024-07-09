@@ -1,15 +1,16 @@
 package org.tacsbot.handlers.impl;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.model.Annotation;
 import org.tacsbot.model.Article;
+import org.tacsbot.model.UserSession;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class ArticleHandler implements CommandsHandler {
     private ArticleType articleType;
     private Integer selectedArticleIndex;
     private List<Article> articleList;
-    private String user;
+    private UserSession userSession;
     @Setter
     private ArticleApi articleApiConnector;
 
@@ -33,19 +34,19 @@ public class ArticleHandler implements CommandsHandler {
         articleApiConnector = new ArticleApiConnection();
     }
 
-    private void subscribe(Message message, String userId, MyTelegramBot bot) throws HttpException {
+    private void subscribe(Message message, UserSession userSession, MyTelegramBot bot) throws HttpException, UnauthorizedException {
         Article article = new Article();
         article.setId(articleId);
-        if (articleApiConnector.suscribeToArticle(article, userId))
+        if (articleApiConnector.suscribeToArticle(article, userSession))
             bot.sendInteraction(message.getFrom(), "SUBSCRIBE_SUCCESS");
         else bot.sendInteraction(message.getFrom(), "SUBSCRIBE_FAIL");
     }
 
-    private void closeArticle(Message message, String userId, MyTelegramBot bot) throws HttpException {
+    private void closeArticle(Message message, UserSession userSession, MyTelegramBot bot) throws HttpException {
         Article article = new Article();
         article.setId(articleId);
         try{
-            Article closedArticle = articleApiConnector.closeArticle(article, userId);
+            Article closedArticle = articleApiConnector.closeArticle(article, userSession);
             bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
             bot.sendArticle(message.getFrom(), closedArticle);
         }
@@ -64,13 +65,13 @@ public class ArticleHandler implements CommandsHandler {
         }
     }
 
-    private void getAllArticles(Message message, MyTelegramBot bot) throws HttpException {
+    private void getAllArticles(Message message, MyTelegramBot bot) throws HttpException, UnauthorizedException {
         List<Article> articles = articleApiConnector.getAllArticles();
         getArticles(message, articles, bot);
     }
 
-    private void getArticlesOf(Message message, String userId, MyTelegramBot bot) throws HttpException {
-        List<Article> articles = articleApiConnector.getArticlesOf(userId);
+    private void getArticlesOf(Message message, UserSession userSession, MyTelegramBot bot) throws HttpException, UnauthorizedException {
+        List<Article> articles = articleApiConnector.getArticlesOf(userSession);
         getArticles(message, articles, bot);
     }
 
@@ -93,7 +94,7 @@ public class ArticleHandler implements CommandsHandler {
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws HttpException {
+    public void processResponse(Message message, MyTelegramBot bot) throws HttpException, UnauthorizedException {
         switch (currentStep) {
             case CHOOSE_ARTICLE_TYPE:
                 if (articleType == null){
@@ -109,14 +110,14 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
-                        if(bot.getCacheService().getUser(chatId) != null && !articleList.isEmpty()) {
+                        if(bot.getCacheService().getSession(chatId) != null && !articleList.isEmpty()) {
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
                         return;
                     case PROPIOS:
-                        user = bot.getCacheService().getUser(chatId).getId();
-                        getArticlesOf(message, user, bot);
+                        userSession = bot.getCacheService().getSession(chatId);
+                        getArticlesOf(message, userSession, bot);
                         if (!articleList.isEmpty()){
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
@@ -151,15 +152,15 @@ public class ArticleHandler implements CommandsHandler {
                 if (articleType == ArticleType.TODOS){
                     //SUBSCRIBE
                     if (action.equals("A")){
-                        user = bot.getCacheService().getUser(chatId).getId();
-                        subscribe(message, user, bot);
+                        userSession = bot.getCacheService().getSession(chatId);
+                        subscribe(message, userSession, bot);
                     } else if (action.equals("B")) {
-                        bot.sendInteraction(message.getFrom(), "CANCELLATION", bot.getCacheService().getUser(chatId).getName());
+                        bot.sendInteraction(message.getFrom(), "CANCELLATION", bot.getCacheService().getSession(chatId));
                     } else{
                         bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     }
                 } else if (articleType == ArticleType.PROPIOS) {
-                    user = bot.getCacheService().getUser(chatId).getId();
+                    userSession = bot.getCacheService().getSession(chatId);
                     switch (action) {
                         //GET SUBSCRIPTIONS
                         case "A":
@@ -167,7 +168,7 @@ public class ArticleHandler implements CommandsHandler {
                             break;
                         //CLOSE
                         case "B":
-                            closeArticle(message, user, bot);
+                            closeArticle(message, userSession, bot);
                             break;
                         default:
                             bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");

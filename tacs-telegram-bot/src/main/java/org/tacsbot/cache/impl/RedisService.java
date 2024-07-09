@@ -5,7 +5,7 @@ import org.tacsbot.cache.CacheService;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.model.Article;
-import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.article.ArticleParser;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.UserParser;
@@ -104,62 +104,62 @@ public class RedisService implements CacheService {
     public ArticleCreationHandler getArticleCreationHandler(Long chatId){
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> response = jedis.zrange(String.valueOf(chatId), 0, 1);
-            return new ArticleCreationHandler(articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
+            return new ArticleCreationHandler(null, articleParser.parseJSONToArticle(response.get(1)), ArticleCreationStep.valueOf(response.get(0)));
         }catch (IllegalArgumentException e){
             return null;
         }
     }
 
-    public User getUser(Long chatId) {
+    public UserSession getSession(Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            return userParser.parseJSONToUser(jedis.get("u:" + chatId));
+            return userParser.parseJSONToUserSession(jedis.get("u:" + chatId));
         } catch (IllegalArgumentException e){
             return null;
         }
     }
 
-    public void saveUser(Long chatId, User user) throws IOException {
-        String jsonUser = userParser.parseUserToJSON(user);
+    public void saveSession(Long chatId, UserSession userSession) throws IOException {
+        String jsonUser = userParser.parseUserSessionToJSON(userSession);
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.set("u:" + chatId, jsonUser);
         }
     }
 
-    public int deleteUser(Long chatId) {
+    public int deleteSession(Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
             return (int) jedis.del("u:" + chatId);
         }
     }
 
-    public Long getChatIdOfUser(String userId) {
+    public Long getChatIdOfSession(UserSession userSession) {
         try (Jedis jedis = jedisPool.getResource()) {
-            String sChatId = jedis.get("ch:" + userId);
+            String sChatId = jedis.get("ch:" + userSession.getSessionId());
             return sChatId == null? null : Long.parseLong(sChatId);
         }
     }
 
     // key: "ch:{userId}" value: "{chatId}"
-    public void saveChatIdOfUser(String userId, Long chatId) {
+    public void saveChatIdOfSession(UserSession userSession, Long chatId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.set("ch:" + userId, String.valueOf(chatId));
+            jedis.set("ch:" + userSession.getSessionId(), String.valueOf(chatId));
         }
     }
 
     // key: "ch:{userId}" value: "{chatId}"
-    public void deleteChatIdOfUser(String userId) {
+    public void deleteChatIdOfSession(UserSession userSession) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.del("ch:" + userId);
+            jedis.del("ch:" + userSession.getSessionId());
         }
     }
 
-    public void addUserMapping(Long chatId, User user) throws IOException {
-        saveUser(chatId, user);
-        saveChatIdOfUser(user.getId(), chatId);
+    public void addSessionMapping(Long chatId, UserSession userSession) throws IOException {
+        saveSession(chatId, userSession);
+        saveChatIdOfSession(userSession, chatId);
     }
 
-    public void deleteUserMapping(Long chatId, User user){
-        deleteUser(chatId);
-        deleteChatIdOfUser(user.getId());
+    public void deleteSessionMapping(Long chatId, UserSession userSession){
+        deleteSession(chatId);
+        deleteChatIdOfSession(userSession);
     }
 
     public void closeConnection(){

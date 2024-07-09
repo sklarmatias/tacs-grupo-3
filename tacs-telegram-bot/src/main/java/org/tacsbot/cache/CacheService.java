@@ -3,6 +3,7 @@ package org.tacsbot.cache;
 import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,21 +20,21 @@ public interface CacheService {
 
     ArticleCreationHandler getArticleCreationHandler(Long chatId);
 
-    User getUser(Long chatId);
+    UserSession getSession(Long chatId);
 
-    void saveUser(Long chatId, User user) throws IOException;
+    void saveSession(Long chatId, UserSession userSession) throws IOException;
 
-    int deleteUser(Long chatId);
+    int deleteSession(Long chatId);
 
-    Long getChatIdOfUser(String userId);
+    Long getChatIdOfSession(UserSession userSession);
 
-    void saveChatIdOfUser(String userId, Long chatId);
+    void saveChatIdOfSession(UserSession userSession, Long chatId);
 
-    void deleteChatIdOfUser(String userId);
+    void deleteChatIdOfSession(UserSession userSession);
 
-    void addUserMapping(Long chatId, User user) throws IOException;
+    void addSessionMapping(Long chatId, UserSession userSession) throws IOException;
 
-    void deleteUserMapping(Long chatId, User user);
+    void deleteSessionMapping(Long chatId, UserSession userSession);
 
     void closeConnection();
 

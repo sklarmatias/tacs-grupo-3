@@ -7,10 +7,12 @@ import org.tacsbot.api.user.impl.UserApiConnection;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.RegisterValidatorHelper;
 import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.tacsbot.bot.MyTelegramBot;
 import javax.naming.AuthenticationException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class LoginHandler implements CommandsHandler {
     private final Long chatId;
@@ -21,7 +23,7 @@ public class LoginHandler implements CommandsHandler {
     private UserApi userApiConnection = new UserApiConnection();
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws IOException {
+    public void processResponse(Message message, MyTelegramBot bot) throws IOException, URISyntaxException, InterruptedException {
         switch (currentStep) {
             case REQUEST_EMAIL:
                 if(RegisterValidatorHelper.validateEmail(message.getText()) != null){
@@ -37,7 +39,7 @@ public class LoginHandler implements CommandsHandler {
             case REQUEST_PASSWORD:
                 user.setPass(message.getText());
                 try{
-                    User savedUser = userApiConnection.logIn(user.getEmail(), user.getPass());
+                    UserSession savedUser = userApiConnection.logIn(user.getEmail(), user.getPass());
                     bot.logInUser(chatId, savedUser);
                     bot.sendInteraction(message.getFrom(), "WELCOME_LOGGED_IN", savedUser.getName());
                 } catch (AuthenticationException e){

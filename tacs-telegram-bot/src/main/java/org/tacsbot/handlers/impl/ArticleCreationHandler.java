@@ -6,10 +6,12 @@ import org.apache.http.HttpException;
 import org.tacsbot.api.article.ArticleApi;
 import org.tacsbot.api.article.impl.ArticleApiConnection;
 import org.tacsbot.bot.MyTelegramBot;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.CommandsHandler;
 import org.tacsbot.helper.ArticleValidatorHelper;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
+import org.tacsbot.model.UserSession;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import java.io.IOException;
 import java.text.ParseException;
@@ -27,28 +29,24 @@ public class ArticleCreationHandler implements CommandsHandler {
     @Setter
     private ArticleApi articleApi;
 
-    public ArticleCreationHandler(String userId) {
-        this(userId, new Article(), ArticleCreationStep.REQUEST_NAME);
+    @Getter
+    private UserSession userSession;
+
+    public ArticleCreationHandler(UserSession userSession) {
+        this(userSession, new Article(), ArticleCreationStep.REQUEST_NAME);
     }
 
-    public ArticleCreationHandler(String userId, Article article, ArticleCreationStep articleCreationStep) {
+    public ArticleCreationHandler(UserSession userSession, Article article, ArticleCreationStep articleCreationStep) {
 
-        this.currentStep = articleCreationStep;
-        this.articleApi = new ArticleApiConnection();
-        this.article = article;
-        this.article.setOwner(userId);
-    }
-
-    public ArticleCreationHandler(Article article, ArticleCreationStep articleCreationStep) {
-
+        this.userSession = userSession;
         this.currentStep = articleCreationStep;
         this.articleApi = new ArticleApiConnection();
         this.article = article;
     }
 
-    private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException {
+    private void createArticle(Message message, Article article, MyTelegramBot bot) throws HttpException, IOException, UnauthorizedException {
         try{
-            articleApi.createArticle(article);
+            articleApi.createArticle(article, userSession);
             bot.sendInteraction(message.getFrom(), "ARTICLE_CREATED");
         } catch(IllegalArgumentException e){
             bot.sendInteraction(message.getFrom(), "ARTICLE_NOT_CREATED");
@@ -56,7 +54,7 @@ public class ArticleCreationHandler implements CommandsHandler {
     }
 
     @Override
-    public void processResponse(Message message, MyTelegramBot bot) throws HttpException, IOException{
+    public void processResponse(Message message, MyTelegramBot bot) throws HttpException, IOException, UnauthorizedException {
         Long chatId = message.getChatId();
         String errorMessage;
         switch (currentStep) {

@@ -6,7 +6,7 @@ import org.tacsbot.handlers.impl.ArticleCreationHandler;
 import org.tacsbot.handlers.impl.ArticleCreationStep;
 import org.tacsbot.model.Article;
 import org.tacsbot.model.CostType;
-import org.tacsbot.model.User;
+import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
 import org.tacsbot.cache.impl.RedisService;
@@ -14,7 +14,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.embedded.RedisServer;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -68,6 +67,9 @@ public class RedisTest {
     );
 
     private Long chatId = 123456789L;
+
+    UserSession userSession = new UserSession("abcdefg", "Thiago", "Cabrera", "thiago@tacs.com");
+
 
     @BeforeClass
     public static void instanciateAll() throws IOException {
@@ -143,7 +145,7 @@ public class RedisTest {
 
     @Test
     public void saveCreationStep() {
-        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(article1, ArticleCreationStep.REQUEST_DEADLINE);
+        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(userSession, article1, ArticleCreationStep.REQUEST_DEADLINE);
         redisService.saveArticleCreationHandler(chatId, articleCreationHandler);
         try (Jedis jedis = jedisPool.getResource()) {
             List<String> strings = jedis.zrange(String.valueOf(chatId), 0, -1);
@@ -154,7 +156,7 @@ public class RedisTest {
 
     @Test
     public void getCreationStep() {
-        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(article1, ArticleCreationStep.REQUEST_MAX_USERS);
+        ArticleCreationHandler articleCreationHandler = new ArticleCreationHandler(userSession, article1, ArticleCreationStep.REQUEST_MAX_USERS);
         redisService.saveArticleCreationHandler(chatId, articleCreationHandler);
         ArticleCreationHandler savedArticleCreationHandler = redisService.getArticleCreationHandler(chatId);
         Assert.assertEquals(articleCreationHandler.getCurrentStep(), savedArticleCreationHandler.getCurrentStep());
@@ -163,30 +165,27 @@ public class RedisTest {
 
     @Test
     public void saveAndGetUser() throws IOException {
-        User user = new User("abcdefg", "Thiago", "Cabrera", "thiago@tacs.com", null);
-        redisService.saveUser(chatId, user);
-        User savedUser = redisService.getUser(chatId);
-        ModelEqualsHelper.assertEquals(user, savedUser);
+        redisService.saveSession(chatId, userSession);
+        UserSession savedSession = redisService.getSession(chatId);
+        Assert.assertEquals(userSession, savedSession);
     }
 
     @Test
     public void getUnknownUser() {
-        Assert.assertNull(redisService.getUser(12345678L));
+        Assert.assertNull(redisService.getSession(12345678L));
     }
 
     @Test
-    public void saveAndGetChatIdOfUser() {
-        String userId = "userId123456789";
-        redisService.saveChatIdOfUser(userId, chatId);
-        Assert.assertEquals(chatId, redisService.getChatIdOfUser(userId));
+    public void saveAndGetChatIdOfSession() {
+        redisService.saveChatIdOfSession(userSession, chatId);
+        Assert.assertEquals(chatId, redisService.getChatIdOfSession(userSession));
 }
 
-    @Test
-    public void saveAndDeleteUser() throws IOException {
-        User user = new User("abcdefg", "Thiago", "Cabrera", "thiago@tacs.com", null);
-        redisService.saveUser(chatId, user);
-        Assert.assertEquals(1, redisService.deleteUser(chatId));
-    }
 
+    @Test
+    public void saveAndDeleteSession() throws IOException {
+        redisService.saveSession(chatId, userSession);
+        Assert.assertEquals(1, redisService.deleteSession(chatId));
+    }
 
 }

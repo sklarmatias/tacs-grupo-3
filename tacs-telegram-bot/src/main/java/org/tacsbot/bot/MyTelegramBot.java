@@ -7,12 +7,10 @@ import org.tacsbot.api.notification.impl.NotificationApiConnection;
 import org.tacsbot.api.report.impl.ReportApiConnection;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
+import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.impl.*;
 import org.tacsbot.handlers.*;
-import org.tacsbot.model.NotificationDTO;
-import org.tacsbot.model.Annotation;
-import org.tacsbot.model.Article;
-import org.tacsbot.model.User;
+import org.tacsbot.model.*;
 import org.tacsbot.cache.impl.RedisService;
 import org.tacsbot.cache.CacheService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -83,7 +81,6 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         Long id = user.getId();
         String txt = msg.getText();
         System.out.println(user.getFirstName() + " wrote " + msg.getText() + " from " + user.getId());
-
         if (msg.isCommand()) {
             resetUserHandlers(id);
             String command = msg.getText();
@@ -91,7 +88,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             if (commandActions.containsKey(command)) {
                 try {
                     commandActions.get(command).execute(msg, txt);
-                } catch (Exception e) {
+                } catch (UnauthorizedException e){
+                    // TODO add session deletion from cache & user interaction
+                }
+                catch (Exception e) {
                     sendInternalErrorMsg(user, e);
                 }
             } else {
@@ -101,6 +101,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         } else if (commandsHandlerMap.containsKey(id)) {
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
+            } catch (UnauthorizedException e){
+                // TODO add session deletion from cache & user interaction
             } catch (Exception e) {
                 sendInternalErrorMsg(user, e);
             }
@@ -132,10 +134,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void createArticle(Message message, String commandText) {
         Long chatId = message.getChatId();
-        User user = cacheService.getUser(chatId);
-        if(user != null) {
+        UserSession userSession = cacheService.getSession(chatId);
+        if(userSession != null) {
             commandsHandlerMap.remove(chatId);
-            ArticleCreationHandler handler = new ArticleCreationHandler(user.getId());
+            ArticleCreationHandler handler = new ArticleCreationHandler(userSession);
             commandsHandlerMap.put(chatId, handler);
             sendInteraction(message.getFrom(), "ARTICLE_NAME");
         }
@@ -145,10 +147,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     }
 
-    public void searchArticles(Message message, String commandText) {
+    public void searchArticles(Message message, String commandText) throws UnauthorizedException {
         Long chatId = message.getChatId();
-        User user = cacheService.getUser(chatId);
-        if(user != null) {
+        UserSession userSession = cacheService.getSession(chatId);
+        if(userSession != null) {
             commandsHandlerMap.remove(chatId);
             ArticleHandler handler = new ArticleHandler(chatId);
             commandsHandlerMap.put(chatId, handler);
@@ -168,9 +170,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void register(Message message, String commandText) {
         Long chatId = message.getChatId();
-        User user = cacheService.getUser(chatId);
-        if(user != null) {
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
+        UserSession userSession = cacheService.getSession(chatId);
+        if(userSession != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", userSession.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -183,9 +185,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     public void login(Message message, String commandText){
         Long chatId = message.getChatId();
-        User user = cacheService.getUser(chatId);
-        if(user != null) {
-            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", user.getName());
+        UserSession userSession = cacheService.getSession(chatId);
+        if(userSession != null) {
+            sendInteraction(message.getFrom(), "ALREADY_LOGGED_IN", userSession.getName());
         }
         else{
             commandsHandlerMap.remove(chatId);
@@ -196,9 +198,9 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
     public void logout(Message message, String commandText){
         Long chatId = message.getChatId();
-        User user = cacheService.getUser(chatId);
-        if(user != null) {
-            logOutUser(chatId, user);
+        UserSession userSession = cacheService.getSession(chatId);
+        if(userSession != null) {
+            logOutUser(chatId, userSession);
             sendInteraction(message.getFrom(), "LOG_OUT");
 
         }
@@ -263,7 +265,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             }else{
                 System.out.println("Enviando notificaciones pendientes...");
                 for (NotificationDTO notification : notifications) {
-                    Long chatId = cacheService.getChatIdOfUser(notification.getSubscriber());
+                    // TODO API must return UserSession instead of User
+                    Long chatId = cacheService.getChatIdOfSession(new UserSession());
                     if (chatId == null) {
                         System.out.println("Chat ID is null for user: " + notification.getSubscriber());
                         continue;  // Skip this notification
@@ -333,11 +336,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
 
-    public void logOutUser(Long chatId, User user){
-        cacheService.deleteUserMapping(chatId, user);
+    public void logOutUser(Long chatId, UserSession userSession){
+        cacheService.deleteSessionMapping(chatId, userSession);
     }
 
-    public void logInUser(Long chatId, User user) throws IOException {
-        cacheService.addUserMapping(chatId, user);
+    public void logInUser(Long chatId, UserSession userSession) throws IOException {
+        cacheService. addSessionMapping(chatId, userSession);
     }
 }

@@ -21,6 +21,11 @@ public class User {
 
     private String pass;
 
+    public User(String email, String password){
+        this.email = email;
+        this.pass = password;
+    }
+
     @Override
     public String toString(){
         return String.format("id:%s;name:%s;surname:%s;email:%s;pass:%s;\n",
