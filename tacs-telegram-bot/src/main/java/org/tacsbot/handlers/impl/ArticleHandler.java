@@ -1,5 +1,6 @@
 package org.tacsbot.handlers.impl;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.apache.http.HttpException;
@@ -16,8 +17,8 @@ import java.util.List;
 
 
 public class ArticleHandler implements CommandsHandler {
-    private final Long chatId;
 
+    @Getter
     private CurrentStep currentStep;
     private String articleId;
     @Setter
@@ -28,8 +29,8 @@ public class ArticleHandler implements CommandsHandler {
     @Setter
     private ArticleApi articleApiConnector;
 
-    public ArticleHandler(Long userId) {
-        this.chatId = userId;
+    public ArticleHandler(UserSession userSession) {
+        this.userSession = userSession;
         this.currentStep = CurrentStep.CHOOSE_ARTICLE_TYPE;
         articleApiConnector = new ArticleApiConnection();
     }
@@ -110,13 +111,12 @@ public class ArticleHandler implements CommandsHandler {
                 switch (articleType) {
                     case TODOS:
                         getAllArticles(message, bot);
-                        if(bot.getCacheService().getSession(chatId) != null && !articleList.isEmpty()) {
+                        if(userSession!= null && !articleList.isEmpty()) {
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
                             bot.sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_INDEX");
                         }
                         return;
                     case PROPIOS:
-                        userSession = bot.getCacheService().getSession(chatId);
                         getArticlesOf(message, userSession, bot);
                         if (!articleList.isEmpty()){
                             currentStep = CurrentStep.CHOOSE_ARTICLE;
@@ -152,15 +152,13 @@ public class ArticleHandler implements CommandsHandler {
                 if (articleType == ArticleType.TODOS){
                     //SUBSCRIBE
                     if (action.equals("A")){
-                        userSession = bot.getCacheService().getSession(chatId);
                         subscribe(message, userSession, bot);
                     } else if (action.equals("B")) {
-                        bot.sendInteraction(message.getFrom(), "CANCELLATION", bot.getCacheService().getSession(chatId));
+                        bot.sendInteraction(message.getFrom(), "CANCELLATION", userSession.getName());
                     } else{
                         bot.sendInteraction(message.getFrom(), "UNKNOWN_RESPONSE");
                     }
                 } else if (articleType == ArticleType.PROPIOS) {
-                    userSession = bot.getCacheService().getSession(chatId);
                     switch (action) {
                         //GET SUBSCRIPTIONS
                         case "A":

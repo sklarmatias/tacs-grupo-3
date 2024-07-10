@@ -152,12 +152,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         UserSession userSession = cacheService.getSession(chatId);
         if(userSession != null) {
             commandsHandlerMap.remove(chatId);
-            ArticleHandler handler = new ArticleHandler(chatId);
+            ArticleHandler handler = new ArticleHandler(userSession);
             commandsHandlerMap.put(chatId, handler);
             sendInteraction(message.getFrom(), "CHOOSE_ARTICLE_SEARCH");
         }
         else{
-            ArticleHandler handler = new ArticleHandler(chatId);
+            ArticleHandler handler = new ArticleHandler(null);
             handler.setArticleType(ArticleType.TODOS);
             try{
                 handler.processResponse(message, this);

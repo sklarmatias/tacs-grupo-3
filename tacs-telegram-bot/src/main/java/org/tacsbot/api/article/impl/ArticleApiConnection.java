@@ -91,7 +91,7 @@ public class ArticleApiConnection implements ArticleApi {
     @Override
     public boolean suscribeToArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException {
         try{
-            String path = String.format("%s/articles/%s/users/", System.getenv("RESOURCE_URL"), article.getId());
+            String path = String.format("/articles/%s/users/", article.getId());
             HttpResponse<String> response = apiHttpConnector.post(path, userSession.getSessionId());
             return response.statusCode() == 200;
         } catch (URISyntaxException | InterruptedException | IOException e) {
@@ -103,7 +103,7 @@ public class ArticleApiConnection implements ArticleApi {
     @Override
     public Article closeArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException, UnauthorizedException {
         try{
-            String path = String.format("%s/articles/%s/close", System.getenv("RESOURCE_URL"), article.getId());
+            String path = String.format("/articles/%s/close", article.getId());
             HttpResponse<String> response = apiHttpConnector.patch(path, "", userSession.getSessionId());
             if (response.statusCode() == 200){
                 return articleJSONParser.parseJSONToArticle(response.body());
@@ -119,7 +119,7 @@ public class ArticleApiConnection implements ArticleApi {
     @Override
     public List<Annotation> viewArticleSubscriptions(Article article) throws HttpException {
         try{
-            String path = String.format("%s/articles/%s/users", System.getenv("RESOURCE_URL"), article.getId());
+            String path = String.format("/articles/%s/users", article.getId());
             HttpResponse<String> response = apiHttpConnector.get(path);
             if (response.statusCode() == 200){
                 return annotationParser.parseJSONToAnnotation(response.body());

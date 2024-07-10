@@ -30,6 +30,8 @@ import static org.mockito.Mockito.*;
 
 public class ArticleHandlerTest {
     private Message message;
+
+    private UserSession userSession;
     private ArticleHandler articleHandler;
     private MyTelegramBot bot;
     private ArticleApiConnection api;
@@ -55,13 +57,14 @@ public class ArticleHandlerTest {
         doNothing().when(bot).sendArticleList(any(), any());
         doNothing().when(bot).sendArticle(any(),any());
         doNothing().when(bot).sendAnnotationList(any(),any());
-        articleHandler = new ArticleHandler(1234L);
-        articleHandler.setArticleApiConnector(api);
 
         CacheService cacheService = mock(RedisService.class);
-        UserSession userSession = new UserSession("abcdefg", "thiago", "cabrera", "thiago@tacs.com");
+        userSession = new UserSession("abcdefg", "thiago", "cabrera", "thiago@tacs.com");
         doReturn(userSession).when(cacheService).getSession(any());
         doReturn(cacheService).when(bot).getCacheService();
+
+        articleHandler = new ArticleHandler(userSession);
+        articleHandler.setArticleApiConnector(api);
 
         articleList = new ArrayList<>();
         Article article = new Article();
@@ -70,19 +73,21 @@ public class ArticleHandlerTest {
         HttpResponse response1 =  mock(HttpResponse.class);
         doReturn(200).when(response1).statusCode();
         doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
-        doReturn(response1).when(connector).get(any());
+        doReturn(response1).when(connector).get(eq("/articles"), eq(userSession.getSessionId()));
+        doReturn(response1).when(connector).get(eq("/articles"));
 
         annotationList = new ArrayList<>();
         annotationList.add(new Annotation());
         HttpResponse response2 =  mock(HttpResponse.class);
         doReturn(200).when(response2).statusCode();
         doReturn(annotationJSONParser.parseAnnotationsToJSON(annotationList)).when(response2).body();
-        doReturn(response2).when(connector).get(any());
+        doReturn(response2).when(connector).get(eq(String.format("/articles/%s/users", article.getId())));
+
 
         HttpResponse response3 =  mock(HttpResponse.class);
         doReturn(200).when(response3).statusCode();
         doReturn(articleJSONParser.parseArticleToJSON(article)).when(response3).body();
-        doReturn(response3).when(connector).patch(any(),any(), any());
+        doReturn(response3).when(connector).patch(eq(String.format("/articles/%s/close", article.getId())),eq(""), eq(userSession.getSessionId()));
 
         HttpResponse response4 =  mock(HttpResponse.class);
         doReturn(200).when(response4).statusCode();
@@ -96,10 +101,10 @@ public class ArticleHandlerTest {
         HttpResponse response1 =  mock(HttpResponse.class);
         doReturn(200).when(response1).statusCode();
         doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
-        doReturn(response1).when(connector).post(any(), any());
+        doReturn(response1).when(connector).get(eq("/articles"));
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("NO_ARTICLES"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("NO_ARTICLES"));
     }
     @Test
     public void testArticleTypeBEmpty() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
@@ -107,16 +112,16 @@ public class ArticleHandlerTest {
         HttpResponse response1 =  mock(HttpResponse.class);
         doReturn(200).when(response1).statusCode();
         doReturn(articleJSONParser.parseArticleListToJSON(articleList)).when(response1).body();
-        doReturn(response1).when(connector).post(any(), any());
+        doReturn(response1).when(connector).get(eq("/articles"), eq(userSession.getSessionId()));
         message.setText("B");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("NO_ARTICLES"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("NO_ARTICLES"));
     }
     @Test
     public void testArticleTypeWrong() throws HttpException, UnauthorizedException {
         message.setText("C");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
     @Test
     public void testArticleWrongIndex() throws HttpException, UnauthorizedException {
@@ -124,7 +129,7 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("B");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
     @Test
     public void testArticleIndexOutOfBound() throws HttpException, UnauthorizedException {
@@ -132,7 +137,7 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("4");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("ARTICLE_INVALID_INDEX"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("ARTICLE_INVALID_INDEX"));
     }
     @Test
     public void testArticleSubscribeCancel() throws HttpException, UnauthorizedException {
@@ -142,7 +147,7 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("B");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("CANCELLATION"),eq("name"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CANCELLATION"),eq(userSession.getName()));
     }
 
     @Test
@@ -153,7 +158,7 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("C");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
 
     @Test
@@ -164,7 +169,7 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("C");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
     @Test
     public void testArticleSubscribeFail() throws HttpException, URISyntaxException, IOException, InterruptedException, UnauthorizedException {
@@ -177,11 +182,11 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_CONFIRMATION"));
-        verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_FAIL"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("SUBSCRIBE_CONFIRMATION"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("SUBSCRIBE_FAIL"));
     }
     @Test
     public void testArticleCloseFail() throws HttpException, URISyntaxException, IOException, InterruptedException, UnauthorizedException {
@@ -194,11 +199,11 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("B");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendInteraction(any(User.class), eq("ARTICLE_NOT_CLOSED"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("ARTICLE_NOT_CLOSED"));
     }
     @Test
     public void testArticleViewSubscriptorsNoSubscriptions() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
@@ -212,29 +217,33 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendInteraction(any(User.class), eq("NO_SUBSCRIPTIONS"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("NO_SUBSCRIPTIONS"));
     }
 
     @Test
     public void testArticleViewSubscriptorsWrong() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(400).when(response).statusCode();
-        doReturn(response).when(connector).get(any());
+        doReturn(response).when(connector).get(eq("/articles/" + articleList.get(0).getId() + "/users"));
+
         message.setText("B");
         articleHandler.processResponse(message,bot);
+        verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot, times(1)).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("CHOOSE_ARTICLE_INDEX"));
+
         message.setText("1");
         articleHandler.processResponse(message,bot);
+        verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
+
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendInteraction(any(User.class), eq("UNKNOWN_RESPONSE"));
+        verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
     @Test
     public void testArticleSubscribeOk() throws HttpException, UnauthorizedException {
@@ -244,11 +253,11 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_CONFIRMATION"));
-        verify(bot).sendInteraction(any(User.class), eq("SUBSCRIBE_SUCCESS"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("SUBSCRIBE_CONFIRMATION"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("SUBSCRIBE_SUCCESS"));
     }
     @Test
     public void testArticleCloseOk() throws HttpException, UnauthorizedException {
@@ -258,11 +267,11 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("B");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendInteraction(any(User.class), eq("ARTICLE_CLOSED"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("ARTICLE_CLOSED"));
     }
     @Test
     public void testArticleViewSubscriptorsOk() throws HttpException, UnauthorizedException {
@@ -272,17 +281,17 @@ public class ArticleHandlerTest {
         articleHandler.processResponse(message,bot);
         message.setText("A");
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
-        verify(bot).sendInteraction(any(User.class), eq("CHOSEN_ARTICLE"), eq(1));
-        verify(bot).sendInteraction(any(User.class), eq("CHOOSE_OWN_ARTICLES_ACTION"));
-        verify(bot).sendAnnotationList(any(User.class), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOSEN_ARTICLE"), eq(1));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
+        verify(bot).sendAnnotationList(eq(message.getFrom()), any(List.class));
     }
     @Test
     public void testShowArticlesWithoutLogin() throws HttpException, UnauthorizedException {
         articleHandler.setArticleType(ArticleType.TODOS);
         articleHandler.processResponse(message,bot);
-        verify(bot).sendInteraction(any(User.class), eq("AVAILABLE_ARTICLES"));
-        verify(bot).sendArticleList(any(User.class), any(List.class));
+        verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
+        verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
     }
 }
