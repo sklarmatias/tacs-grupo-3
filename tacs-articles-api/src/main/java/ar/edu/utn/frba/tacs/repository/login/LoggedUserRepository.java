@@ -12,4 +12,5 @@ public interface LoggedUserRepository {
     public void closeSession(String id);
     public void closeAllSessions(String id);
     public List<LoggedUser> listOpenSessions(String userId);
+    public List<String> listOpenSessionsInBot(String userId);
 }

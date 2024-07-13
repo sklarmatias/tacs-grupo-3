@@ -37,7 +37,7 @@ public class Notification {
     public NotificationDTO convertToDTO() {
         return new NotificationDTO(this);
     }
-
+@Setter
     public static class NotificationDTO {
         public String id;
         public String type;

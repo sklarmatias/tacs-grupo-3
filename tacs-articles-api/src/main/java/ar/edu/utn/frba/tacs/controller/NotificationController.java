@@ -1,8 +1,11 @@
 package ar.edu.utn.frba.tacs.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import ar.edu.utn.frba.tacs.model.Notification;
+import ar.edu.utn.frba.tacs.repository.login.LoggedUserMemoryRepository;
+import ar.edu.utn.frba.tacs.repository.login.LoggedUserRepository;
 import ar.edu.utn.frba.tacs.service.NotificationService;
 import ar.edu.utn.frba.tacs.service.ReportService;
 import jakarta.ws.rs.*;
@@ -13,6 +16,7 @@ import jakarta.ws.rs.core.Response;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final LoggedUserRepository loggedUserRepository = LoggedUserMemoryRepository.getInstance();
     public NotificationController(){
         notificationService = new NotificationService(System.getenv("CON_STRING"));
     }
@@ -22,9 +26,18 @@ public class NotificationController {
     @GET
     public List<Notification.NotificationDTO> getPendingNotifications() {
         List<Notification> pendingNotifications = notificationService.getPendingNotifications();
-        return pendingNotifications.stream()
-                .map(Notification::convertToDTO)
-                .collect(Collectors.toList());
+        List<Notification.NotificationDTO> notificationsWithSessions = new ArrayList<>();
+
+        for (Notification notification : pendingNotifications) {
+            List<String> sessions = loggedUserRepository.listOpenSessionsInBot(notification.getSubscriber());
+            for (String sessionId : sessions) {
+                Notification.NotificationDTO dto = notification.convertToDTO();
+                dto.setSubscriber(sessionId);
+                notificationsWithSessions.add(dto);
+            }
+        }
+
+        return notificationsWithSessions;
     }
 
     @POST

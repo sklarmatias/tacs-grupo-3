@@ -265,15 +265,17 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             }else{
                 System.out.println("Enviando notificaciones pendientes...");
                 for (NotificationDTO notification : notifications) {
-                    // TODO API must return UserSession instead of User
-                    Long chatId = cacheService.getChatIdOfSession(new UserSession());
+                    UserSession notificationUserSession = new UserSession ();
+                    notificationUserSession.setSessionId( notification.getSubscriber());
+                    Long chatId = cacheService.getChatIdOfSession(notificationUserSession);
                     if (chatId == null) {
-                        System.out.println("Chat ID is null for user: " + notification.getSubscriber());
+                        System.out.println("Chat ID is null for user session: " + notification.getSubscriber());
                         continue;  // Skip this notification
                     }
                     try {
                         String message = generateMessage(notification);
                         sendText(chatId, message);
+                        //TODO Different Sessions Same Notifaction Id will try to mark it as read more than once
                         boolean marked = notificationApi.markAsNotified(notification.getId());
                         if (!marked) {
                             System.err.println("Failed to mark notification as notified: " + notification.getId());

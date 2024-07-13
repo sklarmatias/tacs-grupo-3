@@ -5,7 +5,6 @@ import ar.edu.utn.frba.tacs.model.Client;
 import ar.edu.utn.frba.tacs.model.LoggedUser;
 import ar.edu.utn.frba.tacs.model.User;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -55,5 +54,10 @@ public class LoggedUserMemoryRepository implements LoggedUserRepository {
     @Override
     public List<LoggedUser> listOpenSessions(String userId) {
         return loggedUserList.values().stream().filter(a-> Objects.equals(a.getUserId(), userId)).toList();
+    }
+
+    @Override
+    public List<String> listOpenSessionsInBot(String userId) {
+        return loggedUserList.values().stream().filter(a-> Objects.equals(a.getUserId(), userId)).filter(a->a.getClient()==Client.BOT).map(LoggedUser::getSessionId).toList();
     }
 }
