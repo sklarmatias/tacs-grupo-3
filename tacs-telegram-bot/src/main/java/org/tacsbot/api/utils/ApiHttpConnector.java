@@ -38,7 +38,7 @@ public class ApiHttpConnector {
     public HttpResponse<String> post(String path, String body) throws IOException, InterruptedException, URISyntaxException {
 
         System.out.println(path + "\n" + "Sessionless variant post");
-        HttpRequest request = createBasicRequestBuilder(path, body)
+        HttpRequest request = createBasicRequestBuilder(path)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
         return sendRequest(request);
