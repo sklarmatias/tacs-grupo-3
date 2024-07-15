@@ -258,6 +258,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
 
     public void checkPendingNotifications() {
         try {
+            System.out.println(System.getenv("RESOURCE_URL"));
 
             List<NotificationDTO> notifications = notificationApi.getPendingNotifications();
             if (notifications.isEmpty()){

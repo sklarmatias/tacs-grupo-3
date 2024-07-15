@@ -20,6 +20,7 @@ public class MongoNotificationsRepository implements NotificationsRepository{
     }
     @Override
     public void save(Notification notification){
+        System.out.println("Saving notification: " + notification);
         Document document = MongoNotificationMapper.convertNotificationToDocument(notification);
         dbConnector.insert("notifications", document);
     }

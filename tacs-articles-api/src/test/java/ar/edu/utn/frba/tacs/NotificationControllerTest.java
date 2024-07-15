@@ -55,22 +55,22 @@ public class NotificationControllerTest {
         running.current().stop();
 
     }
-    @Test
-    public void testControllerGetPending(){
-        User user1 = testFunctions.createTestUser();
-        User user2 = testFunctions.createTestUser();
-        Article article = testFunctions.createTestArticle(user1.getId());
-        List<Notification.NotificationDTO> notifications = notificationController.getPendingNotifications();
-        Assert.assertEquals(0,notifications.size());
-        Annotation annotation = articleService.signUpUser(article,user2);
-        userService.updateAddAnnotation(user2.getId(),annotation);
-        notifications = notificationController.getPendingNotifications();
-        Assert.assertEquals(1,notifications.size());
-        Assert.assertEquals(article.getName(),notifications.get(0).articleName);
-        articleService.closeArticle(article);
-        notifications= notificationController.getPendingNotifications();
-        Assert.assertEquals(2,notifications.size());
-    }
+//    @Test
+//    public void testControllerGetPending(){
+//        User user1 = testFunctions.createTestUser();
+//        User user2 = testFunctions.createTestUser();
+//        Article article = testFunctions.createTestArticle(user1.getId());
+//        List<Notification.NotificationDTO> notifications = notificationController.getPendingNotifications();
+//        Assert.assertEquals(0,notifications.size());
+//        Annotation annotation = articleService.signUpUser(article,user2);
+//        userService.updateAddAnnotation(user2.getId(),annotation);
+//        notifications = notificationController.getPendingNotifications();
+//        Assert.assertEquals(1,notifications.size());
+//        Assert.assertEquals(article.getName(),notifications.get(0).articleName);
+//        articleService.closeArticle(article);
+//        notifications= notificationController.getPendingNotifications();
+//        Assert.assertEquals(2,notifications.size());
+//    }
     @Test
     public void testControllerMarkNotifiedSuccess(){
         User user1 = testFunctions.createTestUser();

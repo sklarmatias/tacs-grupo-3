@@ -3,6 +3,8 @@ package ar.edu.utn.frba.tacs.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import ar.edu.utn.frba.tacs.model.LoggedUser;
 import ar.edu.utn.frba.tacs.model.Notification;
 import ar.edu.utn.frba.tacs.repository.login.LoggedUserMemoryRepository;
 import ar.edu.utn.frba.tacs.repository.login.LoggedUserRepository;
@@ -26,14 +28,22 @@ public class NotificationController {
     @GET
     public List<Notification.NotificationDTO> getPendingNotifications() {
         List<Notification> pendingNotifications = notificationService.getPendingNotifications();
+        System.out.println("Cantidad de Notificaciones pendientes: " + pendingNotifications.size());
         List<Notification.NotificationDTO> notificationsWithSessions = new ArrayList<>();
-
+        List<LoggedUser> activeSessions ;
         for (Notification notification : pendingNotifications) {
+            activeSessions = loggedUserRepository.listOpenSessions(notification.getSubscriber());
+            System.out.println("Cantidad de Sesiones activas en total: " + activeSessions.size() + " - " + "UserId: " + notification.getSubscriber());
             List<String> sessions = loggedUserRepository.listOpenSessionsInBot(notification.getSubscriber());
+            System.out.println("Cantidad de Sesiones activas en BOT: " + activeSessions.size() + " - " + "UserId: " + notification.getSubscriber());
+            if (sessions != null) {
+                System.out.println("No se encontraron sesiones activas asociadas a las notificiaciones pendientes");
+            }else {
             for (String sessionId : sessions) {
                 Notification.NotificationDTO dto = notification.convertToDTO();
                 dto.setSubscriber(sessionId);
                 notificationsWithSessions.add(dto);
+            }
             }
         }
 

@@ -41,6 +41,10 @@ public class RegisterHandler implements CommandsHandler {
         try {
             bot.sendInteraction(message.getFrom(), "LOADING");
             try{
+                System.out.println(user.getName());
+                System.out.println(user.getPass());
+                System.out.println(user.getSurname());
+                System.out.println(user.getEmail());
                 userApiConnection.register(user.getName(), user.getSurname(), user.getEmail(), user.getPass());
                 bot.sendInteraction(message.getFrom(), "REGISTER_COMPLETED");
             } catch (IllegalArgumentException e){

@@ -46,6 +46,7 @@ public class InMemoryUsersRepository implements UsersRepository {
 
     @Override
     public String save(User user) {
+        System.out.println("Intentando guardar usuario en memoria. Email: " + user.getEmail());
         if (user.getName() == null)
             throw new IllegalArgumentException("\"nombre\" field required");
         if (user.getSurname() == null)

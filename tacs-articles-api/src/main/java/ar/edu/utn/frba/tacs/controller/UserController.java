@@ -54,9 +54,13 @@ public class UserController {
     @Consumes("application/json")
     public Response saveUser(User user) {
         try{
-            String userId = userService.saveUser(user);
+            System.out.println("Se recibio un intento de registro: Email: " + user.getEmail());
+            System.out.println("Registering user: " + user.getEmail());
+            System.out.println(user);
+            userService.saveUser(user);
             return Response.status(201).build();
         } catch (DuplicatedEmailException e){
+            System.out.println("Not able to register: " + user.getEmail());
             return Response.status(400).entity(e.getMessage()).build();
         }
     }
@@ -65,6 +69,7 @@ public class UserController {
     @Consumes("application/json")
     public Response loginUser(User user,@HeaderParam("client") Client client) {
         try{
+            System.out.println("Se recibio un intento de login: Logining user: " + user.getEmail());
             LoggedUser.LoggedUserDTO loggedUser = userService.loginUser(user.getEmail(),user.getPass(),client);
 
             return Response.ok(loggedUser).build();

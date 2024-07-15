@@ -21,18 +21,22 @@ public class NotificationService {
         notificationsRepository = new MongoNotificationsRepository(url);
     }
     public void generateClosedArticleNotificationSubscriber(Notification notification){
+        System.out.println("Generating ClosedArticleNotificationSubscriber");
         notification.setType("ClosedArticleNotification");
         notificationsRepository.save(notification);
     }
     public void generateClosedArticleNotificationOwner(Notification notification){
+        System.out.println("Generating ClosedArticleNotificationOwner");
         notification.setType("OwnerClosedArticleNotification");
         notificationsRepository.save(notification);
     }
     public void generateSubscriptionNotificationSubscriber(Notification notification){
+        System.out.println("Generating SubscriptionNotificationSubscriber");
         notification.setType("SubscriptionNotification");
         notificationsRepository.save(notification);
     }
     public void generateSubscriptionNotificationOwner(Notification notification){
+        System.out.println("Generating SubscriptionNotificationOwner");
         notification.setType("OwnerSubscriptionNotification");
         notificationsRepository.save(notification);
     }

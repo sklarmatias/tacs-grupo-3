@@ -34,6 +34,7 @@ public class LoggedUserMemoryRepository implements LoggedUserRepository {
 
     @Override
     public LoggedUser logUser(User user, Client client) {
+        System.out.println("Intentando loguear usuario: " + user + ", Cliente: " + client);
         String id = hashingHelper.hash(String.valueOf(userCounter));
         userCounter++;
         LoggedUser loggedUser = new LoggedUser(id,user.getId(),client,user.getName(),user.getSurname(),user.getEmail());

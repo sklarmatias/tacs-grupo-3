@@ -11,6 +11,7 @@ import java.net.http.HttpResponse;
 public class ApiHttpConnector {
 
     private HttpRequest.Builder createBasicRequestBuilder(String path) throws URISyntaxException {
+        System.out.println("Create Basic Request, path: " + System.getenv("RESOURCE_URL") + path);
         return HttpRequest.newBuilder()
                 .uri(new URI(System.getenv("RESOURCE_URL") + path))
                 .header("Content-Type", "application/json")
@@ -18,6 +19,7 @@ public class ApiHttpConnector {
     }
 
     private HttpRequest.Builder createBasicRequestBuilder(String path, String sessionId) throws URISyntaxException {
+        System.out.println("Create Basic Request, path: " + System.getenv("RESOURCE_URL") + path);
         return HttpRequest.newBuilder()
                 .uri(new URI(System.getenv("RESOURCE_URL") + path))
                 .header("Content-Type", "application/json")
@@ -34,6 +36,8 @@ public class ApiHttpConnector {
 
     // sessionless variant
     public HttpResponse<String> post(String path, String body) throws IOException, InterruptedException, URISyntaxException {
+
+        System.out.println(path + "\n" + "Sessionless variant post");
         HttpRequest request = createBasicRequestBuilder(path, body)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
@@ -41,6 +45,7 @@ public class ApiHttpConnector {
     }
 
     public HttpResponse<String> post(String path, String body, String sessionId) throws IOException, InterruptedException, URISyntaxException, UnauthorizedException {
+        System.out.println(path + "\n" + "Session post");
         HttpRequest request = createBasicRequestBuilder(path, sessionId)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();

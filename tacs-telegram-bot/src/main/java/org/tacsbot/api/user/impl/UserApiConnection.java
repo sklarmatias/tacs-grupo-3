@@ -46,6 +46,7 @@ public class UserApiConnection implements UserApi {
         public void register(String name, String surname, String email, String password) throws IOException, IllegalArgumentException {
             User user = new User(null, name, surname, email, password);
             try {
+                System.out.println("Trying to register user...");
                 HttpResponse<String> response = apiHttpConnector.post("/users/register", userParser.parseUserToJSON(user));
                 if(response.statusCode() == 400 && response.body().equals(String.format("Error! Email %s already in use", email)))
                     throw new IllegalArgumentException("Email unavailable");

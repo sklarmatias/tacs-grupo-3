@@ -31,6 +31,7 @@ public class UserService {
 
     public LoggedUser.LoggedUserDTO loginUser(String email, String pass, Client client) throws LoginException {
         try{
+            System.out.println("Intentando obtener session en memoria. Email: " + email + ", pass: " + pass + ", cliente: " + client);
             String hashedPass = hashingHelper.hash(pass);
             User user = usersRepository.find(email, hashedPass);
             return loggedUserRepository.logUser(user, client).convertToDTO();

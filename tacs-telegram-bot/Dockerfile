@@ -9,4 +9,4 @@ FROM openjdk:22
 WORKDIR /app
 COPY --from=builder app/target/*.jar .
 EXPOSE 80
-ENTRYPOINT ["java", "-jar", "/app/BotTACS-1.1.0-jar-with-dependencies.jar"]
+ENTRYPOINT ["java", "-jar", "/app/BotTACS-1.2.0-jar-with-dependencies.jar"]
