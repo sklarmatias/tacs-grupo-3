@@ -319,63 +319,47 @@ public class MyTelegramBotTest {
     @Test
     public void testCreateArticle() throws IOException {
         myTelegramBot.logInUser(chatId, userSession);
-        Message message = new Message();
-        message.setText("/crear_articulo");
-        message.setChat(new Chat(chatId,"type"));
-        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
-        telegramuser.setId(123L);
-        telegramuser.setFirstName("name");
-        message.setFrom(telegramuser);
+        Message message = createBasicMessage("/obtener_articulos");
         myTelegramBot.createArticle(message,message.getText());
         verify(myTelegramBot).sendInteraction(any(),eq("ARTICLE_NAME"));
     }
     @Test
     public void testSearchArticlesLogged() throws IOException, UnauthorizedException {
         myTelegramBot.logInUser(chatId, userSession);
-        Message message = new Message();
-        message.setText("/obtener_articulos");
-        message.setChat(new Chat(chatId,"type"));
-        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
-        telegramuser.setId(123L);
-        telegramuser.setFirstName("name");
-        message.setFrom(telegramuser);
+        Message message = createBasicMessage("/obtener_articulos");
         myTelegramBot.searchArticles(message,message.getText());
         verify(myTelegramBot).sendInteraction(any(),eq("CHOOSE_ARTICLE_SEARCH"));
     }
     @Test
     public void testRegister() throws IOException {
-        Message message = new Message();
-        message.setText("/obtener_articulos");
-        message.setChat(new Chat(chatId,"type"));
-        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
-        telegramuser.setId(123L);
-        telegramuser.setFirstName("name");
-        message.setFrom(telegramuser);
+        Message message = createBasicMessage("/obtener_articulos");
         myTelegramBot.register(message,message.getText());
         verify(myTelegramBot).sendInteraction(any(),eq("REGISTER_NAME"));
     }
     @Test
     public void testLogin() throws IOException {
-        Message message = new Message();
-        message.setText("/obtener_articulos");
-        message.setChat(new Chat(chatId,"type"));
-        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
-        telegramuser.setId(123L);
-        telegramuser.setFirstName("name");
-        message.setFrom(telegramuser);
+        Message message = createBasicMessage("/obtener_articulos");
         myTelegramBot.login(message,message.getText());
         verify(myTelegramBot).sendInteraction(any(),eq("LOGIN_EMAIL"));
     }
-    @Test
-    public void testLogout() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
-        myTelegramBot.logInUser(chatId, userSession);
+
+    public Message createBasicMessage(String text){
         Message message = new Message();
-        message.setText("/obtener_articulos");
+        message.setText(text);
         message.setChat(new Chat(chatId,"type"));
         org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
         telegramuser.setId(123L);
         telegramuser.setFirstName("name");
         message.setFrom(telegramuser);
+        return message;
+    }
+
+    @Test
+    public void testLogout() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
+        myTelegramBot.logInUser(chatId, userSession);
+
+        Message message = createBasicMessage("/obtener_articulos");
+
         LogOutHandler logOutHandler = new LogOutHandler(userSession);
         ApiHttpConnector apiHttpConnector = mock(ApiHttpConnector.class);
         HttpResponse<String> response = mock(HttpResponse.class);
@@ -384,17 +368,13 @@ public class MyTelegramBotTest {
         logOutHandler.setApiHttpConnector(apiHttpConnector);
         logOutHandler.processResponse(message, myTelegramBot);
         verify(myTelegramBot).sendInteraction(any(),eq("LOG_OUT"));
+        Assert.assertNull(myTelegramBot.getCacheService().getSession(chatId));
+        Assert.assertNull(myTelegramBot.getCacheService().getChatIdOfSession(userSession));
     }
 
     @Test
     public void testLogoutWithNoSession() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
-        Message message = new Message();
-        message.setText("/logout");
-        message.setChat(new Chat(chatId,"type"));
-        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
-        telegramuser.setId(123L);
-        telegramuser.setFirstName("name");
-        message.setFrom(telegramuser);
+        Message message = createBasicMessage("/logout");
         myTelegramBot.logout(message, message.getText());
         verify(myTelegramBot).sendInteraction(any(),eq("LOGIN_REQUIRED"));
     }

@@ -205,6 +205,7 @@ public class ArticleHandlerTest {
         verify(bot).sendInteraction(eq(message.getFrom()), eq("CHOOSE_OWN_ARTICLES_ACTION"));
         verify(bot).sendInteraction(eq(message.getFrom()), eq("ARTICLE_NOT_CLOSED"));
     }
+
     @Test
     public void testArticleViewSubscriptorsNoSubscriptions() throws HttpException, IOException, URISyntaxException, InterruptedException, UnauthorizedException {
         HttpResponse response =  mock(HttpResponse.class);

@@ -32,7 +32,7 @@ public class LogOutHandler implements CommandsHandler {
 
     @Override
     public void processResponse(Message message, MyTelegramBot bot) throws IOException, HttpException, UnauthorizedException, URISyntaxException, InterruptedException {
-        HttpResponse<String> response = apiHttpConnector.delete("/sessions", session.getSessionId());
+        HttpResponse<String> response = apiHttpConnector.delete("/session", session.getSessionId());
         if (response.statusCode() == 200){
             bot.getCacheService().deleteSessionMapping(message.getChatId(), session);
             bot.sendInteraction(message.getFrom(), "LOG_OUT");
