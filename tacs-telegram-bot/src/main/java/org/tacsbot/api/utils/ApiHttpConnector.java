@@ -25,7 +25,7 @@ public class ApiHttpConnector {
                 .header("session", sessionId);
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
+    public HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         client.close();

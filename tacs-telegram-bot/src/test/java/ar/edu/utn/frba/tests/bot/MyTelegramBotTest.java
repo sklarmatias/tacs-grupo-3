@@ -372,6 +372,23 @@ public class MyTelegramBotTest {
         Assert.assertNull(myTelegramBot.getCacheService().getChatIdOfSession(userSession));
     }
 
+//    @Test
+//    public void testLogoutFailed() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
+//        myTelegramBot.logInUser(chatId, userSession);
+//
+//        Message message = createBasicMessage("/obtener_articulos");
+//
+//        LogOutHandler logOutHandler = new LogOutHandler(userSession);
+//        ApiHttpConnector apiHttpConnector = mock(ApiHttpConnector.class);
+//        HttpResponse<String> response = mock(HttpResponse.class);
+//        doReturn(response).when(apiHttpConnector).sendRequest(any());
+//        logOutHandler.setApiHttpConnector(apiHttpConnector);
+//        Assert.assertThrows(RuntimeException.class, () -> logOutHandler.processResponse(message, myTelegramBot));
+//        verify(myTelegramBot, times(0)).sendInteraction(any(),eq("LOG_OUT"));
+//        Assert.assertNotNull(myTelegramBot.getCacheService().getSession(chatId));
+//        Assert.assertNotNull(myTelegramBot.getCacheService().getChatIdOfSession(userSession));
+//    }
+
     @Test
     public void testLogoutWithNoSession() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
         Message message = createBasicMessage("/logout");
