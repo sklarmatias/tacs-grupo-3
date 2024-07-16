@@ -207,9 +207,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         UserSession userSession = cacheService.getSession(message.getChatId());
         if(userSession == null) {
             sendInteraction(message.getFrom(), "LOGIN_REQUIRED");
+        } else{
+            LogOutHandler logOutHandler = new LogOutHandler(userSession);
+            logOutHandler.processResponse(message, this);
         }
-        LogOutHandler logOutHandler = new LogOutHandler(userSession);
-        logOutHandler.processResponse(message, this);
 
     }
 

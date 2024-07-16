@@ -386,4 +386,17 @@ public class MyTelegramBotTest {
         verify(myTelegramBot).sendInteraction(any(),eq("LOG_OUT"));
     }
 
+    @Test
+    public void testLogoutWithNoSession() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
+        Message message = new Message();
+        message.setText("/logout");
+        message.setChat(new Chat(chatId,"type"));
+        org.telegram.telegrambots.meta.api.objects.User telegramuser = new org.telegram.telegrambots.meta.api.objects.User();
+        telegramuser.setId(123L);
+        telegramuser.setFirstName("name");
+        message.setFrom(telegramuser);
+        myTelegramBot.logout(message, message.getText());
+        verify(myTelegramBot).sendInteraction(any(),eq("LOGIN_REQUIRED"));
+    }
+
 }
