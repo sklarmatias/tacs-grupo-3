@@ -89,10 +89,13 @@ public class ArticleApiConnection implements ArticleApi {
     }
 
     @Override
-    public boolean suscribeToArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException {
+    public boolean suscribeToArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException, UnauthorizedException {
         try{
             String path = String.format("/articles/%s/users/", article.getId());
             HttpResponse<String> response = apiHttpConnector.post(path, userSession.getSessionId());
+            if(response.statusCode() == 401){
+                throw new UnauthorizedException(userSession.getSessionId());
+            }
             return response.statusCode() == 200;
         } catch (URISyntaxException | InterruptedException | IOException e) {
             throw new HttpException(String.format("[Error] Exception subscribing userId %s to articleId %s.\n%s\n",
@@ -107,7 +110,10 @@ public class ArticleApiConnection implements ArticleApi {
             HttpResponse<String> response = apiHttpConnector.patch(path, "", userSession.getSessionId());
             if (response.statusCode() == 200){
                 return articleJSONParser.parseJSONToArticle(response.body());
-            } else{
+            } else if(response.statusCode() == 401){
+                throw new UnauthorizedException(userSession.getSessionId());
+            }
+            else {
                 throw new IllegalArgumentException("Couldn't close article of id " + article.getId());
             }
         } catch (URISyntaxException | InterruptedException | IOException e) {

@@ -82,4 +82,15 @@ public class ApiHttpConnector {
         return response;
     }
 
+    public HttpResponse<String> delete(String path, String sessionId) throws IOException, InterruptedException, URISyntaxException, UnauthorizedException {
+        HttpRequest request = createBasicRequestBuilder(path, sessionId)
+                .method("DELETE", HttpRequest.BodyPublishers.ofString(""))
+                .build();
+        HttpResponse<String> response = sendRequest(request);
+        if (response.statusCode() == 401){
+            throw new UnauthorizedException(sessionId);
+        }
+        return response;
+    }
+
 }

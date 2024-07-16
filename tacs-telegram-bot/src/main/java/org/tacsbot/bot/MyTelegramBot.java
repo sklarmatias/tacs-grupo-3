@@ -5,6 +5,7 @@ import org.apache.http.HttpException;
 import org.tacsbot.api.notification.NotificationApi;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
 import org.tacsbot.api.report.impl.ReportApiConnection;
+import org.tacsbot.api.utils.ApiHttpConnector;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.exceptions.UnauthorizedException;
@@ -19,6 +20,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,17 +203,13 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             sendInteraction(message.getFrom(), "LOGIN_EMAIL");
         }
     }
-    public void logout(Message message, String commandText){
-        Long chatId = message.getChatId();
-        UserSession userSession = cacheService.getSession(chatId);
-        if(userSession != null) {
-            logOutUser(chatId, userSession);
-            sendInteraction(message.getFrom(), "LOG_OUT");
-
-        }
-        else{
+    public void logout(Message message, String commandText) throws UnauthorizedException, IOException, URISyntaxException, InterruptedException, HttpException {
+        UserSession userSession = cacheService.getSession(message.getChatId());
+        if(userSession == null) {
             sendInteraction(message.getFrom(), "LOGIN_REQUIRED");
         }
+        LogOutHandler logOutHandler = new LogOutHandler(userSession);
+        logOutHandler.processResponse(message, this);
 
     }
 
@@ -342,11 +343,11 @@ public class MyTelegramBot extends TelegramLongPollingBot {
     }
 
 
-    public void logOutUser(Long chatId, UserSession userSession){
-        cacheService.deleteSessionMapping(chatId, userSession);
-    }
-
     public void logInUser(Long chatId, UserSession userSession) throws IOException {
         cacheService. addSessionMapping(chatId, userSession);
+    }
+
+    public void logOutUser(Long chatId, UserSession userSession) {
+        getCacheService().deleteSessionMapping(chatId, userSession);
     }
 }

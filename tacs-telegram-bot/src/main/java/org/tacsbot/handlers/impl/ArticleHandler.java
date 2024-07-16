@@ -43,7 +43,7 @@ public class ArticleHandler implements CommandsHandler {
         else bot.sendInteraction(message.getFrom(), "SUBSCRIBE_FAIL");
     }
 
-    private void closeArticle(Message message, UserSession userSession, MyTelegramBot bot) throws HttpException {
+    private void closeArticle(Message message, UserSession userSession, MyTelegramBot bot) throws HttpException, UnauthorizedException {
         Article article = new Article();
         article.setId(articleId);
         try{
@@ -51,7 +51,7 @@ public class ArticleHandler implements CommandsHandler {
             bot.sendInteraction(message.getFrom(), "ARTICLE_CLOSED");
             bot.sendArticle(message.getFrom(), closedArticle);
         }
-        catch(Exception ex){
+        catch(IllegalArgumentException ex){
             bot.sendInteraction(message.getFrom(), "ARTICLE_NOT_CLOSED");
         }
     }

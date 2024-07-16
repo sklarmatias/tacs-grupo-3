@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.tests.bot;
 
-import ar.edu.utn.frba.tests.helpers.ModelEqualsHelper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpException;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -10,12 +9,14 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.tacsbot.api.notification.impl.NotificationApiConnection;
 import org.tacsbot.api.notification.impl.NotificationHttpConnector;
+import org.tacsbot.api.utils.ApiHttpConnector;
 import org.tacsbot.bot.MyTelegramBot;
 import org.tacsbot.cache.impl.RedisService;
 import org.tacsbot.dictionary.MessageDictionary;
 import org.tacsbot.dictionary.impl.JSONMessageDictionary;
 import org.tacsbot.exceptions.UnauthorizedException;
 import org.tacsbot.handlers.CommandsHandler;
+import org.tacsbot.handlers.impl.LogOutHandler;
 import org.tacsbot.model.NotificationDTO;
 import org.tacsbot.model.UserSession;
 import org.tacsbot.parser.article.impl.ArticleJSONParser;
@@ -88,7 +89,7 @@ public class MyTelegramBotTest {
     }
 
     @After
-    public void cleanCacheAfterEachTest(){
+    public void cleanCacheAfterEachTest() throws UnauthorizedException, IOException, URISyntaxException, InterruptedException {
         myTelegramBot.logOutUser(chatId,userSession);
 //        myTelegramBot.getCacheService().closeConnection();
     }
@@ -105,7 +106,7 @@ public class MyTelegramBotTest {
     }
 
     @Test
-    public void logoutDeletesDoubleMapping() throws IOException {
+    public void logoutDeletesDoubleMapping() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException {
 
         myTelegramBot.logInUser(chatId, userSession);
 
@@ -366,7 +367,7 @@ public class MyTelegramBotTest {
         verify(myTelegramBot).sendInteraction(any(),eq("LOGIN_EMAIL"));
     }
     @Test
-    public void testLogout() throws IOException {
+    public void testLogout() throws IOException, UnauthorizedException, URISyntaxException, InterruptedException, HttpException {
         myTelegramBot.logInUser(chatId, userSession);
         Message message = new Message();
         message.setText("/obtener_articulos");
@@ -375,7 +376,13 @@ public class MyTelegramBotTest {
         telegramuser.setId(123L);
         telegramuser.setFirstName("name");
         message.setFrom(telegramuser);
-        myTelegramBot.logout(message,message.getText());
+        LogOutHandler logOutHandler = new LogOutHandler(userSession);
+        ApiHttpConnector apiHttpConnector = mock(ApiHttpConnector.class);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        doReturn(200).when(response).statusCode();
+        doReturn(response).when(apiHttpConnector).delete(any(), eq(userSession.getSessionId()));
+        logOutHandler.setApiHttpConnector(apiHttpConnector);
+        logOutHandler.processResponse(message, myTelegramBot);
         verify(myTelegramBot).sendInteraction(any(),eq("LOG_OUT"));
     }
 
