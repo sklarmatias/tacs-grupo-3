@@ -48,6 +48,7 @@ public class MyTelegramBotTest {
 
     private UserSession userSession = new UserSession(
             "abcdefghi",
+            "BOT",
             "Thiago",
             "Cabrera",
             "thiago@tacs.com"

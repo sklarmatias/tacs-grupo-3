@@ -44,7 +44,7 @@ public class ArticleCreationHandlerTest {
         // bot
         bot = mock(MyTelegramBot.class);
         doNothing().when(bot).sendInteraction(any(), anyString());
-        userSession = new UserSession("ABCDE","","","");
+        userSession = new UserSession("ABCDE","BOT","","","");
         articleCreationHandler = new ArticleCreationHandler(userSession);
         articleCreationHandler.setArticleApi(api);
     }

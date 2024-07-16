@@ -9,6 +9,7 @@ public class UserSessionTest {
 
     private UserSession userSession1 = new UserSession(
             "1234567",
+            "BOT",
             "thiago",
             "cabrera",
             "thiago@tacs.com"
@@ -16,6 +17,7 @@ public class UserSessionTest {
 
     private UserSession userSession2 = new UserSession(
             "qwertyu",
+            "BOT",
             "matias",
             "magarzo",
             "matias@tacs.com"
@@ -26,6 +28,7 @@ public class UserSessionTest {
 
         UserSession anotherUser = new UserSession(
                 "1234567",
+                "BOT",
                 "thiago",
                 "cabrera",
                 "thiago@tacs.com"
