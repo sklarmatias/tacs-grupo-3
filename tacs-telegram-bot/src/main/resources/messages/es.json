@@ -75,5 +75,6 @@
   "ARTICLES_COUNT_REPORT": "Cantidad total de artículos = %d.",
   "ENGAGED_USERS_COUNT_REPORT": "Cantidad total de usuarios que interactuaron con la aplicación = %d.",
   "USERS_COUNT_REPORT": "Cantidad total de usuarios = %d.",
-  "ERROR_EMAIL_INVALID": "El formato del correo electrónico es inválido."
+  "ERROR_EMAIL_INVALID": "El formato del correo electrónico es inválido.",
+  "SESSION_CLOSED": "Se ha cerrado la sesión! Para seguir interactuando, inicia sesión nuevamente con el comando /login."
 }

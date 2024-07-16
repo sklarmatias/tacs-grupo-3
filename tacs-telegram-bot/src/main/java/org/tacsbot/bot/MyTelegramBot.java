@@ -89,7 +89,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 try {
                     commandActions.get(command).execute(msg, txt);
                 } catch (UnauthorizedException e){
-                    // TODO add session deletion from cache & user interaction
+                    sendInteraction(msg.getFrom(), "SESSION_CLOSED");
+                    getCacheService().deleteSessionMapping(id, new UserSession(e.getSessionId()));
                 }
                 catch (Exception e) {
                     sendInternalErrorMsg(user, e);
@@ -102,7 +103,8 @@ public class MyTelegramBot extends TelegramLongPollingBot {
             try {
                 commandsHandlerMap.get(id).processResponse(msg, this);
             } catch (UnauthorizedException e){
-                // TODO add session deletion from cache & user interaction
+                sendInteraction(msg.getFrom(), "SESSION_CLOSED");
+                getCacheService().deleteSessionMapping(id, new UserSession(e.getSessionId()));
             } catch (Exception e) {
                 sendInternalErrorMsg(user, e);
             }

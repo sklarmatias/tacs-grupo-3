@@ -18,6 +18,10 @@ public class UserSession {
     private String surname;
     private String email;
 
+    public UserSession(String sessionId){
+        this.sessionId = sessionId;
+    }
+
     @Override
     public boolean equals(Object o){
         if (!o.getClass().equals(getClass()))

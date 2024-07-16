@@ -75,5 +75,6 @@
   "ARTICLES_COUNT_REPORT": "Total number of articles = %d.",
   "ENGAGED_USERS_COUNT_REPORT": "Total number of users who interacted with the application = %d.",
   "USERS_COUNT_REPORT": "Total number of users = %d.",
-  "ERROR_EMAIL_INVALID": "The email format is invalid."
+  "ERROR_EMAIL_INVALID": "The email format is invalid.",
+  "SESSION_CLOSED": "Logged out! Please log in again with /login."
 }
