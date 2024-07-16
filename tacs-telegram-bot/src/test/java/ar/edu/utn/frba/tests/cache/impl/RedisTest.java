@@ -68,7 +68,7 @@ public class RedisTest {
 
     private Long chatId = 123456789L;
 
-    UserSession userSession = new UserSession("abcdefg", "Thiago", "Cabrera", "thiago@tacs.com");
+    UserSession userSession = new UserSession("abcdefg", "BOT","Thiago", "Cabrera", "thiago@tacs.com");
 
 
     @BeforeClass

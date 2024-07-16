@@ -14,6 +14,7 @@ import java.util.Objects;
 public class UserSession {
 
     private String sessionId;
+    private String client;
     private String name;
     private String surname;
     private String email;
@@ -30,7 +31,8 @@ public class UserSession {
         return Objects.equals(sessionId, u2.getSessionId()) &&
                 Objects.equals(name, u2.getName()) &&
                 Objects.equals(surname, u2.getSurname()) &&
-                Objects.equals(email, u2.getEmail());
+                Objects.equals(email, u2.getEmail()) &&
+                Objects.equals(client, u2.getClient());
     }
 
 }

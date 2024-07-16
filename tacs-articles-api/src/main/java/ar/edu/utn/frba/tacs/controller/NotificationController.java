@@ -36,10 +36,11 @@ public class NotificationController {
             System.out.println("Cantidad de Sesiones activas en total: " + activeSessions.size() + " - " + "UserId: " + notification.getSubscriber());
             List<String> sessions = loggedUserRepository.listOpenSessionsInBot(notification.getSubscriber());
             System.out.println("Cantidad de Sesiones activas en BOT: " + activeSessions.size() + " - " + "UserId: " + notification.getSubscriber());
-            if (sessions != null) {
+            if (sessions.isEmpty()) {
                 System.out.println("No se encontraron sesiones activas asociadas a las notificiaciones pendientes");
             }else {
             for (String sessionId : sessions) {
+                System.out.println("Se crea notificacion por sesion activa: " + sessionId);
                 Notification.NotificationDTO dto = notification.convertToDTO();
                 dto.setSubscriber(sessionId);
                 notificationsWithSessions.add(dto);

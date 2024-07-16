@@ -59,7 +59,7 @@ public class ArticleHandlerTest {
         doNothing().when(bot).sendAnnotationList(any(),any());
 
         CacheService cacheService = mock(RedisService.class);
-        userSession = new UserSession("abcdefg", "thiago", "cabrera", "thiago@tacs.com");
+        userSession = new UserSession("abcdefg", "BOT","thiago", "cabrera", "thiago@tacs.com");
         doReturn(userSession).when(cacheService).getSession(any());
         doReturn(cacheService).when(bot).getCacheService();
 

@@ -1,10 +1,7 @@
 package ar.edu.utn.frba.tacs;
 
 import ar.edu.utn.frba.tacs.controller.NotificationController;
-import ar.edu.utn.frba.tacs.model.Annotation;
-import ar.edu.utn.frba.tacs.model.Article;
-import ar.edu.utn.frba.tacs.model.Notification;
-import ar.edu.utn.frba.tacs.model.User;
+import ar.edu.utn.frba.tacs.model.*;
 import ar.edu.utn.frba.tacs.service.ArticleService;
 import ar.edu.utn.frba.tacs.service.NotificationService;
 import ar.edu.utn.frba.tacs.service.UserService;
@@ -16,6 +13,7 @@ import de.flapdoodle.reverse.TransitionWalker;
 import jakarta.ws.rs.core.Response;
 import org.junit.*;
 
+import javax.security.auth.login.LoginException;
 import java.util.List;
 
 public class NotificationControllerTest {
@@ -55,22 +53,24 @@ public class NotificationControllerTest {
         running.current().stop();
 
     }
-//    @Test
-//    public void testControllerGetPending(){
-//        User user1 = testFunctions.createTestUser();
-//        User user2 = testFunctions.createTestUser();
-//        Article article = testFunctions.createTestArticle(user1.getId());
-//        List<Notification.NotificationDTO> notifications = notificationController.getPendingNotifications();
-//        Assert.assertEquals(0,notifications.size());
-//        Annotation annotation = articleService.signUpUser(article,user2);
-//        userService.updateAddAnnotation(user2.getId(),annotation);
-//        notifications = notificationController.getPendingNotifications();
-//        Assert.assertEquals(1,notifications.size());
-//        Assert.assertEquals(article.getName(),notifications.get(0).articleName);
-//        articleService.closeArticle(article);
-//        notifications= notificationController.getPendingNotifications();
-//        Assert.assertEquals(2,notifications.size());
-//    }
+    @Test
+    public void testControllerGetPending() throws LoginException {
+        User user1 = testFunctions.createTestUser();
+        User user2 = testFunctions.createTestUser();
+        userService.loginUser(user1.getEmail(),"123456" , Client.BOT) ;
+        userService.loginUser(user2.getEmail(),"123456" , Client.BOT) ;
+        Article article = testFunctions.createTestArticle(user1.getId());
+        List<Notification.NotificationDTO> notifications = notificationController.getPendingNotifications();
+        Assert.assertEquals(0,notifications.size());
+        Annotation annotation = articleService.signUpUser(article,user2);
+        userService.updateAddAnnotation(user2.getId(),annotation);
+        notifications = notificationController.getPendingNotifications();
+        Assert.assertEquals(1,notifications.size());
+        Assert.assertEquals(article.getName(),notifications.get(0).articleName);
+        articleService.closeArticle(article);
+        notifications= notificationController.getPendingNotifications();
+        Assert.assertEquals(2,notifications.size());
+    }
     @Test
     public void testControllerMarkNotifiedSuccess(){
         User user1 = testFunctions.createTestUser();

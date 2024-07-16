@@ -101,12 +101,12 @@ public class UserJSONParserTest {
         String userSessionJSON = """
                 {
                   "sessionId" : "123456",
-                  "client" : "BOT",
+                  "client": "BOT",
                   "name" : "thiago",
                   "surname" : "cabrera",
                   "email" : "thiago@tacs.com"
                 }""";
-        UserSession userSession1 = new UserSession("123456","thiago", "cabrera", "thiago@tacs.com");
+        UserSession userSession1 = new UserSession("123456","BOT","thiago", "cabrera", "thiago@tacs.com");
 
         UserJSONParser userJSONParser = new UserJSONParser();
 
@@ -119,12 +119,12 @@ public class UserJSONParserTest {
         String userSessionJSON = """
                 {
                   "sessionId" : "1234567",
-                  "client" : "BOT",
+                  "client": "BOT",
                   "name" : "thiago",
                   "surname" : "cabrera",
                   "email" : "thiago@tacs.com"
                 }""";
-        UserSession userSession1 = new UserSession("123456","thiago", "cabrera", "thiago@tacs.com");
+        UserSession userSession1 = new UserSession("123456","BOT","thiago", "cabrera", "thiago@tacs.com");
 
         UserJSONParser userJSONParser = new UserJSONParser();
 

@@ -270,6 +270,7 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                 for (NotificationDTO notification : notifications) {
                     UserSession notificationUserSession = new UserSession ();
                     notificationUserSession.setSessionId( notification.getSubscriber());
+                    System.out.println();
                     Long chatId = cacheService.getChatIdOfSession(notificationUserSession);
                     if (chatId == null) {
                         System.out.println("Chat ID is null for user session: " + notification.getSubscriber());
