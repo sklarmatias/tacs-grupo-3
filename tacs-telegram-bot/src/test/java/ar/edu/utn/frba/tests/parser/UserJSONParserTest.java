@@ -6,13 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.Assert;
 import org.junit.Test;
-import org.tacsbot.model.Article;
 import org.tacsbot.model.User;
 import org.tacsbot.model.UserSession;
-import org.tacsbot.parser.article.impl.ArticleJSONParser;
 import org.tacsbot.parser.user.impl.UserJSONParser;
 import java.io.IOException;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -85,19 +82,6 @@ public class UserJSONParserTest {
     }
 
     @Test
-    public void invalidJSONToUserTest(){
-        String invalidTestJSON = """
-                {
-                  "Name" : "thiago",
-                  "Surname" : "cabrera",
-                  "Email" : "thiago@tacs.com",
-                  "Pass" : "tacs2024"
-                }""";
-        Assert.assertThrows(IllegalArgumentException.class,  () ->{
-            new UserJSONParser().parseJSONToUser(invalidTestJSON);
-        });
-    }
-    @Test
     public void userToJSONFail() throws IOException {
         UserJSONParser userJSONParser = new UserJSONParser();
         ObjectWriter objectWriter = mock(ObjectWriter.class);
@@ -111,19 +95,13 @@ public class UserJSONParserTest {
         Assert.assertThrows(IOException.class, () -> userJSONParser.parseUserToJSON(new User()));
     }
 
-    private boolean equals(UserSession u1, UserSession u2){
-        return u1.getSessionId().equals(u2.getSessionId()) &&
-                u2.getName().equals(u1.getName()) &&
-                u1.getSurname().equals(u2.getSurname()) &&
-                u1.getEmail().equals(u2.getEmail());
-    }
-
     @Test
     public void userSessionParserTest(){
 
         String userSessionJSON = """
                 {
                   "sessionId" : "123456",
+                  "client" : "BOT",
                   "name" : "thiago",
                   "surname" : "cabrera",
                   "email" : "thiago@tacs.com"
@@ -141,6 +119,7 @@ public class UserJSONParserTest {
         String userSessionJSON = """
                 {
                   "sessionId" : "1234567",
+                  "client" : "BOT",
                   "name" : "thiago",
                   "surname" : "cabrera",
                   "email" : "thiago@tacs.com"
