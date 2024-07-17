@@ -9,8 +9,6 @@ const Header = ({ isLoggedIn, email, onLogout }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('emailUser');
         onLogout();
         navigate('/'); // Redirect to home after logout
     };

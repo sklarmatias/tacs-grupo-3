@@ -133,8 +133,6 @@ function ArticleList({ userFocus, onLogout }) {
             });
     };
     const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('emailUser');
         onLogout();
         navigate('/'); // Redirect to home after logout
     };

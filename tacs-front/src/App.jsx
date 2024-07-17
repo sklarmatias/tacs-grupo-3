@@ -13,6 +13,7 @@ import SubscribersList from './subscribersList.jsx';
 import PrivateRoute from './privateroute.jsx';
 import Reports from './reports.jsx';
 import SessionsList from './sessionsList.jsx'
+import axios from 'axios';
 import './i18n.jsx';
 
 
@@ -35,10 +36,28 @@ function App() {
     };
 
     const handleLogout = () => {
+        handleCloseSession(localStorage.getItem('authToken'));
         localStorage.removeItem('authToken');
         localStorage.removeItem('emailUser');
         setIsLoggedIn(false);
         setEmail('');
+    };
+    const handleCloseSession = (sessionId) => {
+        axios.delete(`${import.meta.env.VITE_API_URL}/users/session`, {
+            headers: {
+                session: `${sessionId}`
+            }
+        })
+            .then(response => {
+                alert(t('sessions.success'));
+            })
+            .catch(async error => {
+                if (error.response && error.response.status === 401) {
+                    alert(t('loggedout'));
+                } else {
+                    alert(t('sessions.error'));
+                }
+            });
     };
     const Layout = ({ isLoggedIn, email, onLogin, onLogout }) => (
         <>
@@ -60,7 +79,7 @@ function App() {
             children: [
                 {
                     path: '/',
-                    element: <ArticleList userFocus="false" />,
+                    element: <ArticleList userFocus="false" onLogout={handleLogout} />,
                 },
                 {
                     path: 'create',
