@@ -247,12 +247,17 @@ public class ArticleHandlerTest {
         verify(bot, times(1)).sendInteraction(eq(message.getFrom()), eq("UNKNOWN_RESPONSE"));
     }
     @Test
-    public void testArticleSubscribeOk() throws HttpException, UnauthorizedException {
+    public void testArticleSubscribeOk() throws HttpException, UnauthorizedException, IOException, URISyntaxException, InterruptedException {
         message.setText("A");
         articleHandler.processResponse(message,bot);
         message.setText("1");
         articleHandler.processResponse(message,bot);
         message.setText("A");
+
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(200);
+        when(connector.post(anyString(), eq(""), eq(userSession.getSessionId()))).thenReturn(response);
+
         articleHandler.processResponse(message,bot);
         verify(bot).sendInteraction(eq(message.getFrom()), eq("AVAILABLE_ARTICLES"));
         verify(bot).sendArticleList(eq(message.getFrom()), any(List.class));
