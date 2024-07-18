@@ -183,7 +183,9 @@ public class ArticleController {
 		else{
 			try {
 				articleService.closeArticle(articleService.getArticle(articleId));
-				return Response.ok(articleService.getArticle(articleId)).build();
+				Article article = articleService.getArticle(articleId);
+				Article.ArticleDTO articleDTO = article.convertToDTO();
+				return Response.ok(articleDTO).build();
 			}
 			catch(Exception exception){
 				return Response.status(Response.Status.BAD_REQUEST).entity(exception.getMessage()).type( MediaType.TEXT_PLAIN).build();

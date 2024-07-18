@@ -175,7 +175,7 @@ public class ArticleHandlerTest {
     public void testArticleSubscribeFail() throws HttpException, URISyntaxException, IOException, InterruptedException, UnauthorizedException {
         HttpResponse response =  mock(HttpResponse.class);
         doReturn(400).when(response).statusCode();
-        doReturn(response).when(connector).post(any(),any());
+        doReturn(response).when(connector).post(any(),any(),any());
         message.setText("A");
         articleHandler.processResponse(message,bot);
         message.setText("1");

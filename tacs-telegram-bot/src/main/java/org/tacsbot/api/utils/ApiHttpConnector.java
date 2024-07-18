@@ -77,8 +77,10 @@ public class ApiHttpConnector {
                 .build();
         HttpResponse<String> response = sendRequest(request);
         if (response.statusCode() == 401){
+            System.out.println("Error 401 in patch request - ApiHttpConnector");
             throw new UnauthorizedException(sessionId);
         }
+        System.out.println("Status in patch request - ApiHttpConnector: " + response.statusCode());
         return response;
     }
 

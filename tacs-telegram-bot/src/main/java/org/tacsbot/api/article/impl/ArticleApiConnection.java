@@ -92,7 +92,8 @@ public class ArticleApiConnection implements ArticleApi {
     public boolean suscribeToArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException, UnauthorizedException {
         try{
             String path = String.format("/articles/%s/users/", article.getId());
-            HttpResponse<String> response = apiHttpConnector.post(path, userSession.getSessionId());
+            System.out.println("Suscribing to article - Path: " + path);
+            HttpResponse<String> response = apiHttpConnector.post(path,"", userSession.getSessionId());
             if(response.statusCode() == 401){
                 throw new UnauthorizedException(userSession.getSessionId());
             }
@@ -107,8 +108,11 @@ public class ArticleApiConnection implements ArticleApi {
     public Article closeArticle(Article article, UserSession userSession) throws HttpException, IllegalArgumentException, UnauthorizedException {
         try{
             String path = String.format("/articles/%s/close", article.getId());
+            System.out.println("Closing article - Path: " + path);
             HttpResponse<String> response = apiHttpConnector.patch(path, "", userSession.getSessionId());
+            System.out.println("Status in close article request - ArticleAPi: " + response.statusCode());
             if (response.statusCode() == 200){
+                System.out.println("Parsing response article...");
                 return articleJSONParser.parseJSONToArticle(response.body());
             } else if(response.statusCode() == 401){
                 throw new UnauthorizedException(userSession.getSessionId());
